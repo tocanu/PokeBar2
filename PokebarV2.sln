@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.Core", "Pokebar.Core\Pokebar.Core.csproj", "{855B13E6-6DF1-47B8-8BF9-3F5263600F65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.Pipeline", "Pokebar.Pipeline\Pokebar.Pipeline.csproj", "{B3069114-4F28-418B-9C4A-4C638E4A4CBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.Editor", "Pokebar.Editor\Pokebar.Editor.csproj", "{3D1B461B-FBB2-429E-94DD-33B0C21375A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.App", "Pokebar.App\Pokebar.App.csproj", "{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{855B13E6-6DF1-47B8-8BF9-3F5263600F65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{855B13E6-6DF1-47B8-8BF9-3F5263600F65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{855B13E6-6DF1-47B8-8BF9-3F5263600F65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{855B13E6-6DF1-47B8-8BF9-3F5263600F65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3069114-4F28-418B-9C4A-4C638E4A4CBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3069114-4F28-418B-9C4A-4C638E4A4CBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3069114-4F28-418B-9C4A-4C638E4A4CBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3069114-4F28-418B-9C4A-4C638E4A4CBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D1B461B-FBB2-429E-94DD-33B0C21375A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D1B461B-FBB2-429E-94DD-33B0C21375A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D1B461B-FBB2-429E-94DD-33B0C21375A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D1B461B-FBB2-429E-94DD-33B0C21375A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,33 @@
+<Window x:Class="Pokebar.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Pokebar App (preview runtime)" Height="400" Width="640">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
+            <TextBlock Text="Offsets runtime" FontSize="16" FontWeight="Bold"/>
+            <TextBlock Text="{Binding RuntimeInfo}" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding RuntimePath}" FontSize="10" Foreground="Gray"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,8,0,8">
+            <TextBlock Text="Dex:" VerticalAlignment="Center"/>
+            <TextBox Width="80" Margin="4,0,0,0" Text="{Binding DexInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Carregar" Margin="8,0,0,0" Padding="10,4" Click="LoadDex_Click"/>
+            <TextBlock Text="{Binding Status}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+        </StackPanel>
+        <Border BorderBrush="Gray" BorderThickness="1" Background="#222">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <Canvas Margin="4">
+                    <Image x:Name="PreviewImageElement" Source="{Binding PreviewImage}" Stretch="None"/>
+                    <Rectangle Fill="Red"
+                               Height="2"
+                               Opacity="0.7"
+                               Canvas.Top="{Binding GroundLineY}"
+                               Width="{Binding ElementName=PreviewImageElement, Path=ActualWidth}"/>
+                </Canvas>
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

@@ -1,0 +1,29 @@
+{
+  "dexNumber": 1021,
+  "species": "1021",
+  "walk": {},
+  "idle": {
+    "fileName": "Idle-Anim.png",
+    "frame": {
+      "width": 48,
+      "height": 88
+    },
+    "grid": {
+      "columns": 1,
+      "rows": 8
+    }
+  },
+  "sleep": {},
+  "animations": {
+    "hasWalk": false,
+    "hasIdle": true,
+    "hasSleep": false,
+    "emotes": []
+  },
+  "offsets": {
+    "groundOffsetY": 37,
+    "centerOffsetX": 0
+  },
+  "bodyType": 3,
+  "notes": []
+}

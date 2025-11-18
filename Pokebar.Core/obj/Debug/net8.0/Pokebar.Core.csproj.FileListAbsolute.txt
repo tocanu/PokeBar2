@@ -1,0 +1,11 @@
+D:\Projetos no HD\PokebarV2\Pokebar.Core\bin\Debug\net8.0\Pokebar.Core.deps.json
+D:\Projetos no HD\PokebarV2\Pokebar.Core\bin\Debug\net8.0\Pokebar.Core.dll
+D:\Projetos no HD\PokebarV2\Pokebar.Core\bin\Debug\net8.0\Pokebar.Core.pdb
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.AssemblyInfoInputs.cache
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.AssemblyInfo.cs
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.csproj.CoreCompileInputs.cache
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.dll
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\refint\Pokebar.Core.dll
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.pdb
+D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\ref\Pokebar.Core.dll

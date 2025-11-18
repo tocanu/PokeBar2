@@ -1,0 +1,39 @@
+{
+  "dexNumber": 825,
+  "species": "0825",
+  "walk": {
+    "fileName": "Walk-Anim.png",
+    "frame": {
+      "width": 12,
+      "height": 24
+    },
+    "grid": {
+      "columns": 8,
+      "rows": 8
+    }
+  },
+  "idle": {
+    "fileName": "Idle-Anim.png",
+    "frame": {
+      "width": 60,
+      "height": 24
+    },
+    "grid": {
+      "columns": 2,
+      "rows": 8
+    }
+  },
+  "sleep": {},
+  "animations": {
+    "hasWalk": true,
+    "hasIdle": true,
+    "hasSleep": false,
+    "emotes": []
+  },
+  "offsets": {
+    "groundOffsetY": 6,
+    "centerOffsetX": 0
+  },
+  "bodyType": 1,
+  "notes": []
+}

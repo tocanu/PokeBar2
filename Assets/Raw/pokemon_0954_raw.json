@@ -1,0 +1,21 @@
+{
+  "dexNumber": 954,
+  "species": "0954",
+  "walk": {},
+  "idle": {},
+  "sleep": {},
+  "animations": {
+    "hasWalk": false,
+    "hasIdle": false,
+    "hasSleep": false,
+    "emotes": []
+  },
+  "offsets": {
+    "groundOffsetY": 0,
+    "centerOffsetX": 0
+  },
+  "bodyType": 0,
+  "notes": [
+    "Sprite folder missing in SpriteCollab clone."
+  ]
+}
