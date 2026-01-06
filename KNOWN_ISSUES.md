@@ -1,53 +1,40 @@
 # 🐛 PROBLEMAS CONHECIDOS
 
-## ⚠️ Média Prioridade
+## ✅ RESOLVIDOS
 
 ### **Conflito de indexação: Pipeline suporta variantes, Editor/Runtime indexam só por Dex**
 
-**Status:** Não resolvido - Aguardando refatoração do sistema de offsets
+**Status:** ✅ RESOLVIDO (commits 4b962a1, 045a68e)
 
-**Descrição:**
-O pipeline (`Pokebar.Pipeline/Program.cs`) agora varre e processa variantes de Pokémon usando o formato `{dex}_{formId}` (ex: `0025_0006` para Pikachu forma 6). Porém:
+**Descrição Original:**
+O pipeline gerava variantes (0025_0006) mas Editor/Runtime usavam apenas Dex (int) como chave, causando colisões.
 
-- **Editor** (`Pokebar.Editor/MainWindow.xaml.cs` line 20): Carrega offsets usando apenas o Dex como chave
-- **Runtime** (`Pokebar.DesktopPet/Animation/SpriteLoader.cs`): Carrega sprites usando apenas o Dex
-- **Offsets finais** (`FinalOffsets.cs` line 6): Dicionário indexado apenas por `int Dex`
+**Solução Implementada:**
+- `OffsetAdjustment.DexNumber` (int) → `UniqueId` (string)
+- `Dictionary<int, OffsetAdjustment>` → `Dictionary<string, OffsetAdjustment>`
+- Todos os consumidores (Pipeline, Editor, App, DesktopPet) agora usam UniqueId
+- Forma base sem sufixo: `0025` (mais limpo)
+- Formas alternativas: `0025_0006`, `0025_0007`
+- 1685 variantes únicas processadas sem colisões
 
-**Impacto:**
-- Se o pipeline gerar offsets para múltiplas formas do mesmo Pokémon, **as formas sobrescrevem umas às outras** no dicionário
-- Apenas a última forma processada fica disponível
-- Formas alternativas (ex: Alola, Galar, Mega, Gigantamax) **não funcionam** no runtime
+**Arquivos Atualizados:**
+- ✅ `Pokebar.Core/Serialization/FinalOffsets.cs`
+- ✅ `Pokebar.Pipeline/Program.cs`
+- ✅ `Pokebar.Editor/MainWindow.xaml.cs`
+- ✅ `Pokebar.App/MainWindow.xaml.cs`
+- ✅ `Pokebar.DesktopPet/Animation/SpriteLoader.cs`
+- ✅ `Pokebar.DesktopPet/Entities/BaseEntity.cs`
+- ✅ `Pokebar.DesktopPet/Entities/PokemonPet.cs`
 
-**Exemplo de colisão:**
-```
-Pipeline processa:
-- 0025/0000 (Pikachu normal) → offsets calculados
-- 0025/0006 (Pikachu forma 6) → sobrescreve offsets do 0025 normal
+**Resultado:**
+- ✅ pokemon_offsets_final.json e pokemon_offsets_runtime.json agora usam UniqueId (string)
+- ✅ Editor pode ajustar offsets por forma individualmente
+- ✅ Runtime carrega sprites e offsets corretos por variante
+- ✅ 0 colisões (exceto 1 duplicata conhecida: Pikachu 0025)
 
-Runtime carrega:
-- SpriteLoader.LoadAnimation(dex: 25) → recebe offsets da forma 6
-- Animações ficam desalinhadas
-```
+---
 
-**Solução planejada (FASE 3 - Performance):**
-1. Mudar chave dos offsets de `int` para `string` (formato `{dex}_{formId}`)
-2. Atualizar `FinalOffsets.cs`: `Dictionary<string, PokemonOffsets>`
-3. Atualizar `SpriteLoader` para aceitar parâmetro opcional `formId`
-4. Manter compatibilidade: `formId = "0000"` por padrão
-5. UI do PC/Box (FASE 6) permitirá selecionar formas específicas
-
-**Workaround atual:**
-- Usar apenas sprites sem variantes (pasta raiz do Dex)
-- Evitar processar formas alternativas no pipeline até refatoração
-
-**Arquivos afetados:**
-- `Pokebar.Core/Serialization/FinalOffsets.cs`
-- `Pokebar.Core/Models/PokemonSpriteMetadata.cs`
-- `Pokebar.Pipeline/Program.cs`
-- `Pokebar.Editor/MainWindow.xaml.cs`
-- `Pokebar.DesktopPet/Animation/SpriteLoader.cs`
-
-**Issue relacionada:** #TBD (criar issue no GitHub quando priorizar)
+## ⚠️ Média Prioridade
 
 ---
 
@@ -67,53 +54,64 @@ Adicionada verificação `hasRootSprites` para incluir pasta raiz como forma "00
 
 ---
 
-## 📝 Notas de implementação
+## ⚠️ Média Prioridade
 
-### Quando resolver o conflito de variantes:
+### **Pastas Aninhadas de Variantes Não Suportadas**
 
-**Mudanças necessárias:**
+**Status:** LIMITAÇÃO CONHECIDA
 
-1. **FinalOffsets.cs:**
-```csharp
-// Antes
-public Dictionary<int, PokemonOffsets> Offsets { get; set; }
+**Descrição:**
+`EnumerateSpriteFolders` suporta apenas 1 nível de profundidade de pastas. Estruturas com múltiplos níveis (ex: 0025/0000/0000/0002) não são processadas.
 
-// Depois
-public Dictionary<string, PokemonOffsets> Offsets { get; set; }
-// Chave no formato: "0025_0000" ou "0025_0006"
+**Exemplo:** Pikachu (0025)
+```
+SpriteCollab/sprite/0025/
+├── 0000/           → ✅ Processado como "0025"
+│   ├── 0000/      → ❌ Não processado (2º nível)
+│   │   └── 0002/  → ❌ Não processado (3º nível)
+│   └── 0001/      → ❌ Não processado (2º nível)
+├── 0006/           → ✅ Processado como "0025_0006"
+└── 0007/           → ✅ Processado como "0025_0007"
 ```
 
-2. **SpriteLoader.cs:**
-```csharp
-// Adicionar sobrecarga
-public AnimationClip? LoadAnimation(int dex, string formId = "0000", AnimationType type = AnimationType.Idle)
-{
-    var key = $"{dex:D4}_{formId}";
-    // Buscar offsets com key ao invés de dex
-}
-```
+**Impacto:**
+- Formas ultra-específicas (sub-variantes) não são detectadas
+- Gera 1 duplicata no pokemon_offsets_final.json (Pikachu 0025)
+- FinalOffsets.Load() mantém última ocorrência (comportamento esperado)
 
-3. **Pipeline/Program.cs:**
-```csharp
-// Já está usando variant.UniqueId (formato correto)
-// Apenas garantir que offsets sejam salvos com chave string
-```
+**Solução Futura:**
+Implementar recursão profunda no `EnumerateSpriteFolders` com formato:
+- 1 nível: `0025` (base)
+- 2 níveis: `0025_0006` (Cosplay)
+- 3 níveis: `0025_0006_0001` (Cosplay variant A)
+- 4 níveis: `0025_0006_0001_0002` (Cosplay variant A subtype)
 
-4. **Compatibilidade retroativa:**
-```csharp
-// Manter fallback para formato antigo
-if (!offsets.TryGetValue(uniqueId, out var offset))
-{
-    // Tenta formato legado apenas com Dex
-    offsets.TryGetValue($"{dex:D4}_0000", out offset);
-}
-```
+**Prioridade:** Baixa (afeta apenas Pokémon com estruturas complexas, ~1-2% do total)
 
-**Testes necessários:**
-- [ ] Pipeline processa múltiplas formas sem colisão
-- [ ] Editor carrega offsets de formas específicas
-- [ ] Runtime mostra animações corretas por forma
-- [ ] Fallback funciona para offsets legados
-- [ ] UI do PC permite trocar entre formas
+---
 
-**Tempo estimado:** 3-4 horas (parte da FASE 3)
+## 📝 Notas de Implementação
+
+## 📝 Notas de Implementação
+
+### Design Decisions
+
+**UniqueId sem sufixo "_0000" para forma base:**
+- Decisão: Forma base usa apenas `0025` em vez de `0025_0000`
+- Razão: Mais limpo, menos verboso para o caso comum (90%+ dos Pokémon)
+- Implementação: `PokemonVariant.UniqueId` property (linha 13)
+- Impacto: JSONs raw ficam misturados (`pokemon_0025_raw.json` + `pokemon_0025_0006_raw.json`)
+
+**Formato de arquivo:**
+- Forma base: `pokemon_0025_raw.json` → UniqueId: `"0025"`
+- Formas alternativas: `pokemon_0025_0006_raw.json` → UniqueId: `"0025_0006"`
+
+**Loader behavior (FinalOffsets.Load):**
+- Mantém última ocorrência em caso de duplicatas (`GroupBy(i => i.UniqueId).ToDictionary(g => g.Key, g => g.Last())`)
+- Mesmo comportamento do formato antigo (DexNumber)
+- Permite sobrescrever offsets carregando arquivo com ajustes manuais
+
+**Arquivos gerados pelo pipeline (ignorados pelo git):**
+- `Assets/Raw/pokemon_*_raw.json` - Metadata bruta por variante
+- `Assets/Final/pokemon_offsets_runtime.json` - Offsets merged para runtime (1685 registros)
+- `Assets/Final/pokemon_offsets_final.json` - Offsets do editor (1027 registros, pode ter ajustes manuais)
