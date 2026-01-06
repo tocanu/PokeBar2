@@ -186,3 +186,10 @@ Melhorias reorganizadas em **fases sequenciais**, do alicerce até o lançamento
 - Configurável por bioma/horário (futuro)
 - Arquivo separado `pokemon_spawn_data.json` com metadados de cada Pokémon
 - Permite override manual de pesos específicos no gameplay_config.json
+
+### **Offsets automáticos (hitbox/ground)**
+- **FASE 3-4** - Pipeline/Editor antes de Gameplay expandir
+- Calcular bbox por frame (pixels opacos) e derivar hitbox encolhendo via fator configurável (ex: 0.9) + clamp mínimo.
+- Ground offset = menor linha Y com pixel opaco (ou média dos últimos N) por animação; fallback manual continua valendo se existir.
+- Salvar no JSON final/runtime por `UniqueId` + animação; Editor mostra preview e permite override/lock.
+- Tratar pastas aninhadas (ex.: Pikachu fêmea) e ignorar frames vazios para não gerar NaN.

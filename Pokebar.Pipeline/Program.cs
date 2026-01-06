@@ -9,6 +9,9 @@ using Pokebar.Core.Models;
 using Pokebar.Core.Serialization;
 using Pokebar.Core.Sprites;
 
+const double HitboxShrinkFactor = 0.9;
+const int MinHitboxSize = 6;
+
 Console.WriteLine("Pokebar Pipeline - stub inicial (gera JSON bruto por pasta de sprite).");
 
 var expectedDex = Enumerable.Range(DexConstants.MinDex, DexConstants.TotalDex).ToHashSet(); // 0001..1025
@@ -20,6 +23,7 @@ var frameHeights = new List<int>();
 var frameWidths = new List<int>();
 var groundOffsets = new List<int>();
 var centerOffsets = new List<int>();
+var geometries = new Dictionary<string, SpriteGeometry>();
 
 // Se nÃ£o informar nada, usa SpriteCollab/sprite no repo.
 var spriteRoot = args.Length > 0
@@ -70,9 +74,10 @@ foreach (var (dex, formId, dir) in allVariants)
         // Usar linhas 3 e 7 (0-based 2 e 6) para cÃ¡lculo de offsets do walk; se nÃ£o existirem, usa todas.
         int[]? rowsToUse = offsetsSource.Item1 == walkFile ? new[] { 2, 6 } : null;
 
-        var offsets = offsetsSource.Item1 is not null && offsetsSource.Item2 is not null && offsetsSource.Item3 is not null
-            ? ComputeOffsets(Path.Combine(dir, offsetsSource.Item1), offsetsSource.Item2, offsetsSource.Item3, rowsToUse)
-            : new SpriteOffsets(GroundOffsetY: 0, CenterOffsetX: 0);
+        var geometry = offsetsSource.Item1 is not null && offsetsSource.Item2 is not null && offsetsSource.Item3 is not null
+            ? ComputeGeometry(Path.Combine(dir, offsetsSource.Item1), offsetsSource.Item2, offsetsSource.Item3, rowsToUse)
+            : SpriteGeometry.Empty;
+        var offsets = geometry.Offsets;
 
         var bodyType = SuggestBodyType(walkInfo.Frame ?? idleInfo.Frame ?? sleepInfo.Frame);
 
@@ -91,6 +96,8 @@ foreach (var (dex, formId, dir) in allVariants)
             Offsets: offsets,
             BodyType: bodyType,
             Notes: Array.Empty<string>());
+
+        geometries[variant.UniqueId] = geometry;
 
         var outputPath = Path.Combine(outputDir, $"pokemon_{variant.UniqueId}_raw.json");
         MetadataJson.SerializeToFile(metadata, outputPath);
@@ -267,10 +274,13 @@ try
         var metaFrame = meta?.Walk.Frame ?? meta?.Idle.Frame ?? meta?.Sleep.Frame;
         var metaGrid = meta?.Walk.Grid ?? meta?.Idle.Grid ?? meta?.Sleep.Grid;
         var metaPrimaryFile = meta?.Walk.FileName ?? meta?.Idle.FileName ?? meta?.Sleep.FileName;
-        var baseOffsets = meta?.Offsets ?? new SpriteOffsets(0, 0);
-        var hb = (metaFrame is not null)
-            ? (HitboxX: 0, HitboxY: 0, HitboxWidth: metaFrame.Width, HitboxHeight: metaFrame.Height)
-            : (HitboxX: 0, HitboxY: 0, HitboxWidth: 0, HitboxHeight: 0);
+        var geometry = geometries.TryGetValue(uniqueId, out var geo) ? geo : SpriteGeometry.Empty;
+        var baseOffsets = meta?.Offsets ?? geometry.Offsets;
+        var hb = geometry.Hitbox.IsValid
+            ? geometry.Hitbox
+            : metaFrame is not null
+                ? new BoundingBox(0, 0, metaFrame.Width, metaFrame.Height)
+                : BoundingBox.Empty;
 
         if (adjustments.TryGetValue(uniqueId, out var adj))
         {
@@ -319,10 +329,10 @@ try
                 baseOffsets.GroundOffsetY,
                 baseOffsets.CenterOffsetX,
                 false,
-                hb.HitboxX,
-                hb.HitboxY,
-                hb.HitboxWidth,
-                hb.HitboxHeight,
+                hb.X,
+                hb.Y,
+                hb.Width,
+                hb.Height,
                 metaFrame?.Width,
                 metaFrame?.Height,
                 metaGrid?.Columns,
@@ -388,11 +398,11 @@ static SpriteSheetInfo AnalyzeSprite(string dir, string? fileName, bool preferSt
 }
 
 [SupportedOSPlatform("windows")]
-static SpriteOffsets ComputeOffsets(string fullPath, SpriteGrid grid, FrameSize frame, int[]? rowsToUse = null)
+static SpriteGeometry ComputeGeometry(string fullPath, SpriteGrid grid, FrameSize frame, int[]? rowsToUse = null)
 {
     using var bmp = SafeBitmap(fullPath);
     var buffer = BuildPixelBuffer(bmp);
-    return SpriteSheetAnalyzer.ComputeOffsets(buffer, grid, frame, rowsToUse);
+    return SpriteSheetAnalyzer.ComputeGeometry(buffer, grid, frame, rowsToUse, HitboxShrinkFactor, MinHitboxSize);
 }
 
 static BodyTypeSuggestion SuggestBodyType(FrameSize? frame)

@@ -144,14 +144,10 @@ public class SpriteLoader
         if (cols.Count == 0)
             cols = Enumerable.Range(0, grid.Columns).ToList();
 
-        var frames = BuildAnimationFrames(sheet, grid, frame, rows, cols);
-        if (frames.Count == 0)
+            var (frames, groundLines) = BuildAnimationFrames(sheet, grid, frame, rows, cols, offset?.GroundOffsetY, offset?.FrameHeight);
+            if (frames.Count == 0)
             return null;
 
-        var groundOffset = offset?.GroundOffsetY ?? 0;
-        groundOffset = Math.Clamp(groundOffset, 0, frame.Height);
-        var groundLine = frame.Height - groundOffset;
-        var groundLines = Enumerable.Repeat((double)groundLine, frames.Count).ToList();
 
         var clipName = $"{type}-{uniqueId}";
         return new AnimationClip(clipName, frames, groundLines);
@@ -250,31 +246,85 @@ public class SpriteLoader
         return null;
     }
 
-    private static List<BitmapSource> BuildAnimationFrames(
+    private static (List<BitmapSource> Frames, List<double> GroundLines) BuildAnimationFrames(
         BitmapSource sheet,
         SpriteGrid grid,
         FrameSize frame,
         IReadOnlyList<int> rows,
-        IReadOnlyList<int> cols)
+        IReadOnlyList<int> cols,
+        double? storedGroundOffset,
+        int? storedFrameHeight)
     {
         var frames = new List<BitmapSource>();
+        var groundLines = new List<double>();
+
         foreach (var row in rows)
         {
-            foreach (var col in cols)
+            for (var col = 0; col < cols.Count; col++)
             {
-                var srcX = col * frame.Width;
+                var srcX = cols[col] * frame.Width;
                 var srcY = row * frame.Height;
                 if (srcX + frame.Width > sheet.PixelWidth || srcY + frame.Height > sheet.PixelHeight)
                     continue;
+
                 var frameRect = new Int32Rect(srcX, srcY, frame.Width, frame.Height);
                 var cropped = new CroppedBitmap(sheet, frameRect);
                 if (cropped.CanFreeze)
                     cropped.Freeze();
+
+                var groundOffset = storedGroundOffset ?? 0;
+                if (storedGroundOffset.HasValue && storedFrameHeight.HasValue && storedFrameHeight.Value > 0 && storedFrameHeight.Value != frame.Height)
+                {
+                    groundOffset = groundOffset * (frame.Height / (double)storedFrameHeight.Value);
+                }
+
+                var detected = ComputeGroundOffset(cropped);
+                if (detected.HasValue)
+                {
+                    groundOffset = detected.Value;
+                }
+
+                groundOffset = Math.Clamp(groundOffset, 0, frame.Height);
+                var groundLine = frame.Height - groundOffset;
+
                 frames.Add(cropped);
+                groundLines.Add(groundLine);
             }
         }
 
-        return frames;
+        return (frames, groundLines);
+    }
+
+    private static int? ComputeGroundOffset(BitmapSource frame)
+    {
+        var bitsPerPixel = frame.Format.BitsPerPixel;
+        var bytesPerPixel = Math.Max(1, (bitsPerPixel + 7) / 8);
+        var stride = (frame.PixelWidth * bitsPerPixel + 7) / 8;
+        var buffer = new byte[stride * frame.PixelHeight];
+        frame.CopyPixels(buffer, stride, 0);
+
+        for (var y = frame.PixelHeight - 1; y >= 0; y--)
+        {
+            var rowHasPixel = false;
+            var rowStart = y * stride;
+            for (var x = 0; x < frame.PixelWidth; x++)
+            {
+                var idx = rowStart + (x * bytesPerPixel);
+                var alpha = bytesPerPixel >= 4 ? buffer[idx + 3] : (byte)255;
+                if (alpha > 0)
+                {
+                    rowHasPixel = true;
+                    break;
+                }
+            }
+
+            if (rowHasPixel)
+            {
+                return frame.PixelHeight - 1 - y;
+            }
+        }
+
+        return null;
     }
 
     private static BitmapImage LoadBitmap(string path)

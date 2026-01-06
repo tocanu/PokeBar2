@@ -35,6 +35,24 @@ public readonly struct PixelBuffer
     public int BytesPerPixel { get; }
 }
 
+public readonly record struct BoundingBox(int X, int Y, int Width, int Height)
+{
+    public bool IsValid => Width > 0 && Height > 0;
+    public static BoundingBox Empty => new(0, 0, 0, 0);
+}
+
+public readonly record struct SpriteGeometry(
+    SpriteOffsets Offsets,
+    BoundingBox Hitbox,
+    int FrameWidth,
+    int FrameHeight,
+    int FramesAnalyzed,
+    int FramesWithPixels)
+{
+    public bool HasPixels => Hitbox.IsValid;
+    public static SpriteGeometry Empty => new(new SpriteOffsets(0, 0), BoundingBox.Empty, 0, 0, 0, 0);
+}
+
 public static class SpriteSheetAnalyzer
 {
     public static (SpriteGrid Grid, FrameSize Frame) DetectGrid(PixelBuffer buffer, bool preferStandardGrid)
@@ -86,15 +104,26 @@ public static class SpriteSheetAnalyzer
         return PickBestGrid(buffer, colCandidatesGeneric, rowCandidatesGeneric);
     }
 
-    public static SpriteOffsets ComputeOffsets(PixelBuffer buffer, SpriteGrid grid, FrameSize frame, int[]? rowsToUse = null)
+    public static SpriteGeometry ComputeGeometry(
+        PixelBuffer buffer,
+        SpriteGrid grid,
+        FrameSize frame,
+        int[]? rowsToUse = null,
+        double hitboxShrinkFactor = 0.9,
+        int minHitboxSize = 4)
     {
         var data = buffer.Data;
         var stride = buffer.Stride;
         var bpp = buffer.BytesPerPixel;
 
-        var groundOffsetMax = 0;
-        double centerOffsetAccum = 0;
+        var groundSamples = new List<int>();
+        var centerSamples = new List<double>();
         var framesCount = 0;
+
+        var unionMinX = frame.Width;
+        var unionMaxX = -1;
+        var unionMinY = frame.Height;
+        var unionMaxY = -1;
 
         HashSet<int>? allowedRows = null;
         if (rowsToUse is not null)
@@ -115,15 +144,14 @@ public static class SpriteSheetAnalyzer
                 var frameOriginX = col * frame.Width;
                 var frameOriginY = row * frame.Height;
 
-                var groundOffset = frame.Height;
-                var minX = frame.Width;
-                var maxX = -1;
+                var localMinX = frame.Width;
+                var localMaxX = -1;
+                var localMinY = frame.Height;
+                var localMaxY = -1;
 
-                for (var y = frame.Height - 1; y >= 0; y--)
+                for (var y = 0; y < frame.Height; y++)
                 {
                     var ptrY = frameOriginY + y;
-                    var rowHasPixel = false;
-
                     for (var x = 0; x < frame.Width; x++)
                     {
                         var ptrX = frameOriginX + x;
@@ -131,36 +159,71 @@ public static class SpriteSheetAnalyzer
                         var alpha = bpp >= 4 ? data[idx + 3] : (byte)255;
                         if (alpha > 0)
                         {
-                            rowHasPixel = true;
-                            groundOffset = Math.Min(groundOffset, frame.Height - 1 - y);
-                            minX = Math.Min(minX, x);
-                            maxX = Math.Max(maxX, x);
+                            localMinX = Math.Min(localMinX, x);
+                            localMaxX = Math.Max(localMaxX, x);
+                            localMinY = Math.Min(localMinY, y);
+                            localMaxY = Math.Max(localMaxY, y);
                         }
                     }
-
-                    if (rowHasPixel && groundOffset != frame.Height)
-                    {
-                        continue;
-                    }
                 }
 
-                if (maxX >= minX && minX < frame.Width && maxX >= 0)
+                if (localMaxX >= localMinX && localMaxY >= localMinY)
                 {
-                    var center = (minX + maxX) / 2.0;
-                    var offsetX = center - (frame.Width / 2.0);
-                    centerOffsetAccum += offsetX;
-                    framesCount++;
-                }
+                    var frameGroundOffset = frame.Height - 1 - localMaxY;
+                    var centerX = (localMinX + localMaxX) / 2.0;
+                    var offsetX = centerX - (frame.Width / 2.0);
 
-                groundOffsetMax = Math.Max(groundOffsetMax, groundOffset);
+                    groundSamples.Add(frameGroundOffset);
+                    centerSamples.Add(offsetX);
+                    framesCount++;
+
+                    unionMinX = Math.Min(unionMinX, localMinX);
+                    unionMaxX = Math.Max(unionMaxX, localMaxX);
+                    unionMinY = Math.Min(unionMinY, localMinY);
+                    unionMaxY = Math.Max(unionMaxY, localMaxY);
+                }
             }
         }
 
-        var centerOffset = framesCount > 0
-            ? (int)Math.Round(centerOffsetAccum / framesCount)
+        var centerOffset = centerSamples.Count > 0
+            ? (int)Math.Round(centerSamples.Average())
             : 0;
 
-        return new SpriteOffsets(groundOffsetMax, centerOffset);
+        var groundOffset = groundSamples.Count switch
+        {
+            > 2 => (int)Math.Round(Percentile(groundSamples, 0.5)),
+            > 0 => (int)Math.Round(groundSamples.Average()),
+            _ => 0
+        };
+
+        var hitbox = BoundingBox.Empty;
+        if (unionMaxX >= unionMinX && unionMaxY >= unionMinY)
+        {
+            var unionWidth = unionMaxX - unionMinX + 1;
+            var unionHeight = unionMaxY - unionMinY + 1;
+            var clampedShrink = Math.Clamp(hitboxShrinkFactor, 0.1, 1.0);
+            var targetW = Math.Clamp((int)Math.Round(unionWidth * clampedShrink), minHitboxSize, frame.Width);
+            var targetH = Math.Clamp((int)Math.Round(unionHeight * clampedShrink), minHitboxSize, frame.Height);
+
+            var centerX = unionMinX + (unionWidth / 2.0);
+            var centerY = unionMinY + (unionHeight / 2.0);
+
+            var hitboxX = (int)Math.Round(centerX - (targetW / 2.0));
+            var hitboxY = (int)Math.Round(centerY - (targetH / 2.0));
+
+            hitboxX = Math.Clamp(hitboxX, 0, frame.Width - targetW);
+            hitboxY = Math.Clamp(hitboxY, 0, frame.Height - targetH);
+
+            hitbox = new BoundingBox(hitboxX, hitboxY, targetW, targetH);
+        }
+
+        var offsets = new SpriteOffsets(groundOffset, centerOffset);
+        return new SpriteGeometry(offsets, hitbox, frame.Width, frame.Height, grid.Rows * grid.Columns, groundSamples.Count);
+    }
+
+    public static SpriteOffsets ComputeOffsets(PixelBuffer buffer, SpriteGrid grid, FrameSize frame, int[]? rowsToUse = null)
+    {
+        return ComputeGeometry(buffer, grid, frame, rowsToUse).Offsets;
     }
 
     private static (SpriteGrid Grid, FrameSize Frame) PickBestGrid(PixelBuffer buffer, IEnumerable<int> colCandidates, IEnumerable<int> rowCandidates)
@@ -256,6 +319,20 @@ public static class SpriteSheetAnalyzer
         var variation = (maxW - minW) + (maxH - minH);
         var emptyPenalty = empty * 10000;
         return variation + emptyPenalty;
+    }
+
+    private static double Percentile(IReadOnlyList<int> values, double percentile)
+    {
+        if (values.Count == 0) return 0;
+        var ordered = values.OrderBy(v => v).ToList();
+        var rank = (ordered.Count - 1) * percentile;
+        var lower = (int)Math.Floor(rank);
+        var upper = (int)Math.Ceiling(rank);
+
+        if (lower == upper) return ordered[lower];
+
+        var fraction = rank - lower;
+        return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction;
     }
 
     private static bool HasFourColumnSeparators(PixelBuffer buffer)
