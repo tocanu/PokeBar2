@@ -16,5 +16,17 @@
                 <ScaleTransform x:Name="FlipTransform" ScaleX="1" ScaleY="1"/>
             </Image.RenderTransform>
         </Image>
+        <Border x:Name="DebugPanel"
+                Background="#AA000000"
+                Padding="4"
+                CornerRadius="4"
+                Visibility="Collapsed"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top">
+            <TextBlock x:Name="DebugText"
+                       Foreground="Lime"
+                       FontFamily="Consolas"
+                       FontSize="12"/>
+        </Border>
     </Canvas>
 </Window>

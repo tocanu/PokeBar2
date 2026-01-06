@@ -32,6 +32,8 @@ public partial class MainWindow : Window
     private double _spawnTimer;
     private double _nextSpawnDelay;
     private bool _allowEnemyMonitorTravel = true;
+    private readonly bool _debugOverlayEnabled;
+    private double _fpsSmooth;
     private readonly List<TaskbarService.TaskbarInfo> _taskbars = new();
     private DateTime _lastUpdate;
     private TaskbarService.TaskbarInfo? _currentTaskbar;
@@ -147,6 +149,7 @@ public partial class MainWindow : Window
         _spriteLoader = new SpriteLoader(offsetsPath, spritesPath);
 
         _allowMonitorTravel = _config.Player.AllowMonitorTravel;
+        _debugOverlayEnabled = _config.Performance.DebugOverlay;
         _pokemon = new PlayerPet(_config.Player.DefaultDex);
         _pokemon.AnimationPlayer.FrameChanged += OnFrameChanged;
         _pokemon.LoadAnimations(_spriteLoader, _config);
@@ -235,6 +238,14 @@ public partial class MainWindow : Window
         UpdateAutoHideVisibility();
         UpdateWindowPosition();
         UpdateEnemyWindowPosition();
+
+        if (_debugOverlayEnabled && deltaTime > 0)
+        {
+            var fps = 1.0 / deltaTime;
+            _fpsSmooth = _fpsSmooth <= 0 ? fps : (_fpsSmooth * 0.9) + (fps * 0.1);
+            UpdatePlayerDebugPanel();
+            UpdateEnemyDebugPanels();
+        }
     }
 
     private void OnFrameChanged(BitmapSource frame, double groundLineY)
@@ -249,6 +260,11 @@ public partial class MainWindow : Window
         {
             RootCanvas.Width = frame.PixelWidth;
             RootCanvas.Height = frame.PixelHeight;
+        }
+
+        if (_debugOverlayEnabled)
+        {
+            DebugPanel.Visibility = Visibility.Visible;
         }
     }
 
@@ -676,6 +692,40 @@ public partial class MainWindow : Window
 
         var scaleX = enemy.ShouldFlip ? (enemy.FacingRight ? 1 : -1) : 1;
         window.UpdateFrame(frame, groundLineY, scaleX);
+
+        if (_debugOverlayEnabled)
+        {
+            window.ShowDebugOverlay = true;
+        }
+    }
+
+    private void UpdatePlayerDebugPanel()
+    {
+        DebugPanel.Visibility = Visibility.Visible;
+        DebugText.Text = string.Join("\n", new[]
+        {
+            $"FPS: {_fpsSmooth:0.0}",
+            $"State: {_pokemon.State}",
+            $"Pos: {_pokemon.X:0},{_pokemon.Y:0}",
+            $"Ground: {_currentGroundLineY:0}"
+        });
+    }
+
+    private void UpdateEnemyDebugPanels()
+    {
+        foreach (var enemy in _entityManager.Enemies)
+        {
+            if (!_enemyWindows.TryGetValue(enemy, out var window))
+                continue;
+
+            window.ShowDebugOverlay = true;
+            window.SetDebugText(string.Join("\n", new[]
+            {
+                $"State: {enemy.State}",
+                $"Pos: {enemy.X:0},{enemy.Y:0}",
+                $"Ground: {enemy.FrameGroundLine:0}"
+            }));
+        }
     }
 
     private int SelectEnemyDex()

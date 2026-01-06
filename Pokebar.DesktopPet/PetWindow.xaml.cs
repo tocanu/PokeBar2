@@ -17,6 +17,19 @@ public partial class PetWindow : Window
         SourceInitialized += OnSourceInitialized;
     }
 
+    public bool ShowDebugOverlay
+    {
+        get => DebugPanel.Visibility == Visibility.Visible;
+        set => DebugPanel.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public void SetDebugText(string? text)
+    {
+        if (!ShowDebugOverlay)
+            return;
+        DebugText.Text = text ?? string.Empty;
+    }
+
     public void UpdateFrame(BitmapSource frame, double groundLineY, double scaleX)
     {
         PokemonImage.Source = frame;

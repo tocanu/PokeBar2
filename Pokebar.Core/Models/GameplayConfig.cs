@@ -85,4 +85,5 @@ public record PerformanceConfig
     public int TickRateMs { get; init; } = 16;
     public int FullscreenCheckMs { get; init; } = 500;
     public bool VsyncEnabled { get; init; } = true;
+    public bool DebugOverlay { get; init; } = false;
 }
