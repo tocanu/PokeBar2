@@ -4,11 +4,11 @@
   "walk": {
     "fileName": "Walk-Anim.png",
     "frame": {
-      "width": 320,
+      "width": 80,
       "height": 80
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },
@@ -31,7 +31,7 @@
     "emotes": []
   },
   "offsets": {
-    "groundOffsetY": 43,
+    "groundOffsetY": 44,
     "centerOffsetX": -1
   },
   "bodyType": 3,

@@ -1,0 +1,69 @@
+# EditorConfig para Pokebar V2
+# https://editorconfig.org
+
+root = true
+
+# Padrões para todos os arquivos
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Arquivos de código C#
+[*.cs]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+
+# Arquivos XAML
+[*.xaml]
+charset = utf-8-bom
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+
+# Arquivos JSON
+[*.json]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+
+# Arquivos Markdown
+[*.md]
+charset = utf-8
+trim_trailing_whitespace = false
+end_of_line = crlf
+
+# Arquivos de projeto
+[*.csproj]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+
+# Arquivos de solução
+[*.sln]
+charset = utf-8-bom
+indent_style = tab
+end_of_line = crlf
+
+# Scripts batch
+[*.bat]
+charset = utf-8
+end_of_line = crlf
+
+# Configurações C# específicas
+[*.cs]
+# Nullable reference types
+dotnet_diagnostic.CS8600.severity = warning
+dotnet_diagnostic.CS8601.severity = warning
+dotnet_diagnostic.CS8602.severity = warning
+dotnet_diagnostic.CS8603.severity = warning
+dotnet_diagnostic.CS8604.severity = warning
+
+# Code style
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:warning
+dotnet_sort_system_directives_first = true

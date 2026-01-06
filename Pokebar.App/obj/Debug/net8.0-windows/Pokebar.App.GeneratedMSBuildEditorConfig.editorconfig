@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Pokebar.App
-build_property.ProjectDir = D:\Projetos no HD\PokebarV2\Pokebar.App\
+build_property.ProjectDir = D:\Projetos\PokeBar2\Pokebar.App\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

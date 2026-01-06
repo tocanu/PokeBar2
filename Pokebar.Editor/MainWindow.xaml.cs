@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -6,8 +6,10 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Pokebar.Core.Models;
 using Pokebar.Core.Serialization;
+using Pokebar.Core.Sprites;
 
 namespace Pokebar.Editor;
 
@@ -21,11 +23,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private readonly string _finalPath;
     private readonly string _runtimePath;
     private PokemonEntry? _currentEntry;
+    private readonly DispatcherTimer _autoSaveTimer;
 
     private string _rawPath = string.Empty;
     private string _status = string.Empty;
     private ImageSource? _previewImage;
-    private string _selectedEntryText = "Selecione um Pokémon";
+    private string _selectedEntryText = "Selecione um PokÃ©mon";
     private string _selectedSpritePath = string.Empty;
     private double _groundLineY;
     private int _selectedGroundOffset;
@@ -63,6 +66,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         (_finalTargets, _runtimeTargets) = ResolveTargets();
         _finalPath = _finalTargets.First();
         _runtimePath = _runtimeTargets.First();
+        _autoSaveTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(400)
+        };
+        _autoSaveTimer.Tick += (_, _) =>
+        {
+            _autoSaveTimer.Stop();
+            PersistAdjustments("Auto-salvo");
+        };
         Reload();
     }
 
@@ -88,15 +100,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var rawDir = FindRawDir();
             RawPath = rawDir;
 
-            var files = Directory.GetFiles(rawDir, "pokemon_*_raw.json");
+            var errors = new List<string>();
+            var files = Directory.GetFiles(rawDir, "pokemon_*_raw.json")
+                .OrderBy(ExtractDexFromRawPath)
+                .ThenBy(Path.GetFileName)
+                .ToList();
             foreach (var file in files)
             {
-                var meta = MetadataJson.DeserializeFromFile(file);
-                if (meta is null) continue;
-                Entries.Add(new PokemonEntry(meta));
+                try
+                {
+                    var meta = MetadataJson.DeserializeFromFile(file);
+                    if (meta is null)
+                    {
+                        errors.Add($"{Path.GetFileName(file)}: JSON invalido");
+                        continue;
+                    }
+
+                    Entries.Add(new PokemonEntry(meta));
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
+                }
             }
 
-            Status = $"Carregado: {Entries.Count} registros";
+            Status = errors.Count > 0
+                ? $"Carregado: {Entries.Count} registros ({errors.Count} com erro)"
+                : $"Carregado: {Entries.Count} registros";
         }
         catch (Exception ex)
         {
@@ -106,13 +136,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         OnAllPropertiesChanged();
     }
 
+    private static int ExtractDexFromRawPath(string path)
+    {
+        var name = Path.GetFileNameWithoutExtension(path);
+        var parts = name.Split('_');
+        if (parts.Length >= 2 && int.TryParse(parts[1], out var dex))
+        {
+            return dex;
+        }
+
+        return int.MaxValue;
+    }
+
     private void LoadPreview(PokemonEntry entry)
     {
         _currentEntry = entry;
         SelectedEntryText = $"Dex {entry.DexNumber:D4} - {entry.Species}";
-
-        if (_adjustments.TryGetValue(entry.DexNumber, out var adj))
+        OffsetAdjustment? adj = null;
+        if (_adjustments.TryGetValue(entry.DexNumber, out var loaded))
         {
+            adj = loaded;
             SelectedGroundOffset = adj.GroundOffsetY;
             SelectedCenterOffset = adj.CenterOffsetX;
             SelectedReviewed = adj.Reviewed;
@@ -131,7 +174,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             HitboxWidth = entry.FrameWidth ?? 0;
             HitboxHeight = entry.FrameHeight ?? 0;
         }
-
         SelectedFrameHeight = entry.FrameHeight ?? 0;
         SelectedStripIndex = 0;
         PreviewImage = null;
@@ -140,7 +182,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         try
         {
-            var sprite = ResolveSpritePath(entry.DexNumber, entry.PrimarySpriteFile, entry.SpriteFiles);
+            var sprite = ResolveSpritePath(entry.DexNumber, adj?.PrimarySpriteFile ?? entry.PrimarySpriteFile, entry.SpriteFiles);
             if (sprite is not null && File.Exists(sprite))
             {
                 SelectedSpritePath = sprite;
@@ -150,7 +192,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 sheet.UriSource = new Uri(sprite);
                 sheet.EndInit();
 
-                BuildPreview(sheet, SelectedGroundOffset, out var frameH, out var frameW);
+                var preferStandardGrid = PreferStandardGrid(sprite);
+                var frameWOverride = CoalescePositive(adj?.FrameWidth, entry.FrameWidth);
+                var frameHOverride = CoalescePositive(adj?.FrameHeight, entry.FrameHeight);
+                var gridColsOverride = CoalescePositive(adj?.GridColumns, entry.GridColumns);
+                var gridRowsOverride = CoalescePositive(adj?.GridRows, entry.GridRows);
+
+                BuildPreview(sheet, SelectedGroundOffset, preferStandardGrid, frameWOverride, frameHOverride, gridColsOverride, gridRowsOverride, out var frameH, out var frameW);
                 SelectedFrameHeight = frameH;
 
                 if (!_adjustments.ContainsKey(entry.DexNumber))
@@ -163,7 +211,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             else
             {
-                SelectedSpritePath = "Sprite não encontrado";
+                SelectedSpritePath = "Sprite nÃ£o encontrado";
             }
         }
         catch (Exception ex)
@@ -194,15 +242,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void SaveCurrentAdjustment()
     {
         if (_currentEntry is null) return;
-        _adjustments[_currentEntry.DexNumber] = new OffsetAdjustment(
-            DexNumber: _currentEntry.DexNumber,
-            GroundOffsetY: SelectedGroundOffset,
-            CenterOffsetX: SelectedCenterOffset,
-            Reviewed: SelectedReviewed,
-            HitboxX: (int)Math.Round(HitboxX),
-            HitboxY: (int)Math.Round(HitboxY),
-            HitboxWidth: (int)Math.Round(HitboxWidth),
-            HitboxHeight: (int)Math.Round(HitboxHeight));
+        _adjustments.TryGetValue(_currentEntry.DexNumber, out var existing);
+        _adjustments[_currentEntry.DexNumber] = BuildAdjustment(
+            _currentEntry,
+            existing,
+            SelectedGroundOffset,
+            SelectedCenterOffset,
+            SelectedReviewed,
+            HitboxX,
+            HitboxY,
+            HitboxWidth,
+            HitboxHeight);
         PersistAdjustments($"Salvo Dex {_currentEntry.DexNumber:D4}");
         OnAllPropertiesChanged();
     }
@@ -213,27 +263,49 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         OnAllPropertiesChanged();
     }
 
-    private void BuildPreview(BitmapSource sheet, int groundOffset, out int frameH, out int frameW)
+    private void BuildPreview(
+        BitmapSource sheet,
+        int groundOffset,
+        bool preferStandardGrid,
+        int? frameWOverride,
+        int? frameHOverride,
+        int? gridColsOverride,
+        int? gridRowsOverride,
+        out int frameH,
+        out int frameW)
     {
-        var rows = 8;
-        var cols = Enumerable.Range(1, Math.Min(12, sheet.PixelWidth))
-            .Where(c => sheet.PixelWidth % c == 0)
-            .OrderByDescending(c => c)
-            .FirstOrDefault();
-        if (cols == 0) cols = 1;
+        SpriteGrid grid;
+        FrameSize frame;
+        if (TryGetStoredFrameGrid(frameWOverride, frameHOverride, gridColsOverride, gridRowsOverride, sheet, out var storedGrid, out var storedFrame))
+        {
+            grid = storedGrid;
+            frame = storedFrame;
+        }
+        else
+        {
+            var buffer = BuildPixelBuffer(sheet);
+            (grid, frame) = SpriteSheetAnalyzer.DetectGrid(buffer, preferStandardGrid);
+        }
 
-        frameH = sheet.PixelHeight / rows;
-        frameW = sheet.PixelWidth / cols;
+        frameH = frame.Height;
+        frameW = frame.Width;
 
-        var targetRows = new List<int> { 2, 6 };
-        var validRows = targetRows.Where(r => r < rows).ToList();
-        if (validRows.Count == 0) validRows = new List<int> { 0 };
+        var rows = grid.Rows;
+        var cols = grid.Columns;
+
+        var validRows = SelectPreviewRows(rows, preferStandardGrid);
+        if (validRows.Count == 0 || frameW <= 0 || frameH <= 0 || cols <= 0)
+        {
+            _segmentHeight = 0;
+            _segmentsCount = 0;
+            PreviewImage = null;
+            return;
+        }
 
         _segmentHeight = frameH;
-        _segmentsCount = validRows.Count == 0 ? 1 : validRows.Count;
+        _segmentsCount = validRows.Count;
 
         var totalHeight = frameH * validRows.Count;
-        if (totalHeight == 0) totalHeight = frameH;
         var totalWidth = frameW * cols;
 
         UpdateGroundLineY(groundOffset);
@@ -256,6 +328,151 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var rtb = new RenderTargetBitmap(totalWidth, totalHeight, 96, 96, PixelFormats.Pbgra32);
         rtb.Render(dv);
         PreviewImage = rtb;
+    }
+
+    private static List<int> SelectPreviewRows(int rows, bool preferStandardGrid)
+    {
+        var validRows = new List<int>();
+        if (preferStandardGrid && rows > 6)
+        {
+            validRows.Add(2);
+            validRows.Add(6);
+            return validRows;
+        }
+
+        if (rows > 0) validRows.Add(0);
+        return validRows;
+    }
+
+    private static bool PreferStandardGrid(string spritePath)
+    {
+        var name = Path.GetFileName(spritePath);
+        if (string.Equals(name, SpriteFileNames.Walk, StringComparison.OrdinalIgnoreCase)) return true;
+        if (string.Equals(name, SpriteFileNames.Idle, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    private static PixelBuffer BuildPixelBuffer(BitmapSource source)
+    {
+        var bitsPerPixel = source.Format.BitsPerPixel;
+        var bytesPerPixel = Math.Max(1, (bitsPerPixel + 7) / 8);
+        var stride = (source.PixelWidth * bitsPerPixel + 7) / 8;
+        var buffer = new byte[stride * source.PixelHeight];
+        source.CopyPixels(buffer, stride, 0);
+        return new PixelBuffer(buffer, source.PixelWidth, source.PixelHeight, stride, bytesPerPixel);
+    }
+
+    private void ScheduleAutoSave()
+    {
+        _autoSaveTimer.Stop();
+        _autoSaveTimer.Start();
+    }
+
+    private static bool TryGetStoredFrameGrid(int? frameW, int? frameH, int? cols, int? rows, BitmapSource source, out SpriteGrid grid, out FrameSize frame)
+    {
+        if (frameW is null || frameH is null || cols is null || rows is null)
+        {
+            grid = new SpriteGrid(1, 1);
+            frame = new FrameSize(0, 0);
+            return false;
+        }
+
+        if (frameW <= 0 || frameH <= 0 || cols <= 0 || rows <= 0)
+        {
+            grid = new SpriteGrid(1, 1);
+            frame = new FrameSize(0, 0);
+            return false;
+        }
+
+        if (frameW.Value * cols.Value > source.PixelWidth || frameH.Value * rows.Value > source.PixelHeight)
+        {
+            grid = new SpriteGrid(1, 1);
+            frame = new FrameSize(0, 0);
+            return false;
+        }
+
+        grid = new SpriteGrid(cols.Value, rows.Value);
+        frame = new FrameSize(frameW.Value, frameH.Value);
+        return true;
+    }
+
+    private static int? CoalescePositive(int? value, int? fallback)
+    {
+        if (value.HasValue && value.Value > 0) return value;
+        return fallback;
+    }
+
+    private OffsetAdjustment BuildAdjustment(
+        PokemonEntry entry,
+        OffsetAdjustment? existing,
+        int groundOffset,
+        int centerOffset,
+        bool reviewed,
+        double hitboxX,
+        double hitboxY,
+        double hitboxWidth,
+        double hitboxHeight)
+    {
+        var frameW = CoalescePositive(existing?.FrameWidth, entry.FrameWidth);
+        var frameH = CoalescePositive(existing?.FrameHeight, entry.FrameHeight);
+        var gridCols = CoalescePositive(existing?.GridColumns, entry.GridColumns);
+        var gridRows = CoalescePositive(existing?.GridRows, entry.GridRows);
+        var primary = existing?.PrimarySpriteFile ?? entry.PrimarySpriteFile;
+        var walkFile = existing?.WalkSpriteFile;
+        var idleFile = existing?.IdleSpriteFile;
+        var fightFile = existing?.FightSpriteFile;
+        var hasAttack = existing?.HasAttackAnimation ?? false;
+
+        return new OffsetAdjustment(
+            entry.DexNumber,
+            groundOffset,
+            centerOffset,
+            reviewed,
+            (int)Math.Round(hitboxX),
+            (int)Math.Round(hitboxY),
+            (int)Math.Round(hitboxWidth),
+            (int)Math.Round(hitboxHeight),
+            frameW,
+            frameH,
+            gridCols,
+            gridRows,
+            primary,
+            walkFile,
+            idleFile,
+            fightFile,
+            hasAttack);
+    }
+
+    private OffsetAdjustment BuildExportAdjustment(PokemonEntry entry, OffsetAdjustment? existing)
+    {
+        if (existing is null)
+        {
+            return BuildAdjustment(
+                entry,
+                null,
+                entry.GroundOffsetY,
+                entry.CenterOffsetX,
+                false,
+                0,
+                0,
+                entry.FrameWidth ?? 0,
+                entry.FrameHeight ?? 0);
+        }
+
+        var frameW = CoalescePositive(existing.FrameWidth, entry.FrameWidth);
+        var frameH = CoalescePositive(existing.FrameHeight, entry.FrameHeight);
+        var gridCols = CoalescePositive(existing.GridColumns, entry.GridColumns);
+        var gridRows = CoalescePositive(existing.GridRows, entry.GridRows);
+        var primary = existing.PrimarySpriteFile ?? entry.PrimarySpriteFile;
+
+        return existing with
+        {
+            FrameWidth = frameW,
+            FrameHeight = frameH,
+            GridColumns = gridCols,
+            GridRows = gridRows,
+            PrimarySpriteFile = primary
+        };
     }
 
     private void UpdateGroundLineY(int? groundOverride = null)
@@ -302,20 +519,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         return Entries.Select(e =>
         {
-            if (_adjustments.TryGetValue(e.DexNumber, out var adj))
-            {
-                return adj with { };
-            }
-
-            return new OffsetAdjustment(
-                DexNumber: e.DexNumber,
-                GroundOffsetY: e.GroundOffsetY,
-                CenterOffsetX: e.CenterOffsetX,
-                Reviewed: false,
-                HitboxX: 0,
-                HitboxY: 0,
-                HitboxWidth: e.FrameWidth ?? 0,
-                HitboxHeight: e.FrameHeight ?? 0);
+            _adjustments.TryGetValue(e.DexNumber, out var adj);
+            return BuildExportAdjustment(e, adj);
         }).OrderBy(r => r.DexNumber).ToList();
     }
 
@@ -377,16 +582,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void SnapshotCurrent()
     {
         if (_currentEntry is null) return;
-        _adjustments[_currentEntry.DexNumber] = new OffsetAdjustment(
-            DexNumber: _currentEntry.DexNumber,
-            GroundOffsetY: SelectedGroundOffset,
-            CenterOffsetX: SelectedCenterOffset,
-            Reviewed: SelectedReviewed,
-            HitboxX: (int)Math.Round(HitboxX),
-            HitboxY: (int)Math.Round(HitboxY),
-            HitboxWidth: (int)Math.Round(HitboxWidth),
-            HitboxHeight: (int)Math.Round(HitboxHeight));
-        PersistAdjustments("Auto-salvo");
+        _adjustments.TryGetValue(_currentEntry.DexNumber, out var existing);
+        _adjustments[_currentEntry.DexNumber] = BuildAdjustment(
+            _currentEntry,
+            existing,
+            SelectedGroundOffset,
+            SelectedCenterOffset,
+            SelectedReviewed,
+            HitboxX,
+            HitboxY,
+            HitboxWidth,
+            HitboxHeight);
+        ScheduleAutoSave();
     }
 
     private static string? ResolveSpritePath(int dex, string? primaryFile, IReadOnlyList<string> emotes)
@@ -401,7 +608,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var order = new List<string>();
         if (!string.IsNullOrEmpty(primaryFile)) order.Add(primaryFile);
-        order.AddRange(new[] { "Walk-Anim.png", "Idle-Anim.png", "Sleep.png" });
+        order.AddRange(new[] { SpriteFileNames.Walk, SpriteFileNames.Idle, SpriteFileNames.Sleep });
         foreach (var name in order)
         {
             var p = Path.Combine(baseDir, name);
@@ -425,7 +632,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var current = Path.GetFullPath("Assets/Raw");
         if (Directory.Exists(current)) return current;
-        throw new DirectoryNotFoundException("Assets/Raw não encontrado.");
+        throw new DirectoryNotFoundException("Assets/Raw nÃ£o encontrado.");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -457,6 +664,8 @@ public class PokemonEntry
     public string? PrimarySpriteFile { get; }
     public int? FrameHeight { get; }
     public int? FrameWidth { get; }
+    public int? GridColumns { get; }
+    public int? GridRows { get; }
 
     public PokemonEntry(PokemonSpriteMetadata meta)
     {
@@ -469,24 +678,21 @@ public class PokemonEntry
         SpriteFiles = meta.Animations.Emotes;
         PrimarySpriteFile = meta.Walk.FileName ?? meta.Idle.FileName ?? meta.Sleep.FileName;
 
-        FrameHeight = meta.Walk.Frame?.Height ?? meta.Idle.Frame?.Height ?? meta.Sleep.Frame?.Height;
-        FrameWidth = meta.Walk.Frame?.Width ?? meta.Idle.Frame?.Width ?? meta.Sleep.Frame?.Width;
+        var frame = meta.Walk.Frame ?? meta.Idle.Frame ?? meta.Sleep.Frame;
+        var grid = meta.Walk.Grid ?? meta.Idle.Grid ?? meta.Sleep.Grid;
 
-        FrameSize = meta.Walk.Frame is not null
-            ? $"{meta.Walk.Frame.Width}x{meta.Walk.Frame.Height}"
-            : meta.Idle.Frame is not null
-                ? $"{meta.Idle.Frame.Width}x{meta.Idle.Frame.Height}"
-                : meta.Sleep.Frame is not null
-                    ? $"{meta.Sleep.Frame.Width}x{meta.Sleep.Frame.Height}"
-                    : "-";
+        FrameHeight = frame?.Height;
+        FrameWidth = frame?.Width;
+        GridColumns = grid?.Columns;
+        GridRows = grid?.Rows;
 
-        Grid = meta.Walk.Grid is not null
-            ? $"{meta.Walk.Grid.Columns}x{meta.Walk.Grid.Rows}"
-            : meta.Idle.Grid is not null
-                ? $"{meta.Idle.Grid.Columns}x{meta.Idle.Grid.Rows}"
-                : meta.Sleep.Grid is not null
-                    ? $"{meta.Sleep.Grid.Columns}x{meta.Sleep.Grid.Rows}"
-                    : "-";
+        FrameSize = frame is not null
+            ? $"{frame.Width}x{frame.Height}"
+            : "-";
+
+        Grid = grid is not null
+            ? $"{grid.Columns}x{grid.Rows}"
+            : "-";
 
         GroundOffsetY = meta.Offsets.GroundOffsetY;
         CenterOffsetX = meta.Offsets.CenterOffsetX;
@@ -494,3 +700,17 @@ public class PokemonEntry
         Notes = string.Join(" | ", meta.Notes ?? Array.Empty<string>());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

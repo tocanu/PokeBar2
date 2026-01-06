@@ -9,3 +9,15 @@ D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.dll
 D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\refint\Pokebar.Core.dll
 D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.pdb
 D:\Projetos no HD\PokebarV2\Pokebar.Core\obj\Debug\net8.0\ref\Pokebar.Core.dll
+D:\Projetos\PokeBar2\Pokebar.Core\bin\Debug\net8.0\Pokebar.Core.deps.json
+D:\Projetos\PokeBar2\Pokebar.Core\bin\Debug\net8.0\Pokebar.Core.dll
+D:\Projetos\PokeBar2\Pokebar.Core\bin\Debug\net8.0\Pokebar.Core.pdb
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.AssemblyInfoInputs.cache
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.AssemblyInfo.cs
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.csproj.CoreCompileInputs.cache
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.sourcelink.json
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.dll
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\refint\Pokebar.Core.dll
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\Pokebar.Core.pdb
+D:\Projetos\PokeBar2\Pokebar.Core\obj\Debug\net8.0\ref\Pokebar.Core.dll

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.Editor", "Pokebar.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.App", "Pokebar.App\Pokebar.App.csproj", "{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pokebar.DesktopPet", "Pokebar.DesktopPet\Pokebar.DesktopPet.csproj", "{9C9FE7D0-1B12-44C1-86C0-DFE314E66593}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96EDE4F3-7E2F-4A31-B709-8FA36FFBED62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C9FE7D0-1B12-44C1-86C0-DFE314E66593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C9FE7D0-1B12-44C1-86C0-DFE314E66593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C9FE7D0-1B12-44C1-86C0-DFE314E66593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C9FE7D0-1B12-44C1-86C0-DFE314E66593}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

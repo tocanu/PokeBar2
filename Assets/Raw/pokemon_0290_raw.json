@@ -4,11 +4,11 @@
   "walk": {
     "fileName": "Walk-Anim.png",
     "frame": {
-      "width": 96,
+      "width": 24,
       "height": 24
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },

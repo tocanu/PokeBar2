@@ -15,11 +15,11 @@
   "idle": {
     "fileName": "Idle-Anim.png",
     "frame": {
-      "width": 256,
+      "width": 64,
       "height": 32
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },

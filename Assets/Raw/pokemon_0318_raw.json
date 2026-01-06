@@ -4,22 +4,22 @@
   "walk": {
     "fileName": "Walk-Anim.png",
     "frame": {
-      "width": 128,
+      "width": 32,
       "height": 48
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },
   "idle": {
     "fileName": "Idle-Anim.png",
     "frame": {
-      "width": 128,
+      "width": 32,
       "height": 48
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },
@@ -31,7 +31,7 @@
     "emotes": []
   },
   "offsets": {
-    "groundOffsetY": 19,
+    "groundOffsetY": 21,
     "centerOffsetX": 0
   },
   "bodyType": 2,

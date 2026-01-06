@@ -1,0 +1,9 @@
+# Build artifacts
+**/bin/
+**/obj/
+.vs/
+
+# Generated offsets and pipeline outputs
+Assets/Raw/
+Assets/Final/
+Pokebar.Editor/Assets/Final/

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Projetos no HD\\PokebarV2\\Pokebar.Editor\\Pokebar.Editor.csproj": {}
+    "D:\\Projetos\\PokeBar2\\Pokebar.Editor\\Pokebar.Editor.csproj": {}
   },
   "projects": {
-    "D:\\Projetos no HD\\PokebarV2\\Pokebar.Core\\Pokebar.Core.csproj": {
+    "D:\\Projetos\\PokeBar2\\Pokebar.Core\\Pokebar.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Core\\Pokebar.Core.csproj",
+        "projectUniqueName": "D:\\Projetos\\PokeBar2\\Pokebar.Core\\Pokebar.Core.csproj",
         "projectName": "Pokebar.Core",
-        "projectPath": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Core\\Pokebar.Core.csproj",
-        "packagesPath": "C:\\Users\\Arthur\\.nuget\\packages\\",
-        "outputPath": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Core\\obj\\",
+        "projectPath": "D:\\Projetos\\PokeBar2\\Pokebar.Core\\Pokebar.Core.csproj",
+        "packagesPath": "C:\\Users\\arthu\\.nuget\\packages\\",
+        "outputPath": "D:\\Projetos\\PokeBar2\\Pokebar.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Arthur\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\arthu\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -62,17 +62,17 @@
         }
       }
     },
-    "D:\\Projetos no HD\\PokebarV2\\Pokebar.Editor\\Pokebar.Editor.csproj": {
+    "D:\\Projetos\\PokeBar2\\Pokebar.Editor\\Pokebar.Editor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Editor\\Pokebar.Editor.csproj",
+        "projectUniqueName": "D:\\Projetos\\PokeBar2\\Pokebar.Editor\\Pokebar.Editor.csproj",
         "projectName": "Pokebar.Editor",
-        "projectPath": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Editor\\Pokebar.Editor.csproj",
-        "packagesPath": "C:\\Users\\Arthur\\.nuget\\packages\\",
-        "outputPath": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Editor\\obj\\",
+        "projectPath": "D:\\Projetos\\PokeBar2\\Pokebar.Editor\\Pokebar.Editor.csproj",
+        "packagesPath": "C:\\Users\\arthu\\.nuget\\packages\\",
+        "outputPath": "D:\\Projetos\\PokeBar2\\Pokebar.Editor\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Arthur\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\arthu\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0-windows"
@@ -84,8 +84,8 @@
           "net8.0-windows7.0": {
             "targetAlias": "net8.0-windows",
             "projectReferences": {
-              "D:\\Projetos no HD\\PokebarV2\\Pokebar.Core\\Pokebar.Core.csproj": {
-                "projectPath": "D:\\Projetos no HD\\PokebarV2\\Pokebar.Core\\Pokebar.Core.csproj"
+              "D:\\Projetos\\PokeBar2\\Pokebar.Core\\Pokebar.Core.csproj": {
+                "projectPath": "D:\\Projetos\\PokeBar2\\Pokebar.Core\\Pokebar.Core.csproj"
               }
             }
           }

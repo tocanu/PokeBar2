@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -6,8 +6,10 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Pokebar.Core;
 using Pokebar.Core.Models;
 using Pokebar.Core.Serialization;
+using Pokebar.Core.Sprites;
 
 namespace Pokebar.App;
 
@@ -44,9 +46,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void LoadDex_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(DexInput, out var dex) || dex < 1 || dex > 1025)
+        if (!int.TryParse(DexInput, out var dex) || !DexConstants.IsValid(dex))
         {
-            Status = "Dex inválido.";
+            Status = "Dex invÃ¡lido.";
             OnPropertyChanged(nameof(Status));
             return;
         }
@@ -70,10 +72,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _frames.Clear();
         _frameGroundLines.Clear();
 
-        var spritePath = ResolveSpritePath(dex);
+        OffsetAdjustment? adj = null;
+        if (_offsets.TryGetValue(dex, out var existing))
+        {
+            adj = existing;
+        }
+
+        var spritePath = ResolveSpritePath(dex, adj?.PrimarySpriteFile);
         if (spritePath is null)
         {
-            Status = "Sprite não encontrado.";
+            Status = "Sprite nao encontrado.";
             PreviewImage = null;
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(PreviewImage));
@@ -86,25 +94,38 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         sheet.UriSource = new Uri(Path.GetFullPath(spritePath), UriKind.Absolute);
         sheet.EndInit();
 
-        // SpriteCollab walk: 8 linhas fixas. Usa colunas para deixar frame próximo do quadrado.
-        var rows = 8;
-        var frameH = sheet.PixelHeight / rows;
-        var candidates = Enumerable.Range(1, Math.Min(24, sheet.PixelWidth))
-            .Where(c => c > 0 && sheet.PixelWidth % c == 0)
-            .ToList();
-        if (candidates.Count == 0) candidates.Add(1);
-        var cols = candidates
-            .Select(c => new { c, frameW = sheet.PixelWidth / c, diff = Math.Abs((sheet.PixelWidth / c) - frameH) })
-            .OrderBy(x => x.diff)
-            .ThenByDescending(x => x.c)
-            .First().c;
-        var frameW = sheet.PixelWidth / cols;
+        var preferStandardGrid = PreferStandardGrid(spritePath);
+        SpriteGrid grid;
+        FrameSize frame;
+        if (adj is not null && TryGetStoredFrameGrid(adj, sheet, out var storedGrid, out var storedFrame))
+        {
+            grid = storedGrid;
+            frame = storedFrame;
+        }
+        else
+        {
+            var buffer = BuildPixelBuffer(sheet);
+            (grid, frame) = SpriteSheetAnalyzer.DetectGrid(buffer, preferStandardGrid);
+        }
 
-        var offset = _offsets.TryGetValue(dex, out var adj)
-            ? adj
-            : new OffsetAdjustment(dex, 0, 0, false, 0, 0, frameW, frameH);
+        var frameW = frame.Width;
+        var frameH = frame.Height;
+        var offset = adj ?? new OffsetAdjustment(
+            dex,
+            0,
+            0,
+            false,
+            0,
+            0,
+            frameW,
+            frameH,
+            frameW,
+            frameH,
+            grid.Columns,
+            grid.Rows,
+            Path.GetFileName(spritePath));
 
-        BuildAnimationFrames(sheet, frameW, frameH, cols, rows, offset);
+        BuildAnimationFrames(sheet, grid, frame, offset, preferStandardGrid);
 
         if (_frames.Count == 0)
         {
@@ -127,14 +148,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         OnPropertyChanged(nameof(Status));
     }
 
-    private static string? ResolveSpritePath(int dex)
+    private static string? ResolveSpritePath(int dex, string? primaryFile)
     {
         var baseDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "SpriteCollab", "sprite", dex.ToString("D4"));
         var alt = Path.Combine("SpriteCollab", "sprite", dex.ToString("D4"));
         var root = Directory.Exists(baseDir) ? baseDir : Directory.Exists(alt) ? alt : null;
         if (root is null) return null;
 
-        var order = new[] { "Walk-Anim.png", "Idle-Anim.png", "Sleep.png" };
+        var order = new List<string>();
+        if (!string.IsNullOrEmpty(primaryFile)) order.Add(primaryFile);
+        order.AddRange(new[] { "Walk-Anim.png", "Idle-Anim.png", "Sleep.png" });
         foreach (var name in order)
         {
             var p = Path.Combine(root, name);
@@ -175,15 +198,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
         }
 
-        return (new Dictionary<int, OffsetAdjustment>(), "(não encontrado)", "Arquivo de offsets não encontrado. Rode pipeline/editor.");
+        return (new Dictionary<int, OffsetAdjustment>(), "(nÃ£o encontrado)", "Arquivo de offsets nÃ£o encontrado. Rode pipeline/editor.");
     }
 
-    private void BuildAnimationFrames(BitmapSource sheet, int frameW, int frameH, int cols, int rows, OffsetAdjustment offset)
+    private void BuildAnimationFrames(BitmapSource sheet, SpriteGrid grid, FrameSize frame, OffsetAdjustment offset, bool preferStandardGrid)
     {
-        var validRows = new List<int>();
-        if (rows > 2) validRows.Add(2);  // linha 3 (direita)
-        if (rows > 6) validRows.Add(6);  // linha 7 (esquerda)
-        if (validRows.Count == 0) validRows.Add(0); // fallback
+        var frameW = frame.Width;
+        var frameH = frame.Height;
+        var cols = grid.Columns;
+        var rows = grid.Rows;
+
+        var validRows = SelectPreviewRows(rows, preferStandardGrid);
+        if (validRows.Count == 0) return;
 
         var hasHitbox = offset.HitboxWidth > 0 && offset.HitboxHeight > 0;
         var hx = Math.Clamp(offset.HitboxX, 0, frameW);
@@ -224,6 +250,84 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private static List<int> SelectPreviewRows(int rows, bool preferStandardGrid)
+    {
+        var validRows = new List<int>();
+        if (preferStandardGrid && rows > 6)
+        {
+            validRows.Add(2);
+            validRows.Add(6);
+            return validRows;
+        }
+
+        if (rows > 0) validRows.Add(0);
+        return validRows;
+    }
+
+    private static bool PreferStandardGrid(string spritePath)
+    {
+        var name = Path.GetFileName(spritePath);
+        if (string.Equals(name, "Walk-Anim.png", StringComparison.OrdinalIgnoreCase)) return true;
+        if (string.Equals(name, "Idle-Anim.png", StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    private static PixelBuffer BuildPixelBuffer(BitmapSource source)
+    {
+        var bitsPerPixel = source.Format.BitsPerPixel;
+        var bytesPerPixel = Math.Max(1, (bitsPerPixel + 7) / 8);
+        var stride = (source.PixelWidth * bitsPerPixel + 7) / 8;
+        var buffer = new byte[stride * source.PixelHeight];
+        source.CopyPixels(buffer, stride, 0);
+        return new PixelBuffer(buffer, source.PixelWidth, source.PixelHeight, stride, bytesPerPixel);
+    }
+
+    private static bool TryGetStoredFrameGrid(OffsetAdjustment offset, BitmapSource source, out SpriteGrid grid, out FrameSize frame)
+    {
+        var frameW = offset.FrameWidth;
+        var frameH = offset.FrameHeight;
+        var cols = offset.GridColumns;
+        var rows = offset.GridRows;
+
+        if (frameW is null || frameH is null || cols is null || rows is null)
+        {
+            grid = new SpriteGrid(1, 1);
+            frame = new FrameSize(0, 0);
+            return false;
+        }
+
+        if (frameW <= 0 || frameH <= 0 || cols <= 0 || rows <= 0)
+        {
+            grid = new SpriteGrid(1, 1);
+            frame = new FrameSize(0, 0);
+            return false;
+        }
+
+        if (frameW.Value * cols.Value > source.PixelWidth || frameH.Value * rows.Value > source.PixelHeight)
+        {
+            grid = new SpriteGrid(1, 1);
+            frame = new FrameSize(0, 0);
+            return false;
+        }
+
+        grid = new SpriteGrid(cols.Value, rows.Value);
+        frame = new FrameSize(frameW.Value, frameH.Value);
+        return true;
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

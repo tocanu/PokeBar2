@@ -1,0 +1,90 @@
+{
+  // Configurações de gameplay do Pokebar Desktop Pet
+  // Este arquivo é carregado automaticamente ao iniciar
+  
+  "player": {
+    "defaultDex": 25,           // Pikachu por padrão
+    "walkSpeed": 50.0,          // Pixels por segundo
+    "runSpeed": 80.0,           // Velocidade quando correndo
+    "allowMonitorTravel": true, // Permite andar entre monitores
+    "taskbarMargin": 0          // Margem da barra de tarefas
+  },
+  
+  "enemy": {
+    "defaultDex": 19,           // Rattata por padrão
+    "walkSpeed": 30.0,          // Velocidade de inimigos
+    "maxSimultaneous": 3,       // Máximo de inimigos na tela
+    "allowMonitorTravel": true, // Inimigos podem trocar de monitor
+    
+    "spawnWeights": [
+      // Peso define chance relativa de spawn (maior = mais comum)
+      // Muito comuns (Gen 1)
+      { "dex": 16, "weight": 60, "comment": "Pidgey" },
+      { "dex": 19, "weight": 60, "comment": "Rattata" },
+      { "dex": 21, "weight": 50, "comment": "Spearow" },
+      { "dex": 23, "weight": 45, "comment": "Ekans" },
+      { "dex": 27, "weight": 45, "comment": "Sandshrew" },
+      { "dex": 29, "weight": 40, "comment": "Nidoran♀" },
+      { "dex": 32, "weight": 40, "comment": "Nidoran♂" },
+      { "dex": 41, "weight": 50, "comment": "Zubat" },
+      { "dex": 43, "weight": 40, "comment": "Oddish" },
+      
+      // Incomuns
+      { "dex": 10, "weight": 25, "comment": "Caterpie" },
+      { "dex": 13, "weight": 25, "comment": "Weedle" },
+      { "dex": 37, "weight": 20, "comment": "Vulpix" },
+      { "dex": 58, "weight": 18, "comment": "Growlithe" },
+      
+      // Raros
+      { "dex": 133, "weight": 5, "comment": "Eevee" },
+      { "dex": 25, "weight": 8, "comment": "Pikachu" },
+      { "dex": 147, "weight": 3, "comment": "Dratini" }
+    ]
+  },
+  
+  "spawn": {
+    "offsetFromEdge": 200.0,    // Distância da borda para spawn (px)
+    "chanceWhenReady": 0.7,     // Chance de spawn quando timer acabar (0-1)
+    "delayMinSeconds": 6.0,     // Tempo mínimo entre spawns
+    "delayMaxSeconds": 12.0     // Tempo máximo entre spawns
+  },
+  
+  "combat": {
+    "collisionTolerance": 20.0, // Distância para iniciar combate (px)
+    "facingSpacing": 50.0,      // Espaço entre lutadores (px)
+    "roundDurationSeconds": 3.0,// Duração de cada round
+    "roundsPerFight": 3,        // Número de rounds por combate
+    "retreatDistance": 200.0,   // Distância que jogador recua ao perder (px)
+    "cooldownSeconds": 1.5      // Tempo de espera após combate
+  },
+  
+  "capture": {
+    "ballSizePx": 20.0,         // Tamanho da pokébola (px)
+    "throwSpeedMin": 200.0,     // Velocidade mínima de arremesso
+    "throwSpeedMax": 600.0,     // Velocidade máxima de arremesso
+    "gravity": 500.0,           // Força da gravidade na física
+    "captureDistance": 50.0,    // Distância para captura (px)
+    "shrinkDuration": 0.8,      // Duração da animação de captura (s)
+    "baseSuccessRate": 0.5,     // Taxa base de sucesso (0-1)
+    "starterPokeballs": 10      // Pokébolas iniciais
+  },
+  
+  "animation": {
+    "defaultFrameTimeSeconds": 0.1,  // Padrão para animações
+    "walkFrameTimeSeconds": 0.1,     // Tempo entre frames de walk
+    "idleFrameTimeSeconds": 0.15,    // Tempo entre frames de idle
+    "sleepFrameTimeSeconds": 0.2,    // Tempo entre frames de sleep
+    "attackFrameTimeSeconds": 0.08   // Tempo entre frames de ataque
+  },
+  
+  "sprite": {
+    "walkRowRight": 2,          // Linha do sprite sheet para walk direita (0-based)
+    "walkRowLeft": 6            // Linha do sprite sheet para walk esquerda (0-based)
+  },
+  
+  "performance": {
+    "tickRateMs": 16,           // ~60 FPS
+    "fullscreenCheckMs": 500,   // Intervalo de checagem de fullscreen
+    "vsyncEnabled": true        // Sincronizar com monitor
+  }
+}

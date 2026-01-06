@@ -1,10 +1,10 @@
 {
   "totalDex": 1025,
-  "present": 956,
-  "placeholders": 69,
-  "anomalies": 1940,
-  "avgFrameWidth": 151.0199789695058,
-  "avgFrameHeight": 47.88222923238696,
-  "avgGroundOffset": 17.993690851735014,
-  "avgCenterOffset": -0.38065194532071506
+  "present": 965,
+  "placeholders": 60,
+  "anomalies": 2141,
+  "avgFrameWidth": 76.925,
+  "avgFrameHeight": 47.94166666666667,
+  "avgGroundOffset": 18.759375,
+  "avgCenterOffset": -0.3458333333333333
 }

@@ -8,8 +8,10 @@ Dex 0005: Frame walk 32x32 difere do idle 192x56
 Dex 0005: Grid walk 3x8 difere do idle 1x8
 Dex 0006: Sleep.png ausente
 Dex 0007: Sleep.png ausente
-Dex 0007: Frame walk 128x32 difere do idle 256x32
+Dex 0007: Frame walk 32x32 difere do idle 64x32
 Dex 0008: Sleep.png ausente
+Dex 0008: Frame walk 32x40 difere do idle 96x40
+Dex 0008: Grid walk 4x8 difere do idle 1x8
 Dex 0009: Sleep.png ausente
 Dex 0009: Frame walk 128x40 difere do idle 40x40
 Dex 0009: Grid walk 1x8 difere do idle 8x8
@@ -17,12 +19,13 @@ Dex 0010: Sleep.png ausente
 Dex 0010: Frame walk 48x32 difere do idle 320x32
 Dex 0010: Grid walk 2x8 difere do idle 1x8
 Dex 0011: Sleep.png ausente
-Dex 0011: Frame walk 320x48 difere do idle 128x40
+Dex 0011: Frame walk 320x48 difere do idle 32x40
+Dex 0011: Grid walk 1x8 difere do idle 4x8
 Dex 0012: Sleep.png ausente
-Dex 0012: Frame walk 384x56 difere do idle 128x56
+Dex 0012: Frame walk 96x56 difere do idle 32x56
 Dex 0013: Sleep.png ausente
-Dex 0013: Frame walk 48x40 difere do idle 128x40
-Dex 0013: Grid walk 2x8 difere do idle 1x8
+Dex 0013: Frame walk 48x40 difere do idle 32x40
+Dex 0013: Grid walk 2x8 difere do idle 4x8
 Dex 0014: Sleep.png ausente
 Dex 0014: Frame walk 24x40 difere do idle 144x40
 Dex 0014: Grid walk 5x8 difere do idle 1x8
@@ -36,8 +39,8 @@ Dex 0018: Sleep.png ausente
 Dex 0018: Frame walk 32x40 difere do idle 16x48
 Dex 0018: Grid walk 4x8 difere do idle 8x8
 Dex 0019: Sleep.png ausente
-Dex 0019: Frame walk 168x40 difere do idle 256x32
-Dex 0019: Grid walk 2x8 difere do idle 1x8
+Dex 0019: Frame walk 168x40 difere do idle 64x32
+Dex 0019: Grid walk 2x8 difere do idle 4x8
 Dex 0020: Sleep.png ausente
 Dex 0021: Sleep.png ausente
 Dex 0022: Sleep.png ausente
@@ -47,9 +50,11 @@ Dex 0023: Frame walk 240x48 difere do idle 64x48
 Dex 0024: Sleep.png ausente
 Dex 0024: Frame walk 240x56 difere do idle 64x56
 Dex 0025: Sleep.png ausente
-Dex 0025: Frame walk 128x40 difere do idle 240x56
+Dex 0025: Frame walk 32x40 difere do idle 240x56
+Dex 0025: Grid walk 4x8 difere do idle 1x8
 Dex 0026: Sleep.png ausente
-Dex 0026: Frame walk 160x48 difere do idle 240x56
+Dex 0026: Frame walk 40x48 difere do idle 240x56
+Dex 0026: Grid walk 4x8 difere do idle 1x8
 Dex 0027: Sleep.png ausente
 Dex 0028: Sleep.png ausente
 Dex 0029: Sleep.png ausente
@@ -57,20 +62,21 @@ Dex 0029: Frame walk 40x48 difere do idle 120x40
 Dex 0029: Grid walk 7x8 difere do idle 1x8
 Dex 0030: Sleep.png ausente
 Dex 0031: Sleep.png ausente
+Dex 0031: Frame walk 32x40 difere do idle 160x40
+Dex 0031: Grid walk 4x8 difere do idle 1x8
 Dex 0032: Sleep.png ausente
 Dex 0032: Frame walk 40x48 difere do idle 160x48
 Dex 0032: Grid walk 6x8 difere do idle 1x8
 Dex 0033: Sleep.png ausente
-Dex 0033: Frame walk 160x40 difere do idle 100x40
-Dex 0033: Grid walk 1x8 difere do idle 4x8
+Dex 0033: Frame walk 40x40 difere do idle 100x40
 Dex 0034: Sleep.png ausente
-Dex 0034: Frame walk 160x48 difere do idle 32x48
-Dex 0034: Grid walk 1x8 difere do idle 2x8
+Dex 0034: Grid walk 4x8 difere do idle 2x8
 Dex 0035: Sleep.png ausente
 Dex 0036: Sleep.png ausente
+Dex 0036: Frame walk 64x48 difere do idle 192x48
+Dex 0036: Grid walk 4x8 difere do idle 1x8
 Dex 0037: Sleep.png ausente
-Dex 0037: Frame walk 32x40 difere do idle 128x32
-Dex 0037: Grid walk 5x8 difere do idle 1x8
+Dex 0037: Grid walk 5x8 difere do idle 4x8
 Dex 0038: Sleep.png ausente
 Dex 0038: Frame walk 40x40 difere do idle 560x40
 Dex 0038: Grid walk 4x8 difere do idle 1x8
@@ -78,7 +84,7 @@ Dex 0039: Sleep.png ausente
 Dex 0040: Sleep.png ausente
 Dex 0041: Sleep.png ausente
 Dex 0042: Sleep.png ausente
-Dex 0042: Frame walk 320x64 difere do idle 160x56
+Dex 0042: Frame walk 80x64 difere do idle 40x56
 Dex 0043: Sleep.png ausente
 Dex 0043: Frame walk 24x40 difere do idle 120x40
 Dex 0043: Grid walk 8x8 difere do idle 1x8
@@ -86,30 +92,31 @@ Dex 0044: Sleep.png ausente
 Dex 0044: Frame walk 16x32 difere do idle 80x32
 Dex 0044: Grid walk 8x8 difere do idle 2x8
 Dex 0045: Sleep.png ausente
-Dex 0045: Frame walk 128x32 difere do idle 384x40
+Dex 0045: Frame walk 32x32 difere do idle 96x40
 Dex 0046: Sleep.png ausente
 Dex 0047: Sleep.png ausente
+Dex 0047: Frame walk 32x32 difere do idle 96x32
+Dex 0047: Grid walk 4x8 difere do idle 1x8
 Dex 0048: Sleep.png ausente
 Dex 0048: Frame walk 160x48 difere do idle 48x40
 Dex 0049: Sleep.png ausente
-Dex 0049: Frame walk 480x48 difere do idle 256x56
+Dex 0049: Frame walk 120x48 difere do idle 64x56
 Dex 0050: Sleep.png ausente
 Dex 0050: Frame walk 60x40 difere do idle 48x24
 Dex 0050: Grid walk 2x8 difere do idle 1x8
 Dex 0051: Sleep.png ausente
 Dex 0051: Frame walk 168x48 difere do idle 64x32
 Dex 0052: Sleep.png ausente
-Dex 0052: Frame walk 96x32 difere do idle 32x32
-Dex 0052: Grid walk 1x8 difere do idle 4x8
 Dex 0053: Sleep.png ausente
 Dex 0053: Frame walk 16x40 difere do idle 32x48
 Dex 0053: Grid walk 8x8 difere do idle 1x8
 Dex 0054: Sleep.png ausente
 Dex 0055: Sleep.png ausente
 Dex 0056: Sleep.png ausente
-Dex 0056: Frame walk 256x56 difere do idle 160x56
+Dex 0056: Frame walk 64x56 difere do idle 160x56
+Dex 0056: Grid walk 4x8 difere do idle 1x8
 Dex 0057: Sleep.png ausente
-Dex 0057: Frame walk 128x40 difere do idle 256x56
+Dex 0057: Frame walk 32x40 difere do idle 64x56
 Dex 0058: Sleep.png ausente
 Dex 0058: Frame walk 16x40 difere do idle 60x48
 Dex 0058: Grid walk 8x8 difere do idle 2x8
@@ -117,44 +124,54 @@ Dex 0059: Sleep.png ausente
 Dex 0059: Frame walk 16x48 difere do idle 40x48
 Dex 0059: Grid walk 8x8 difere do idle 1x8
 Dex 0060: Sleep.png ausente
-Dex 0060: Frame walk 160x40 difere do idle 320x48
+Dex 0060: Frame walk 160x40 difere do idle 80x48
+Dex 0060: Grid walk 1x8 difere do idle 4x8
 Dex 0061: Sleep.png ausente
-Dex 0061: Frame walk 128x40 difere do idle 80x40
-Dex 0061: Grid walk 1x8 difere do idle 2x8
+Dex 0061: Frame walk 32x40 difere do idle 80x40
+Dex 0061: Grid walk 4x8 difere do idle 2x8
 Dex 0062: Sleep.png ausente
-Dex 0062: Frame walk 160x40 difere do idle 16x48
-Dex 0062: Grid walk 1x8 difere do idle 8x8
+Dex 0062: Frame walk 40x40 difere do idle 16x48
+Dex 0062: Grid walk 4x8 difere do idle 8x8
 Dex 0063: Sleep.png ausente
-Dex 0063: Frame walk 256x48 difere do idle 144x48
+Dex 0063: Frame walk 64x48 difere do idle 144x48
+Dex 0063: Grid walk 4x8 difere do idle 1x8
 Dex 0064: Sleep.png ausente
-Dex 0064: Frame walk 160x40 difere do idle 360x56
+Dex 0064: Frame walk 40x40 difere do idle 360x56
+Dex 0064: Grid walk 4x8 difere do idle 1x8
 Dex 0065: Sleep.png ausente
-Dex 0065: Frame walk 128x40 difere do idle 256x48
+Dex 0065: Frame walk 32x40 difere do idle 64x48
 Dex 0066: Sleep.png ausente
 Dex 0067: Sleep.png ausente
 Dex 0068: Sleep.png ausente
-Dex 0068: Frame walk 128x48 difere do idle 400x48
+Dex 0068: Frame walk 32x48 difere do idle 400x48
+Dex 0068: Grid walk 4x8 difere do idle 1x8
 Dex 0069: Sleep.png ausente
-Dex 0069: Frame walk 96x32 difere do idle 48x32
+Dex 0069: Frame walk 24x32 difere do idle 48x32
+Dex 0069: Grid walk 4x8 difere do idle 1x8
 Dex 0070: Sleep.png ausente
 Dex 0071: Sleep.png ausente
-Dex 0071: Grid walk 1x8 difere do idle 2x8
+Dex 0071: Frame walk 32x56 difere do idle 144x56
+Dex 0071: Grid walk 4x8 difere do idle 2x8
 Dex 0072: Sleep.png ausente
-Dex 0072: Frame walk 96x40 difere do idle 168x48
+Dex 0072: Frame walk 24x40 difere do idle 168x48
+Dex 0072: Grid walk 4x8 difere do idle 1x8
 Dex 0073: Sleep.png ausente
-Dex 0073: Frame walk 128x40 difere do idle 224x48
+Dex 0073: Frame walk 32x40 difere do idle 224x48
+Dex 0073: Grid walk 4x8 difere do idle 1x8
 Dex 0074: Sleep.png ausente
-Dex 0074: Frame walk 16x32 difere do idle 128x24
-Dex 0074: Grid walk 8x8 difere do idle 1x8
+Dex 0074: Frame walk 16x32 difere do idle 32x24
+Dex 0074: Grid walk 8x8 difere do idle 4x8
 Dex 0075: Sleep.png ausente
-Dex 0075: Frame walk 128x48 difere do idle 560x48
+Dex 0075: Frame walk 32x48 difere do idle 560x48
+Dex 0075: Grid walk 4x8 difere do idle 1x8
 Dex 0076: Sleep.png ausente
-Dex 0076: Frame walk 128x40 difere do idle 64x40
+Dex 0076: Frame walk 32x40 difere do idle 64x40
+Dex 0076: Grid walk 4x8 difere do idle 1x8
 Dex 0077: Sleep.png ausente
 Dex 0077: Frame walk 16x40 difere do idle 112x40
 Dex 0077: Grid walk 8x8 difere do idle 4x8
 Dex 0078: Sleep.png ausente
-Dex 0078: Grid walk 1x8 difere do idle 4x8
+Dex 0078: Frame walk 40x56 difere do idle 140x56
 Dex 0079: Sleep.png ausente
 Dex 0079: Frame walk 96x32 difere do idle 32x32
 Dex 0079: Grid walk 1x8 difere do idle 3x8
@@ -162,9 +179,10 @@ Dex 0080: Sleep.png ausente
 Dex 0080: Frame walk 16x40 difere do idle 80x40
 Dex 0080: Grid walk 8x8 difere do idle 1x8
 Dex 0081: Sleep.png ausente
-Dex 0081: Frame walk 144x32 difere do idle 96x32
+Dex 0081: Frame walk 144x32 difere do idle 24x32
+Dex 0081: Grid walk 1x8 difere do idle 4x8
 Dex 0082: Sleep.png ausente
-Dex 0082: Frame walk 256x48 difere do idle 128x40
+Dex 0082: Frame walk 64x48 difere do idle 32x40
 Dex 0083: Sleep.png ausente
 Dex 0084: Sleep.png ausente
 Dex 0085: Sleep.png ausente
@@ -175,25 +193,29 @@ Dex 0087: Sleep.png ausente
 Dex 0087: Frame walk 40x48 difere do idle 288x40
 Dex 0087: Grid walk 7x8 difere do idle 1x8
 Dex 0088: Sleep.png ausente
-Dex 0088: Grid walk 2x8 difere do idle 1x8
+Dex 0088: Frame walk 96x32 difere do idle 24x32
+Dex 0088: Grid walk 2x8 difere do idle 4x8
 Dex 0089: Sleep.png ausente
-Dex 0089: Frame walk 48x40 difere do idle 160x40
-Dex 0089: Grid walk 5x8 difere do idle 1x8
+Dex 0089: Grid walk 5x8 difere do idle 4x8
 Dex 0090: Sleep.png ausente
-Dex 0090: Frame walk 144x32 difere do idle 96x32
+Dex 0090: Frame walk 144x32 difere do idle 24x32
+Dex 0090: Grid walk 1x8 difere do idle 4x8
 Dex 0091: Sleep.png ausente
 Dex 0092: Sleep.png ausente
-Dex 0092: Frame walk 576x64 difere do idle 288x56
+Dex 0092: Frame walk 144x64 difere do idle 288x56
+Dex 0092: Grid walk 4x8 difere do idle 1x8
 Dex 0093: Sleep.png ausente
-Dex 0093: Frame walk 320x56 difere do idle 128x56
+Dex 0093: Frame walk 320x56 difere do idle 32x56
+Dex 0093: Grid walk 1x8 difere do idle 4x8
 Dex 0094: Sleep.png ausente
-Dex 0094: Frame walk 128x40 difere do idle 256x40
+Dex 0094: Frame walk 32x40 difere do idle 64x40
 Dex 0095: Sleep.png ausente
 Dex 0096: Sleep.png ausente
 Dex 0097: Sleep.png ausente
-Dex 0097: Frame walk 160x40 difere do idle 320x48
+Dex 0097: Frame walk 40x40 difere do idle 80x48
 Dex 0098: Sleep.png ausente
-Dex 0098: Frame walk 128x32 difere do idle 48x40
+Dex 0098: Frame walk 32x32 difere do idle 48x40
+Dex 0098: Grid walk 4x8 difere do idle 1x8
 Dex 0099: Sleep.png ausente
 Dex 0099: Frame walk 16x32 difere do idle 64x48
 Dex 0099: Grid walk 8x8 difere do idle 1x8
@@ -203,62 +225,73 @@ Dex 0100: Grid walk 8x8 difere do idle 1x8
 Dex 0101: Sleep.png ausente
 Dex 0101: Grid walk 7x8 difere do idle 4x8
 Dex 0102: Sleep.png ausente
-Dex 0102: Frame walk 128x32 difere do idle 192x40
+Dex 0102: Frame walk 32x32 difere do idle 192x40
+Dex 0102: Grid walk 4x8 difere do idle 1x8
 Dex 0103: Sleep.png ausente
 Dex 0104: Sleep.png ausente
-Dex 0104: Frame walk 128x32 difere do idle 192x40
+Dex 0104: Frame walk 32x32 difere do idle 192x40
+Dex 0104: Grid walk 4x8 difere do idle 1x8
 Dex 0105: Sleep.png ausente
 Dex 0106: Sleep.png ausente
-Dex 0106: Frame walk 160x48 difere do idle 80x48
+Dex 0106: Frame walk 40x48 difere do idle 80x48
+Dex 0106: Grid walk 4x8 difere do idle 1x8
 Dex 0107: Sleep.png ausente
-Dex 0107: Frame walk 128x40 difere do idle 192x56
+Dex 0107: Frame walk 32x40 difere do idle 48x56
 Dex 0108: Sleep.png ausente
-Dex 0108: Frame walk 128x40 difere do idle 192x48
+Dex 0108: Frame walk 32x40 difere do idle 48x48
 Dex 0109: Sleep.png ausente
 Dex 0109: Frame walk 320x56 difere do idle 192x56
 Dex 0110: Sleep.png ausente
 Dex 0110: Grid walk 1x8 difere do idle 2x8
 Dex 0111: Sleep.png ausente
-Dex 0111: Frame walk 128x32 difere do idle 60x32
-Dex 0111: Grid walk 1x8 difere do idle 2x8
+Dex 0111: Frame walk 32x32 difere do idle 60x32
+Dex 0111: Grid walk 4x8 difere do idle 2x8
 Dex 0112: Sleep.png ausente
 Dex 0113: Sleep.png ausente
 Dex 0113: Frame walk 96x32 difere do idle 18x40
 Dex 0113: Grid walk 1x8 difere do idle 8x8
 Dex 0114: Sleep.png ausente
-Dex 0114: Frame walk 192x48 difere do idle 128x48
+Dex 0114: Frame walk 192x48 difere do idle 32x48
+Dex 0114: Grid walk 1x8 difere do idle 4x8
 Dex 0115: Sleep.png ausente
-Dex 0115: Frame walk 160x56 difere do idle 100x56
-Dex 0115: Grid walk 1x8 difere do idle 2x8
+Dex 0115: Frame walk 40x56 difere do idle 100x56
+Dex 0115: Grid walk 4x8 difere do idle 2x8
 Dex 0116: Sleep.png ausente
 Dex 0117: Sleep.png ausente
+Dex 0117: Frame walk 200x56 difere do idle 64x64
+Dex 0117: Grid walk 1x8 difere do idle 4x8
 Dex 0118: Sleep.png ausente
-Dex 0118: Frame walk 256x40 difere do idle 480x40
+Dex 0118: Frame walk 64x40 difere do idle 480x40
+Dex 0118: Grid walk 4x8 difere do idle 1x8
 Dex 0119: Sleep.png ausente
-Dex 0119: Frame walk 128x48 difere do idle 480x48
+Dex 0119: Frame walk 32x48 difere do idle 480x48
+Dex 0119: Grid walk 4x8 difere do idle 1x8
 Dex 0120: Sleep.png ausente
-Dex 0120: Frame walk 32x32 difere do idle 96x32
-Dex 0120: Grid walk 3x8 difere do idle 1x8
+Dex 0120: Grid walk 3x8 difere do idle 4x8
 Dex 0121: Sleep.png ausente
-Dex 0121: Frame walk 32x40 difere do idle 192x32
-Dex 0121: Grid walk 3x8 difere do idle 1x8
+Dex 0121: Frame walk 32x40 difere do idle 48x32
+Dex 0121: Grid walk 3x8 difere do idle 4x8
 Dex 0122: Sleep.png ausente
-Dex 0122: Frame walk 128x48 difere do idle 64x48
+Dex 0122: Frame walk 32x48 difere do idle 64x48
+Dex 0122: Grid walk 4x8 difere do idle 1x8
 Dex 0123: Sleep.png ausente
 Dex 0124: Sleep.png ausente
 Dex 0125: Sleep.png ausente
 Dex 0126: Sleep.png ausente
 Dex 0127: Sleep.png ausente
+Dex 0127: Frame walk 32x48 difere do idle 160x48
+Dex 0127: Grid walk 4x8 difere do idle 1x8
 Dex 0128: Sleep.png ausente
 Dex 0128: Grid walk 2x8 difere do idle 1x8
 Dex 0129: Sleep.png ausente
-Dex 0129: Frame walk 224x40 difere do idle 128x32
+Dex 0129: Frame walk 224x40 difere do idle 32x32
+Dex 0129: Grid walk 1x8 difere do idle 4x8
 Dex 0130: Sleep.png ausente
-Dex 0130: Frame walk 352x128 difere do idle 36x128
-Dex 0130: Grid walk 1x8 difere do idle 8x8
+Dex 0130: Frame walk 88x128 difere do idle 36x128
+Dex 0130: Grid walk 4x8 difere do idle 8x8
 Dex 0131: Sleep.png ausente
-Dex 0131: Frame walk 192x56 difere do idle 24x56
-Dex 0131: Grid walk 1x8 difere do idle 8x8
+Dex 0131: Frame walk 48x56 difere do idle 24x56
+Dex 0131: Grid walk 4x8 difere do idle 8x8
 Dex 0132: Sleep.png ausente
 Dex 0132: Frame walk 80x32 difere do idle 48x32
 Dex 0132: Grid walk 2x8 difere do idle 1x8
@@ -267,83 +300,88 @@ Dex 0133: Frame walk 280x48 difere do idle 48x32
 Dex 0134: Sleep.png ausente
 Dex 0134: Frame walk 128x48 difere do idle 80x56
 Dex 0135: Sleep.png ausente
-Dex 0135: Frame walk 128x40 difere do idle 64x40
+Dex 0135: Frame walk 32x40 difere do idle 64x40
+Dex 0135: Grid walk 4x8 difere do idle 1x8
 Dex 0136: Sleep.png ausente
 Dex 0137: Sleep.png ausente
 Dex 0138: Sleep.png ausente
-Dex 0138: Frame walk 128x32 difere do idle 64x32
+Dex 0138: Frame walk 32x32 difere do idle 64x32
+Dex 0138: Grid walk 4x8 difere do idle 1x8
 Dex 0139: Sleep.png ausente
-Dex 0139: Frame walk 160x40 difere do idle 64x40
+Dex 0139: Frame walk 40x40 difere do idle 64x40
+Dex 0139: Grid walk 4x8 difere do idle 1x8
 Dex 0140: Sleep.png ausente
 Dex 0140: Frame walk 96x24 difere do idle 24x24
 Dex 0140: Grid walk 1x8 difere do idle 3x8
 Dex 0141: Sleep.png ausente
 Dex 0141: Grid walk 8x8 difere do idle 4x8
 Dex 0142: Sleep.png ausente
-Dex 0142: Frame walk 160x64 difere do idle 320x64
+Dex 0142: Frame walk 40x64 difere do idle 80x64
 Dex 0143: Sleep.png ausente
 Dex 0143: Grid walk 8x8 difere do idle 12x8
 Dex 0144: Sleep.png ausente
 Dex 0145: Sleep.png ausente
 Dex 0146: Sleep.png ausente
 Dex 0147: Sleep.png ausente
+Dex 0147: Frame walk 160x40 difere do idle 32x40
+Dex 0147: Grid walk 1x8 difere do idle 4x8
 Dex 0148: Idle-Anim.png ausente
 Dex 0148: Sleep.png ausente
 Dex 0149: Sleep.png ausente
-Dex 0149: Frame walk 160x56 difere do idle 280x64
+Dex 0149: Frame walk 40x56 difere do idle 280x64
+Dex 0149: Grid walk 4x8 difere do idle 1x8
 Dex 0150: Sleep.png ausente
 Dex 0151: Sleep.png ausente
-Dex 0151: Frame walk 60x64 difere do idle 128x56
-Dex 0151: Grid walk 4x8 difere do idle 1x8
+Dex 0151: Frame walk 60x64 difere do idle 32x56
 Dex 0152: Sleep.png ausente
 Dex 0152: Frame walk 12x32 difere do idle 144x48
 Dex 0152: Grid walk 8x8 difere do idle 1x8
 Dex 0153: Sleep.png ausente
 Dex 0154: Sleep.png ausente
 Dex 0155: Sleep.png ausente
-Dex 0155: Frame walk 96x32 difere do idle 48x32
+Dex 0155: Frame walk 24x32 difere do idle 48x32
+Dex 0155: Grid walk 4x8 difere do idle 1x8
 Dex 0156: Sleep.png ausente
 Dex 0156: Frame walk 16x24 difere do idle 80x24
 Dex 0156: Grid walk 8x8 difere do idle 2x8
 Dex 0157: Sleep.png ausente
-Dex 0157: Frame walk 128x40 difere do idle 128x56
+Dex 0157: Frame walk 32x40 difere do idle 32x56
 Dex 0158: Sleep.png ausente
 Dex 0158: Frame walk 32x32 difere do idle 112x48
 Dex 0158: Grid walk 3x8 difere do idle 2x8
 Dex 0159: Sleep.png ausente
-Dex 0159: Frame walk 128x48 difere do idle 32x48
-Dex 0159: Grid walk 1x8 difere do idle 2x8
+Dex 0159: Grid walk 4x8 difere do idle 2x8
 Dex 0160: Sleep.png ausente
 Dex 0160: Frame walk 128x48 difere do idle 60x56
 Dex 0160: Grid walk 1x8 difere do idle 4x8
 Dex 0161: Sleep.png ausente
-Dex 0161: Frame walk 128x40 difere do idle 32x72
-Dex 0161: Grid walk 1x8 difere do idle 6x8
+Dex 0161: Frame walk 32x40 difere do idle 32x72
+Dex 0161: Grid walk 4x8 difere do idle 6x8
 Dex 0162: Sleep.png ausente
-Dex 0162: Frame walk 448x64 difere do idle 240x40
+Dex 0162: Frame walk 112x64 difere do idle 240x40
+Dex 0162: Grid walk 4x8 difere do idle 1x8
 Dex 0163: Sleep.png ausente
 Dex 0163: Grid walk 5x8 difere do idle 4x8
 Dex 0164: Sleep.png ausente
-Dex 0164: Frame walk 80x48 difere do idle 640x64
-Dex 0164: Grid walk 2x8 difere do idle 1x8
+Dex 0164: Frame walk 80x48 difere do idle 160x64
+Dex 0164: Grid walk 2x8 difere do idle 4x8
 Dex 0165: Sleep.png ausente
 Dex 0165: Grid walk 4x8 difere do idle 8x8
 Dex 0166: Sleep.png ausente
-Dex 0166: Frame walk 48x56 difere do idle 384x56
-Dex 0166: Grid walk 4x8 difere do idle 1x8
+Dex 0166: Frame walk 48x56 difere do idle 96x56
 Dex 0167: Sleep.png ausente
-Dex 0167: Frame walk 32x24 difere do idle 96x24
-Dex 0167: Grid walk 3x8 difere do idle 1x8
+Dex 0167: Grid walk 3x8 difere do idle 4x8
 Dex 0168: Sleep.png ausente
-Dex 0168: Frame walk 128x40 difere do idle 320x40
+Dex 0168: Frame walk 32x40 difere do idle 320x40
+Dex 0168: Grid walk 4x8 difere do idle 1x8
 Dex 0169: Sleep.png ausente
 Dex 0170: Sleep.png ausente
 Dex 0170: Frame walk 224x40 difere do idle 160x40
 Dex 0171: Sleep.png ausente
-Dex 0171: Frame walk 128x48 difere do idle 288x56
+Dex 0171: Frame walk 32x48 difere do idle 288x56
+Dex 0171: Grid walk 4x8 difere do idle 1x8
 Dex 0172: Sleep.png ausente
-Dex 0172: Frame walk 256x48 difere do idle 32x48
-Dex 0172: Grid walk 1x8 difere do idle 4x8
+Dex 0172: Frame walk 64x48 difere do idle 32x48
 Dex 0173: Sleep.png ausente
 Dex 0173: Frame walk 32x32 difere do idle 48x32
 Dex 0173: Grid walk 8x8 difere do idle 1x8
@@ -351,52 +389,55 @@ Dex 0174: Sleep.png ausente
 Dex 0174: Frame walk 120x32 difere do idle 24x24
 Dex 0174: Grid walk 1x8 difere do idle 2x8
 Dex 0175: Sleep.png ausente
-Dex 0175: Frame walk 144x32 difere do idle 96x32
+Dex 0175: Frame walk 144x32 difere do idle 24x32
+Dex 0175: Grid walk 1x8 difere do idle 4x8
 Dex 0176: Sleep.png ausente
-Dex 0176: Frame walk 96x40 difere do idle 144x48
+Dex 0176: Frame walk 24x40 difere do idle 144x48
+Dex 0176: Grid walk 4x8 difere do idle 1x8
 Dex 0177: Sleep.png ausente
 Dex 0178: Sleep.png ausente
-Dex 0178: Frame walk 128x40 difere do idle 32x40
-Dex 0178: Grid walk 1x8 difere do idle 2x8
+Dex 0178: Grid walk 4x8 difere do idle 2x8
 Dex 0179: Sleep.png ausente
 Dex 0179: Frame walk 16x32 difere do idle 192x40
 Dex 0179: Grid walk 8x8 difere do idle 1x8
 Dex 0180: Sleep.png ausente
-Dex 0180: Frame walk 128x40 difere do idle 192x48
+Dex 0180: Frame walk 32x40 difere do idle 192x48
+Dex 0180: Grid walk 4x8 difere do idle 1x8
 Dex 0181: Sleep.png ausente
-Dex 0181: Grid walk 1x8 difere do idle 2x8
+Dex 0181: Frame walk 32x56 difere do idle 112x64
+Dex 0181: Grid walk 4x8 difere do idle 2x8
 Dex 0182: Sleep.png ausente
 Dex 0183: Sleep.png ausente
-Dex 0183: Frame walk 128x40 difere do idle 64x40
+Dex 0183: Frame walk 32x40 difere do idle 64x40
+Dex 0183: Grid walk 4x8 difere do idle 1x8
 Dex 0184: Sleep.png ausente
-Dex 0184: Frame walk 128x40 difere do idle 32x48
-Dex 0184: Grid walk 1x8 difere do idle 4x8
 Dex 0185: Sleep.png ausente
-Dex 0185: Frame walk 128x40 difere do idle 12x40
-Dex 0185: Grid walk 1x8 difere do idle 2x8
+Dex 0185: Frame walk 32x40 difere do idle 12x40
+Dex 0185: Grid walk 4x8 difere do idle 2x8
 Dex 0186: Sleep.png ausente
 Dex 0186: Frame walk 280x72 difere do idle 160x64
 Dex 0187: Sleep.png ausente
-Dex 0187: Frame walk 256x56 difere do idle 480x56
+Dex 0187: Frame walk 64x56 difere do idle 480x56
+Dex 0187: Grid walk 4x8 difere do idle 1x8
 Dex 0188: Sleep.png ausente
-Dex 0188: Frame walk 192x40 difere do idle 48x32
+Dex 0188: Grid walk 4x8 difere do idle 1x8
 Dex 0189: Sleep.png ausente
 Dex 0189: Frame walk 32x48 difere do idle 32x32
 Dex 0189: Grid walk 6x8 difere do idle 3x8
 Dex 0190: Sleep.png ausente
-Dex 0190: Frame walk 320x48 difere do idle 64x40
+Dex 0190: Grid walk 4x8 difere do idle 1x8
 Dex 0191: Sleep.png ausente
-Dex 0191: Frame walk 192x40 difere do idle 12x32
-Dex 0191: Grid walk 1x8 difere do idle 4x8
+Dex 0191: Frame walk 48x40 difere do idle 12x32
 Dex 0192: Sleep.png ausente
-Dex 0192: Frame walk 128x48 difere do idle 512x56
+Dex 0192: Frame walk 32x48 difere do idle 128x56
 Dex 0193: Sleep.png ausente
-Dex 0193: Frame walk 512x48 difere do idle 288x40
+Dex 0193: Frame walk 128x48 difere do idle 288x40
+Dex 0193: Grid walk 4x8 difere do idle 1x8
 Dex 0194: Sleep.png ausente
-Dex 0194: Frame walk 256x40 difere do idle 16x32
-Dex 0194: Grid walk 1x8 difere do idle 4x8
+Dex 0194: Frame walk 64x40 difere do idle 16x32
 Dex 0195: Sleep.png ausente
-Dex 0195: Frame walk 192x40 difere do idle 336x56
+Dex 0195: Frame walk 48x40 difere do idle 336x56
+Dex 0195: Grid walk 4x8 difere do idle 1x8
 Dex 0196: Sleep.png ausente
 Dex 0197: Sleep.png ausente
 Dex 0197: Frame walk 32x40 difere do idle 336x48
@@ -404,110 +445,116 @@ Dex 0197: Grid walk 4x8 difere do idle 1x8
 Dex 0198: Sleep.png ausente
 Dex 0198: Grid walk 2x8 difere do idle 1x8
 Dex 0199: Sleep.png ausente
-Dex 0199: Frame walk 96x48 difere do idle 240x48
+Dex 0199: Frame walk 24x48 difere do idle 240x48
+Dex 0199: Grid walk 4x8 difere do idle 1x8
 Dex 0200: Sleep.png ausente
 Dex 0201: Sleep.png ausente
-Dex 0201: Frame walk 32x48 difere do idle 96x40
-Dex 0201: Grid walk 10x8 difere do idle 1x8
+Dex 0201: Grid walk 10x8 difere do idle 4x8
 Dex 0202: Sleep.png ausente
-Dex 0202: Frame walk 96x32 difere do idle 216x40
+Dex 0202: Frame walk 24x32 difere do idle 216x40
+Dex 0202: Grid walk 4x8 difere do idle 1x8
 Dex 0203: Sleep.png ausente
-Dex 0203: Frame walk 128x48 difere do idle 256x48
+Dex 0203: Frame walk 32x48 difere do idle 64x48
 Dex 0204: Sleep.png ausente
 Dex 0204: Frame walk 144x40 difere do idle 48x32
 Dex 0205: Sleep.png ausente
-Dex 0205: Frame walk 192x40 difere do idle 16x40
-Dex 0205: Grid walk 1x8 difere do idle 8x8
+Dex 0205: Frame walk 48x40 difere do idle 16x40
+Dex 0205: Grid walk 4x8 difere do idle 8x8
 Dex 0206: Sleep.png ausente
 Dex 0206: Frame walk 160x40 difere do idle 32x24
 Dex 0206: Grid walk 1x8 difere do idle 2x8
 Dex 0207: Sleep.png ausente
-Dex 0207: Frame walk 256x64 difere do idle 128x56
+Dex 0207: Frame walk 64x64 difere do idle 32x56
 Dex 0208: Sleep.png ausente
-Dex 0208: Frame walk 288x112 difere do idle 32x112
-Dex 0208: Grid walk 1x8 difere do idle 8x8
+Dex 0208: Frame walk 72x112 difere do idle 32x112
+Dex 0208: Grid walk 4x8 difere do idle 8x8
 Dex 0209: Sleep.png ausente
 Dex 0209: Frame walk 32x32 difere do idle 144x40
 Dex 0209: Grid walk 3x8 difere do idle 1x8
 Dex 0210: Sleep.png ausente
-Dex 0210: Frame walk 96x40 difere do idle 32x40
-Dex 0210: Grid walk 1x8 difere do idle 2x8
+Dex 0210: Grid walk 4x8 difere do idle 2x8
 Dex 0211: Sleep.png ausente
-Dex 0211: Frame walk 128x32 difere do idle 224x40
+Dex 0211: Frame walk 32x32 difere do idle 224x40
+Dex 0211: Grid walk 4x8 difere do idle 1x8
 Dex 0212: Sleep.png ausente
-Dex 0212: Frame walk 160x48 difere do idle 32x64
-Dex 0212: Grid walk 1x8 difere do idle 6x8
+Dex 0212: Grid walk 4x8 difere do idle 6x8
 Dex 0213: Sleep.png ausente
 Dex 0214: Sleep.png ausente
-Dex 0214: Frame walk 128x56 difere do idle 240x56
+Dex 0214: Frame walk 32x56 difere do idle 240x56
+Dex 0214: Grid walk 4x8 difere do idle 1x8
 Dex 0215: Sleep.png ausente
-Dex 0215: Grid walk 1x8 difere do idle 2x8
+Dex 0215: Frame walk 32x48 difere do idle 112x56
+Dex 0215: Grid walk 4x8 difere do idle 2x8
 Dex 0216: Sleep.png ausente
-Dex 0216: Frame walk 96x32 difere do idle 36x32
-Dex 0216: Grid walk 1x8 difere do idle 4x8
+Dex 0216: Frame walk 24x32 difere do idle 36x32
 Dex 0217: Sleep.png ausente
-Dex 0217: Grid walk 1x8 difere do idle 4x8
+Dex 0217: Frame walk 32x48 difere do idle 140x56
 Dex 0218: Sleep.png ausente
 Dex 0219: Sleep.png ausente
-Dex 0219: Frame walk 160x40 difere do idle 16x40
-Dex 0219: Grid walk 1x8 difere do idle 4x8
+Dex 0219: Frame walk 40x40 difere do idle 16x40
 Dex 0220: Sleep.png ausente
 Dex 0220: Frame walk 48x24 difere do idle 84x24
 Dex 0221: Sleep.png ausente
-Dex 0221: Frame walk 128x32 difere do idle 80x32
-Dex 0221: Grid walk 1x8 difere do idle 2x8
+Dex 0221: Frame walk 32x32 difere do idle 80x32
+Dex 0221: Grid walk 4x8 difere do idle 2x8
 Dex 0222: Sleep.png ausente
+Dex 0222: Frame walk 24x32 difere do idle 72x32
+Dex 0222: Grid walk 4x8 difere do idle 1x8
 Dex 0223: Sleep.png ausente
-Dex 0223: Frame walk 48x40 difere do idle 192x40
-Dex 0223: Grid walk 2x8 difere do idle 1x8
+Dex 0223: Grid walk 2x8 difere do idle 4x8
 Dex 0224: Sleep.png ausente
 Dex 0224: Frame walk 100x40 difere do idle 16x32
 Dex 0224: Grid walk 2x8 difere do idle 4x8
 Dex 0225: Sleep.png ausente
-Dex 0225: Frame walk 128x40 difere do idle 32x40
-Dex 0225: Grid walk 1x8 difere do idle 4x8
 Dex 0226: Sleep.png ausente
+Dex 0226: Frame walk 640x72 difere do idle 128x72
+Dex 0226: Grid walk 1x8 difere do idle 4x8
 Dex 0227: Sleep.png ausente
 Dex 0228: Sleep.png ausente
-Dex 0228: Grid walk 1x8 difere do idle 4x8
+Dex 0228: Frame walk 32x40 difere do idle 112x48
 Dex 0229: Sleep.png ausente
-Dex 0229: Grid walk 1x8 difere do idle 4x8
+Dex 0229: Frame walk 40x56 difere do idle 140x64
 Dex 0230: Sleep.png ausente
-Dex 0230: Frame walk 160x64 difere do idle 240x72
-Dex 0230: Grid walk 1x8 difere do idle 2x8
+Dex 0230: Frame walk 40x64 difere do idle 240x72
+Dex 0230: Grid walk 4x8 difere do idle 2x8
 Dex 0231: Sleep.png ausente
 Dex 0232: Sleep.png ausente
-Dex 0232: Frame walk 160x32 difere do idle 160x56
+Dex 0232: Frame walk 40x32 difere do idle 40x56
 Dex 0233: Sleep.png ausente
 Dex 0234: Sleep.png ausente
 Dex 0234: Frame walk 240x64 difere do idle 560x48
 Dex 0235: Sleep.png ausente
-Dex 0235: Frame walk 128x40 difere do idle 64x40
+Dex 0235: Frame walk 32x40 difere do idle 64x40
+Dex 0235: Grid walk 4x8 difere do idle 1x8
 Dex 0236: Sleep.png ausente
-Dex 0236: Frame walk 96x40 difere do idle 168x48
+Dex 0236: Frame walk 24x40 difere do idle 168x48
+Dex 0236: Grid walk 4x8 difere do idle 1x8
 Dex 0237: Sleep.png ausente
-Dex 0237: Frame walk 96x40 difere do idle 192x56
+Dex 0237: Frame walk 24x40 difere do idle 48x56
 Dex 0238: Sleep.png ausente
 Dex 0238: Frame walk 24x32 difere do idle 120x40
 Dex 0238: Grid walk 4x8 difere do idle 1x8
 Dex 0239: Sleep.png ausente
-Dex 0239: Frame walk 128x48 difere do idle 16x56
-Dex 0239: Grid walk 1x8 difere do idle 8x8
+Dex 0239: Frame walk 32x48 difere do idle 16x56
+Dex 0239: Grid walk 4x8 difere do idle 8x8
 Dex 0240: Sleep.png ausente
-Dex 0240: Frame walk 96x40 difere do idle 144x48
+Dex 0240: Frame walk 24x40 difere do idle 144x48
+Dex 0240: Grid walk 4x8 difere do idle 1x8
 Dex 0241: Sleep.png ausente
-Dex 0241: Frame walk 128x40 difere do idle 192x48
+Dex 0241: Frame walk 32x40 difere do idle 192x48
+Dex 0241: Grid walk 4x8 difere do idle 1x8
 Dex 0242: Sleep.png ausente
-Dex 0242: Frame walk 128x40 difere do idle 32x40
-Dex 0242: Grid walk 1x8 difere do idle 2x8
+Dex 0242: Grid walk 4x8 difere do idle 2x8
 Dex 0243: Sleep.png ausente
-Dex 0243: Grid walk 1x8 difere do idle 4x8
+Dex 0243: Frame walk 40x48 difere do idle 196x48
 Dex 0244: Sleep.png ausente
-Dex 0244: Frame walk 160x56 difere do idle 672x56
+Dex 0244: Frame walk 40x56 difere do idle 672x56
+Dex 0244: Grid walk 4x8 difere do idle 1x8
 Dex 0245: Sleep.png ausente
-Dex 0245: Frame walk 160x48 difere do idle 672x48
+Dex 0245: Frame walk 40x48 difere do idle 672x48
+Dex 0245: Grid walk 4x8 difere do idle 1x8
 Dex 0246: Sleep.png ausente
-Dex 0246: Frame walk 96x32 difere do idle 288x48
+Dex 0246: Frame walk 24x32 difere do idle 72x48
 Dex 0247: Sleep.png ausente
 Dex 0247: Frame walk 32x56 difere do idle 96x56
 Dex 0247: Grid walk 5x8 difere do idle 2x8
@@ -515,22 +562,33 @@ Dex 0248: Sleep.png ausente
 Dex 0249: Sleep.png ausente
 Dex 0250: Sleep.png ausente
 Dex 0251: Sleep.png ausente
+Dex 0251: Frame walk 48x48 difere do idle 144x56
+Dex 0251: Grid walk 4x8 difere do idle 1x8
 Dex 0252: Sleep.png ausente
+Dex 0252: Frame walk 32x32 difere do idle 96x40
+Dex 0252: Grid walk 4x8 difere do idle 1x8
 Dex 0253: Sleep.png ausente
 Dex 0253: Frame walk 160x56 difere do idle 32x40
 Dex 0253: Grid walk 1x8 difere do idle 2x8
 Dex 0254: Sleep.png ausente
-Dex 0254: Frame walk 128x48 difere do idle 80x40
+Dex 0254: Frame walk 32x48 difere do idle 80x40
+Dex 0254: Grid walk 4x8 difere do idle 1x8
 Dex 0255: Sleep.png ausente
+Dex 0255: Frame walk 24x32 difere do idle 120x40
+Dex 0255: Grid walk 4x8 difere do idle 1x8
 Dex 0256: Sleep.png ausente
+Dex 0256: Frame walk 24x48 difere do idle 120x48
+Dex 0256: Grid walk 4x8 difere do idle 1x8
 Dex 0257: Sleep.png ausente
-Dex 0257: Frame walk 128x56 difere do idle 64x56
+Dex 0257: Frame walk 32x56 difere do idle 64x56
+Dex 0257: Grid walk 4x8 difere do idle 1x8
 Dex 0258: Sleep.png ausente
 Dex 0258: Frame walk 32x40 difere do idle 168x40
 Dex 0258: Grid walk 6x8 difere do idle 1x8
 Dex 0259: Sleep.png ausente
 Dex 0260: Sleep.png ausente
-Dex 0260: Frame walk 128x48 difere do idle 192x64
+Dex 0260: Frame walk 32x48 difere do idle 192x64
+Dex 0260: Grid walk 4x8 difere do idle 1x8
 Dex 0261: Sleep.png ausente
 Dex 0261: Frame walk 80x48 difere do idle 36x40
 Dex 0261: Grid walk 2x8 difere do idle 4x8
@@ -549,29 +607,30 @@ Dex 0265: Grid walk 1x8 difere do idle 3x8
 Dex 0266: Idle-Anim.png ausente
 Dex 0266: Sleep.png ausente
 Dex 0267: Sleep.png ausente
-Dex 0267: Frame walk 480x64 difere do idle 160x64
+Dex 0267: Frame walk 120x64 difere do idle 40x64
 Dex 0268: Idle-Anim.png ausente
 Dex 0268: Sleep.png ausente
 Dex 0269: Sleep.png ausente
 Dex 0269: Grid walk 8x8 difere do idle 4x8
 Dex 0270: Sleep.png ausente
 Dex 0271: Sleep.png ausente
-Dex 0271: Frame walk 128x40 difere do idle 32x48
-Dex 0271: Grid walk 1x8 difere do idle 8x8
+Dex 0271: Grid walk 4x8 difere do idle 8x8
 Dex 0272: Sleep.png ausente
 Dex 0272: Grid walk 2x8 difere do idle 1x8
 Dex 0273: Sleep.png ausente
 Dex 0273: Grid walk 8x8 difere do idle 2x8
 Dex 0274: Sleep.png ausente
-Dex 0274: Frame walk 128x48 difere do idle 448x48
+Dex 0274: Frame walk 32x48 difere do idle 448x48
+Dex 0274: Grid walk 4x8 difere do idle 1x8
 Dex 0275: Sleep.png ausente
 Dex 0276: Sleep.png ausente
 Dex 0276: Frame walk 160x32 difere do idle 80x32
 Dex 0276: Grid walk 1x8 difere do idle 2x8
 Dex 0277: Sleep.png ausente
-Dex 0277: Frame walk 128x32 difere do idle 448x64
+Dex 0277: Frame walk 32x32 difere do idle 448x64
+Dex 0277: Grid walk 4x8 difere do idle 1x8
 Dex 0278: Sleep.png ausente
-Dex 0278: Grid walk 1x8 difere do idle 4x8
+Dex 0278: Frame walk 32x40 difere do idle 144x48
 Dex 0279: Sleep.png ausente
 Dex 0279: Frame walk 192x40 difere do idle 64x40
 Dex 0280: Sleep.png ausente
@@ -582,64 +641,73 @@ Dex 0282: Sleep.png ausente
 Dex 0283: Sleep.png ausente
 Dex 0283: Grid walk 9x8 difere do idle 4x8
 Dex 0284: Sleep.png ausente
-Dex 0284: Frame walk 320x48 difere do idle 160x48
+Dex 0284: Frame walk 80x48 difere do idle 40x48
 Dex 0285: Sleep.png ausente
+Dex 0285: Frame walk 24x24 difere do idle 120x24
+Dex 0285: Grid walk 4x8 difere do idle 1x8
 Dex 0286: Sleep.png ausente
-Dex 0286: Frame walk 160x48 difere do idle 480x48
+Dex 0286: Frame walk 40x48 difere do idle 120x48
 Dex 0287: Sleep.png ausente
-Dex 0287: Frame walk 160x32 difere do idle 80x32
+Dex 0287: Frame walk 40x32 difere do idle 80x32
+Dex 0287: Grid walk 4x8 difere do idle 1x8
 Dex 0288: Sleep.png ausente
-Dex 0288: Frame walk 128x48 difere do idle 192x56
+Dex 0288: Frame walk 32x48 difere do idle 192x56
+Dex 0288: Grid walk 4x8 difere do idle 1x8
 Dex 0289: Sleep.png ausente
-Dex 0289: Frame walk 128x48 difere do idle 224x48
+Dex 0289: Frame walk 32x48 difere do idle 224x48
+Dex 0289: Grid walk 4x8 difere do idle 1x8
 Dex 0290: Sleep.png ausente
+Dex 0290: Frame walk 24x24 difere do idle 120x24
+Dex 0290: Grid walk 4x8 difere do idle 1x8
 Dex 0291: Sleep.png ausente
 Dex 0292: Sleep.png ausente
-Dex 0292: Frame walk 64x56 difere do idle 288x56
-Dex 0292: Grid walk 6x8 difere do idle 1x8
+Dex 0292: Grid walk 6x8 difere do idle 4x8
 Dex 0293: Sleep.png ausente
-Dex 0293: Frame walk 96x40 difere do idle 192x56
+Dex 0293: Frame walk 24x40 difere do idle 192x56
+Dex 0293: Grid walk 4x8 difere do idle 1x8
 Dex 0294: Sleep.png ausente
 Dex 0294: Frame walk 32x40 difere do idle 112x56
 Dex 0294: Grid walk 4x8 difere do idle 2x8
 Dex 0295: Sleep.png ausente
 Dex 0296: Sleep.png ausente
-Dex 0296: Frame walk 128x40 difere do idle 512x48
+Dex 0296: Frame walk 32x40 difere do idle 128x48
 Dex 0297: Sleep.png ausente
-Dex 0297: Frame walk 160x48 difere do idle 480x56
+Dex 0297: Frame walk 40x48 difere do idle 120x56
 Dex 0298: Sleep.png ausente
-Dex 0298: Frame walk 280x40 difere do idle 96x32
+Dex 0298: Frame walk 280x40 difere do idle 24x32
+Dex 0298: Grid walk 1x8 difere do idle 4x8
 Dex 0299: Sleep.png ausente
-Dex 0299: Frame walk 128x40 difere do idle 256x56
+Dex 0299: Frame walk 32x40 difere do idle 64x56
 Dex 0300: Sleep.png ausente
-Dex 0300: Grid walk 2x8 difere do idle 1x8
+Dex 0300: Frame walk 140x48 difere do idle 32x40
+Dex 0300: Grid walk 2x8 difere do idle 4x8
 Dex 0301: Sleep.png ausente
-Dex 0301: Frame walk 128x48 difere do idle 288x48
+Dex 0301: Frame walk 32x48 difere do idle 288x48
+Dex 0301: Grid walk 4x8 difere do idle 1x8
 Dex 0302: Sleep.png ausente
 Dex 0302: Frame walk 32x40 difere do idle 64x40
 Dex 0302: Grid walk 3x8 difere do idle 1x8
 Dex 0303: Sleep.png ausente
-Dex 0303: Frame walk 160x40 difere do idle 728x48
+Dex 0303: Frame walk 40x40 difere do idle 728x48
+Dex 0303: Grid walk 4x8 difere do idle 1x8
 Dex 0304: Sleep.png ausente
 Dex 0305: Sleep.png ausente
 Dex 0306: Sleep.png ausente
-Dex 0306: Frame walk 160x48 difere do idle 40x48
-Dex 0306: Grid walk 1x8 difere do idle 6x8
+Dex 0306: Grid walk 4x8 difere do idle 6x8
 Dex 0307: Sleep.png ausente
 Dex 0307: Grid walk 6x8 difere do idle 3x8
 Dex 0308: Sleep.png ausente
 Dex 0309: Sleep.png ausente
 Dex 0309: Frame walk 32x32 difere do idle 112x40
 Dex 0310: Sleep.png ausente
-Dex 0310: Frame walk 128x48 difere do idle 560x48
+Dex 0310: Frame walk 32x48 difere do idle 560x48
+Dex 0310: Grid walk 4x8 difere do idle 1x8
 Dex 0311: Sleep.png ausente
-Dex 0311: Frame walk 192x40 difere do idle 24x32
-Dex 0311: Grid walk 1x8 difere do idle 4x8
+Dex 0311: Frame walk 48x40 difere do idle 24x32
 Dex 0312: Sleep.png ausente
-Dex 0312: Frame walk 192x40 difere do idle 24x32
-Dex 0312: Grid walk 1x8 difere do idle 4x8
+Dex 0312: Frame walk 48x40 difere do idle 24x32
 Dex 0313: Sleep.png ausente
-Dex 0313: Frame walk 256x56 difere do idle 256x40
+Dex 0313: Frame walk 64x56 difere do idle 64x40
 Dex 0314: Sleep.png ausente
 Dex 0314: Frame walk 32x56 difere do idle 48x40
 Dex 0314: Grid walk 8x8 difere do idle 1x8
@@ -652,36 +720,38 @@ Dex 0317: Sleep.png ausente
 Dex 0317: Frame walk 192x40 difere do idle 64x40
 Dex 0318: Sleep.png ausente
 Dex 0319: Sleep.png ausente
-Dex 0319: Frame walk 256x56 difere do idle 128x48
+Dex 0319: Frame walk 64x56 difere do idle 32x48
 Dex 0320: Sleep.png ausente
 Dex 0321: Sleep.png ausente
-Dex 0321: Frame walk 864x104 difere do idle 108x104
-Dex 0321: Grid walk 1x8 difere do idle 4x8
+Dex 0321: Frame walk 216x104 difere do idle 108x104
 Dex 0322: Sleep.png ausente
 Dex 0323: Sleep.png ausente
 Dex 0324: Sleep.png ausente
 Dex 0325: Sleep.png ausente
-Dex 0325: Frame walk 384x64 difere do idle 192x56
+Dex 0325: Frame walk 96x64 difere do idle 48x56
 Dex 0326: Sleep.png ausente
 Dex 0327: Sleep.png ausente
 Dex 0327: Frame walk 220x48 difere do idle 144x48
 Dex 0328: Sleep.png ausente
-Dex 0328: Frame walk 32x32 difere do idle 128x32
-Dex 0328: Grid walk 4x8 difere do idle 1x8
 Dex 0329: Sleep.png ausente
+Dex 0329: Frame walk 80x48 difere do idle 360x48
+Dex 0329: Grid walk 4x8 difere do idle 1x8
 Dex 0330: Sleep.png ausente
-Dex 0330: Grid walk 1x8 difere do idle 2x8
+Dex 0330: Frame walk 32x64 difere do idle 112x72
+Dex 0330: Grid walk 4x8 difere do idle 2x8
 Dex 0331: Sleep.png ausente
 Dex 0332: Sleep.png ausente
-Dex 0332: Frame walk 128x56 difere do idle 64x64
-Dex 0332: Grid walk 1x8 difere do idle 3x8
+Dex 0332: Frame walk 32x56 difere do idle 64x64
+Dex 0332: Grid walk 4x8 difere do idle 3x8
 Dex 0333: Sleep.png ausente
 Dex 0333: Frame walk 48x40 difere do idle 144x40
 Dex 0333: Grid walk 4x8 difere do idle 2x8
 Dex 0334: Sleep.png ausente
-Dex 0334: Frame walk 192x56 difere do idle 672x64
+Dex 0334: Frame walk 48x56 difere do idle 672x64
+Dex 0334: Grid walk 4x8 difere do idle 1x8
 Dex 0335: Sleep.png ausente
-Dex 0335: Frame walk 160x40 difere do idle 240x48
+Dex 0335: Frame walk 40x40 difere do idle 240x48
+Dex 0335: Grid walk 4x8 difere do idle 1x8
 Dex 0336: Sleep.png ausente
 Dex 0337: Sleep.png ausente
 Dex 0338: Sleep.png ausente
@@ -689,94 +759,105 @@ Dex 0338: Frame walk 80x48 difere do idle 48x48
 Dex 0339: Sleep.png ausente
 Dex 0340: Sleep.png ausente
 Dex 0341: Sleep.png ausente
-Dex 0341: Frame walk 128x32 difere do idle 64x32
+Dex 0341: Frame walk 32x32 difere do idle 64x32
+Dex 0341: Grid walk 4x8 difere do idle 1x8
 Dex 0342: Sleep.png ausente
 Dex 0343: Sleep.png ausente
-Dex 0343: Frame walk 512x48 difere do idle 48x40
-Dex 0343: Grid walk 1x8 difere do idle 4x8
+Dex 0343: Frame walk 128x48 difere do idle 48x40
 Dex 0344: Sleep.png ausente
-Dex 0344: Frame walk 192x48 difere do idle 48x40
+Dex 0344: Grid walk 4x8 difere do idle 1x8
 Dex 0345: Idle-Anim.png ausente
 Dex 0345: Sleep.png ausente
 Dex 0346: Sleep.png ausente
-Dex 0346: Frame walk 128x48 difere do idle 384x48
+Dex 0346: Frame walk 32x48 difere do idle 96x48
 Dex 0347: Sleep.png ausente
-Dex 0347: Grid walk 2x8 difere do idle 1x8
+Dex 0347: Frame walk 160x40 difere do idle 40x40
+Dex 0347: Grid walk 2x8 difere do idle 4x8
 Dex 0348: Sleep.png ausente
-Dex 0348: Grid walk 1x8 difere do idle 4x8
+Dex 0348: Frame walk 48x48 difere do idle 168x48
 Dex 0349: Sleep.png ausente
-Dex 0349: Frame walk 256x48 difere do idle 128x40
+Dex 0349: Frame walk 64x48 difere do idle 32x40
 Dex 0350: Sleep.png ausente
 Dex 0350: Frame walk 432x80 difere do idle 144x80
 Dex 0350: Grid walk 1x8 difere do idle 2x8
 Dex 0351: Sleep.png ausente
+Dex 0351: Frame walk 48x40 difere do idle 144x40
+Dex 0351: Grid walk 4x8 difere do idle 1x8
 Dex 0352: Sleep.png ausente
 Dex 0353: Sleep.png ausente
 Dex 0354: Sleep.png ausente
-Dex 0354: Frame walk 96x40 difere do idle 216x56
+Dex 0354: Frame walk 24x40 difere do idle 216x56
+Dex 0354: Grid walk 4x8 difere do idle 1x8
 Dex 0355: Sleep.png ausente
+Dex 0355: Frame walk 48x48 difere do idle 192x56
+Dex 0355: Grid walk 4x8 difere do idle 1x8
 Dex 0356: Sleep.png ausente
 Dex 0357: Sleep.png ausente
-Dex 0357: Frame walk 192x56 difere do idle 576x72
+Dex 0357: Frame walk 48x56 difere do idle 144x72
 Dex 0358: Sleep.png ausente
-Dex 0358: Frame walk 192x56 difere do idle 96x48
-Dex 0358: Grid walk 2x8 difere do idle 1x8
+Dex 0358: Frame walk 192x56 difere do idle 24x48
+Dex 0358: Grid walk 2x8 difere do idle 4x8
 Dex 0359: Sleep.png ausente
-Dex 0359: Frame walk 160x48 difere do idle 40x48
-Dex 0359: Grid walk 1x8 difere do idle 2x8
+Dex 0359: Grid walk 4x8 difere do idle 2x8
 Dex 0360: Sleep.png ausente
+Dex 0360: Frame walk 48x40 difere do idle 144x40
+Dex 0360: Grid walk 4x8 difere do idle 1x8
 Dex 0361: Sleep.png ausente
 Dex 0362: Sleep.png ausente
 Dex 0363: Sleep.png ausente
 Dex 0364: Sleep.png ausente
-Dex 0364: Frame walk 40x40 difere do idle 160x40
-Dex 0364: Grid walk 5x8 difere do idle 1x8
+Dex 0364: Grid walk 5x8 difere do idle 4x8
 Dex 0365: Sleep.png ausente
+Dex 0365: Frame walk 336x56 difere do idle 80x48
+Dex 0365: Grid walk 1x8 difere do idle 4x8
 Dex 0366: Sleep.png ausente
-Dex 0366: Frame walk 192x40 difere do idle 128x32
+Dex 0366: Frame walk 192x40 difere do idle 32x32
+Dex 0366: Grid walk 1x8 difere do idle 4x8
 Dex 0367: Sleep.png ausente
-Dex 0367: Frame walk 160x56 difere do idle 320x56
+Dex 0367: Frame walk 40x56 difere do idle 80x56
 Dex 0368: Sleep.png ausente
-Dex 0368: Grid walk 2x8 difere do idle 1x8
+Dex 0368: Frame walk 216x64 difere do idle 48x72
+Dex 0368: Grid walk 2x8 difere do idle 4x8
 Dex 0369: Sleep.png ausente
-Dex 0369: Frame walk 128x48 difere do idle 288x56
+Dex 0369: Frame walk 32x48 difere do idle 288x56
+Dex 0369: Grid walk 4x8 difere do idle 1x8
 Dex 0370: Sleep.png ausente
-Dex 0370: Frame walk 36x40 difere do idle 192x40
-Dex 0370: Grid walk 8x8 difere do idle 1x8
+Dex 0370: Grid walk 8x8 difere do idle 4x8
 Dex 0371: Sleep.png ausente
 Dex 0372: Sleep.png ausente
-Dex 0372: Frame walk 128x40 difere do idle 32x40
-Dex 0372: Grid walk 1x8 difere do idle 4x8
 Dex 0373: Sleep.png ausente
 Dex 0373: Frame walk 336x80 difere do idle 196x56
 Dex 0373: Grid walk 1x8 difere do idle 4x8
 Dex 0374: Sleep.png ausente
 Dex 0375: Sleep.png ausente
 Dex 0376: Sleep.png ausente
-Dex 0376: Frame walk 192x40 difere do idle 80x40
+Dex 0376: Frame walk 48x40 difere do idle 80x40
+Dex 0376: Grid walk 4x8 difere do idle 1x8
 Dex 0377: Sleep.png ausente
 Dex 0377: Frame walk 16x48 difere do idle 112x56
 Dex 0377: Grid walk 8x8 difere do idle 2x8
 Dex 0378: Sleep.png ausente
 Dex 0378: Grid walk 4x8 difere do idle 2x8
 Dex 0379: Sleep.png ausente
-Dex 0379: Frame walk 160x40 difere do idle 40x40
-Dex 0379: Grid walk 1x8 difere do idle 2x8
+Dex 0379: Grid walk 4x8 difere do idle 2x8
 Dex 0380: Sleep.png ausente
 Dex 0380: Frame walk 672x64 difere do idle 288x64
 Dex 0381: Sleep.png ausente
-Dex 0381: Frame walk 768x80 difere do idle 384x80
+Dex 0381: Frame walk 192x80 difere do idle 384x80
+Dex 0381: Grid walk 4x8 difere do idle 1x8
 Dex 0382: Sleep.png ausente
 Dex 0383: Sleep.png ausente
-Dex 0383: Frame walk 256x88 difere do idle 896x80
+Dex 0383: Frame walk 64x88 difere do idle 896x80
+Dex 0383: Grid walk 4x8 difere do idle 1x8
 Dex 0384: Sleep.png ausente
-Dex 0384: Frame walk 960x128 difere do idle 320x120
+Dex 0384: Frame walk 240x128 difere do idle 80x120
 Dex 0385: Sleep.png ausente
-Dex 0385: Frame walk 360x48 difere do idle 160x48
+Dex 0385: Frame walk 360x48 difere do idle 40x48
+Dex 0385: Grid walk 1x8 difere do idle 4x8
 Dex 0386: Sleep.png ausente
 Dex 0387: Sleep.png ausente
 Dex 0388: Sleep.png ausente
-Dex 0388: Frame walk 128x32 difere do idle 256x32
+Dex 0388: Frame walk 32x32 difere do idle 64x32
 Dex 0389: Sleep.png ausente
 Dex 0389: Frame walk 32x48 difere do idle 120x48
 Dex 0389: Grid walk 5x8 difere do idle 2x8
@@ -787,12 +868,14 @@ Dex 0391: Sleep.png ausente
 Dex 0391: Frame walk 216x56 difere do idle 352x56
 Dex 0391: Grid walk 2x8 difere do idle 1x8
 Dex 0392: Sleep.png ausente
-Dex 0392: Frame walk 160x56 difere do idle 600x64
+Dex 0392: Frame walk 40x56 difere do idle 600x64
+Dex 0392: Grid walk 4x8 difere do idle 1x8
 Dex 0393: Sleep.png ausente
-Dex 0393: Frame walk 96x32 difere do idle 144x40
+Dex 0393: Frame walk 24x32 difere do idle 144x40
+Dex 0393: Grid walk 4x8 difere do idle 1x8
 Dex 0394: Sleep.png ausente
-Dex 0394: Frame walk 32x40 difere do idle 192x48
-Dex 0394: Grid walk 3x8 difere do idle 1x8
+Dex 0394: Frame walk 32x40 difere do idle 48x48
+Dex 0394: Grid walk 3x8 difere do idle 4x8
 Dex 0395: Sleep.png ausente
 Dex 0396: Sleep.png ausente
 Dex 0396: Frame walk 160x40 difere do idle 60x40
@@ -800,35 +883,31 @@ Dex 0396: Grid walk 1x8 difere do idle 2x8
 Dex 0397: Sleep.png ausente
 Dex 0398: Sleep.png ausente
 Dex 0399: Sleep.png ausente
-Dex 0399: Frame walk 128x32 difere do idle 32x32
-Dex 0399: Grid walk 1x8 difere do idle 4x8
 Dex 0400: Sleep.png ausente
-Dex 0400: Frame walk 128x40 difere do idle 192x48
+Dex 0400: Frame walk 32x40 difere do idle 192x48
+Dex 0400: Grid walk 4x8 difere do idle 1x8
 Dex 0401: Sleep.png ausente
 Dex 0402: Sleep.png ausente
-Dex 0402: Grid walk 1x8 difere do idle 2x8
+Dex 0402: Frame walk 32x48 difere do idle 112x56
+Dex 0402: Grid walk 4x8 difere do idle 2x8
 Dex 0403: Sleep.png ausente
 Dex 0403: Frame walk 140x48 difere do idle 280x48
 Dex 0403: Grid walk 2x8 difere do idle 1x8
 Dex 0404: Sleep.png ausente
-Dex 0404: Frame walk 128x40 difere do idle 32x40
-Dex 0404: Grid walk 1x8 difere do idle 8x8
+Dex 0404: Grid walk 4x8 difere do idle 8x8
 Dex 0405: Sleep.png ausente
-Dex 0405: Frame walk 160x48 difere do idle 40x48
-Dex 0405: Grid walk 1x8 difere do idle 8x8
+Dex 0405: Grid walk 4x8 difere do idle 8x8
 Dex 0406: Sleep.png ausente
 Dex 0407: Sleep.png ausente
-Dex 0407: Frame walk 128x48 difere do idle 16x48
-Dex 0407: Grid walk 1x8 difere do idle 8x8
+Dex 0407: Frame walk 32x48 difere do idle 16x48
+Dex 0407: Grid walk 4x8 difere do idle 8x8
 Dex 0408: Sleep.png ausente
-Dex 0408: Frame walk 128x40 difere do idle 256x56
+Dex 0408: Frame walk 32x40 difere do idle 64x56
 Dex 0409: Sleep.png ausente
 Dex 0410: Sleep.png ausente
 Dex 0410: Frame walk 12x32 difere do idle 32x32
 Dex 0410: Grid walk 8x8 difere do idle 3x8
 Dex 0411: Sleep.png ausente
-Dex 0411: Frame walk 128x40 difere do idle 40x40
-Dex 0411: Grid walk 1x8 difere do idle 4x8
 Dex 0412: Sleep.png ausente
 Dex 0412: Frame walk 144x40 difere do idle 48x32
 Dex 0413: Sleep.png ausente
@@ -836,13 +915,14 @@ Dex 0414: Idle-Anim.png ausente
 Dex 0414: Sleep.png ausente
 Dex 0415: Sleep.png ausente
 Dex 0416: Sleep.png ausente
-Dex 0416: Frame walk 256x64 difere do idle 64x64
-Dex 0416: Grid walk 1x8 difere do idle 7x8
+Dex 0416: Grid walk 4x8 difere do idle 7x8
 Dex 0417: Sleep.png ausente
 Dex 0418: Sleep.png ausente
-Dex 0418: Grid walk 1x8 difere do idle 2x8
+Dex 0418: Frame walk 32x40 difere do idle 144x48
+Dex 0418: Grid walk 4x8 difere do idle 2x8
 Dex 0419: Sleep.png ausente
-Dex 0419: Frame walk 128x48 difere do idle 200x48
+Dex 0419: Frame walk 32x48 difere do idle 200x48
+Dex 0419: Grid walk 4x8 difere do idle 1x8
 Dex 0420: Sleep.png ausente
 Dex 0421: Sleep.png ausente
 Dex 0422: Sleep.png ausente
@@ -850,9 +930,11 @@ Dex 0422: Grid walk 6x8 difere do idle 2x8
 Dex 0423: Sleep.png ausente
 Dex 0423: Frame walk 192x40 difere do idle 96x40
 Dex 0424: Sleep.png ausente
+Dex 0424: Frame walk 80x56 difere do idle 240x64
+Dex 0424: Grid walk 4x8 difere do idle 1x8
 Dex 0425: Sleep.png ausente
 Dex 0426: Sleep.png ausente
-Dex 0426: Frame walk 256x64 difere do idle 384x56
+Dex 0426: Frame walk 64x64 difere do idle 96x56
 Dex 0427: Sleep.png ausente
 Dex 0427: Frame walk 96x56 difere do idle 224x56
 Dex 0427: Grid walk 2x8 difere do idle 1x8
@@ -860,45 +942,55 @@ Dex 0428: Sleep.png ausente
 Dex 0428: Frame walk 360x64 difere do idle 112x56
 Dex 0428: Grid walk 1x8 difere do idle 2x8
 Dex 0429: Sleep.png ausente
+Dex 0429: Frame walk 288x64 difere do idle 64x64
+Dex 0429: Grid walk 1x8 difere do idle 4x8
 Dex 0430: Sleep.png ausente
-Dex 0430: Frame walk 112x56 difere do idle 128x40
-Dex 0430: Grid walk 2x8 difere do idle 1x8
+Dex 0430: Frame walk 112x56 difere do idle 32x40
+Dex 0430: Grid walk 2x8 difere do idle 4x8
 Dex 0431: Sleep.png ausente
-Dex 0431: Frame walk 96x32 difere do idle 32x32
-Dex 0431: Grid walk 1x8 difere do idle 8x8
+Dex 0431: Grid walk 4x8 difere do idle 8x8
 Dex 0432: Sleep.png ausente
-Dex 0432: Frame walk 128x48 difere do idle 320x48
+Dex 0432: Frame walk 32x48 difere do idle 80x48
 Dex 0433: Sleep.png ausente
 Dex 0433: Frame walk 360x48 difere do idle 64x32
 Dex 0434: Sleep.png ausente
-Dex 0434: Frame walk 128x40 difere do idle 192x48
+Dex 0434: Frame walk 32x40 difere do idle 192x48
+Dex 0434: Grid walk 4x8 difere do idle 1x8
 Dex 0435: Sleep.png ausente
-Dex 0435: Frame walk 160x40 difere do idle 240x56
+Dex 0435: Frame walk 40x40 difere do idle 240x56
+Dex 0435: Grid walk 4x8 difere do idle 1x8
 Dex 0436: Sleep.png ausente
 Dex 0436: Frame walk 36x40 difere do idle 240x48
 Dex 0436: Grid walk 4x8 difere do idle 1x8
 Dex 0437: Sleep.png ausente
-Dex 0437: Frame walk 32x56 difere do idle 320x48
-Dex 0437: Grid walk 6x8 difere do idle 1x8
+Dex 0437: Frame walk 32x56 difere do idle 80x48
+Dex 0437: Grid walk 6x8 difere do idle 4x8
 Dex 0438: Sleep.png ausente
+Dex 0438: Frame walk 24x40 difere do idle 120x40
+Dex 0438: Grid walk 4x8 difere do idle 1x8
 Dex 0439: Sleep.png ausente
 Dex 0439: Frame walk 240x48 difere do idle 64x56
 Dex 0439: Grid walk 1x8 difere do idle 3x8
 Dex 0440: Sleep.png ausente
+Dex 0440: Frame walk 48x40 difere do idle 160x40
+Dex 0440: Grid walk 4x8 difere do idle 1x8
 Dex 0441: Sleep.png ausente
+Dex 0441: Frame walk 192x48 difere do idle 64x48
+Dex 0441: Grid walk 1x8 difere do idle 4x8
 Dex 0442: Sleep.png ausente
 Dex 0442: Frame walk 192x48 difere do idle 96x40
 Dex 0443: Sleep.png ausente
 Dex 0444: Sleep.png ausente
-Dex 0444: Frame walk 128x48 difere do idle 240x48
+Dex 0444: Frame walk 32x48 difere do idle 240x48
+Dex 0444: Grid walk 4x8 difere do idle 1x8
 Dex 0445: Sleep.png ausente
-Dex 0445: Frame walk 160x48 difere do idle 288x56
+Dex 0445: Frame walk 40x48 difere do idle 288x56
+Dex 0445: Grid walk 4x8 difere do idle 1x8
 Dex 0446: Sleep.png ausente
 Dex 0447: Sleep.png ausente
-Dex 0447: Frame walk 96x40 difere do idle 32x40
-Dex 0447: Grid walk 1x8 difere do idle 4x8
 Dex 0448: Sleep.png ausente
-Dex 0448: Frame walk 128x48 difere do idle 192x56
+Dex 0448: Frame walk 32x48 difere do idle 192x56
+Dex 0448: Grid walk 4x8 difere do idle 1x8
 Dex 0449: Sleep.png ausente
 Dex 0449: Frame walk 32x32 difere do idle 192x32
 Dex 0449: Grid walk 4x8 difere do idle 1x8
@@ -914,54 +1006,68 @@ Dex 0454: Sleep.png ausente
 Dex 0454: Frame walk 96x40 difere do idle 48x40
 Dex 0454: Grid walk 1x8 difere do idle 4x8
 Dex 0455: Sleep.png ausente
+Dex 0455: Frame walk 360x56 difere do idle 80x56
+Dex 0455: Grid walk 1x8 difere do idle 4x8
 Dex 0456: Sleep.png ausente
+Dex 0456: Frame walk 64x40 difere do idle 192x48
+Dex 0456: Grid walk 4x8 difere do idle 1x8
 Dex 0457: Sleep.png ausente
-Dex 0457: Frame walk 128x40 difere do idle 192x48
+Dex 0457: Frame walk 32x40 difere do idle 192x48
+Dex 0457: Grid walk 4x8 difere do idle 1x8
 Dex 0458: Sleep.png ausente
 Dex 0458: Frame walk 320x56 difere do idle 224x48
 Dex 0459: Sleep.png ausente
-Dex 0459: Frame walk 128x40 difere do idle 192x40
+Dex 0459: Frame walk 32x40 difere do idle 192x40
+Dex 0459: Grid walk 4x8 difere do idle 1x8
 Dex 0460: Sleep.png ausente
-Dex 0460: Frame walk 128x48 difere do idle 280x56
+Dex 0460: Frame walk 32x48 difere do idle 280x56
+Dex 0460: Grid walk 4x8 difere do idle 1x8
 Dex 0461: Sleep.png ausente
-Dex 0461: Frame walk 128x48 difere do idle 32x48
-Dex 0461: Grid walk 1x8 difere do idle 2x8
+Dex 0461: Grid walk 4x8 difere do idle 2x8
 Dex 0462: Sleep.png ausente
 Dex 0462: Frame walk 192x56 difere do idle 416x56
 Dex 0463: Sleep.png ausente
-Dex 0463: Frame walk 128x48 difere do idle 320x56
+Dex 0463: Frame walk 32x48 difere do idle 80x56
 Dex 0464: Sleep.png ausente
-Dex 0464: Frame walk 192x56 difere do idle 264x64
-Dex 0464: Grid walk 1x8 difere do idle 2x8
+Dex 0464: Frame walk 48x56 difere do idle 264x64
+Dex 0464: Grid walk 4x8 difere do idle 2x8
 Dex 0465: Sleep.png ausente
 Dex 0465: Frame walk 16x48 difere do idle 80x48
 Dex 0465: Grid walk 8x8 difere do idle 2x8
 Dex 0466: Sleep.png ausente
-Dex 0466: Frame walk 160x48 difere do idle 336x56
+Dex 0466: Frame walk 40x48 difere do idle 336x56
+Dex 0466: Grid walk 4x8 difere do idle 1x8
 Dex 0467: Sleep.png ausente
+Dex 0467: Frame walk 32x48 difere do idle 120x48
+Dex 0467: Grid walk 4x8 difere do idle 1x8
 Dex 0468: Sleep.png ausente
 Dex 0469: Sleep.png ausente
-Dex 0469: Frame walk 640x56 difere do idle 384x56
+Dex 0469: Frame walk 160x56 difere do idle 96x56
 Dex 0470: Sleep.png ausente
 Dex 0470: Frame walk 32x48 difere do idle 96x48
 Dex 0470: Grid walk 4x8 difere do idle 2x8
 Dex 0471: Sleep.png ausente
-Dex 0471: Grid walk 1x8 difere do idle 2x8
+Dex 0471: Frame walk 32x40 difere do idle 96x40
+Dex 0471: Grid walk 4x8 difere do idle 2x8
 Dex 0472: Sleep.png ausente
-Dex 0472: Frame walk 256x72 difere do idle 128x64
+Dex 0472: Frame walk 64x72 difere do idle 32x64
 Dex 0473: Sleep.png ausente
-Dex 0473: Frame walk 192x40 difere do idle 432x48
+Dex 0473: Frame walk 48x40 difere do idle 432x48
+Dex 0473: Grid walk 4x8 difere do idle 1x8
 Dex 0474: Sleep.png ausente
-Dex 0474: Frame walk 168x64 difere do idle 384x64
+Dex 0474: Frame walk 168x64 difere do idle 96x64
+Dex 0474: Grid walk 1x8 difere do idle 4x8
 Dex 0475: Sleep.png ausente
+Dex 0475: Frame walk 24x48 difere do idle 120x64
+Dex 0475: Grid walk 4x8 difere do idle 1x8
 Dex 0476: Sleep.png ausente
 Dex 0476: Frame walk 80x56 difere do idle 40x56
 Dex 0476: Grid walk 2x8 difere do idle 8x8
 Dex 0477: Sleep.png ausente
-Dex 0477: Frame walk 192x72 difere do idle 624x80
+Dex 0477: Frame walk 48x72 difere do idle 624x80
+Dex 0477: Grid walk 4x8 difere do idle 1x8
 Dex 0478: Sleep.png ausente
-Dex 0478: Frame walk 256x48 difere do idle 112x48
-Dex 0478: Grid walk 1x8 difere do idle 4x8
+Dex 0478: Frame walk 64x48 difere do idle 112x48
 Dex 0479: Sleep.png ausente
 Dex 0479: Frame walk 240x56 difere do idle 64x48
 Dex 0479: Grid walk 1x8 difere do idle 3x8
@@ -969,130 +1075,136 @@ Dex 0480: Sleep.png ausente
 Dex 0481: Sleep.png ausente
 Dex 0482: Sleep.png ausente
 Dex 0483: Sleep.png ausente
-Dex 0483: Frame walk 288x104 difere do idle 36x104
-Dex 0483: Grid walk 1x8 difere do idle 4x8
+Dex 0483: Frame walk 72x104 difere do idle 36x104
 Dex 0484: Sleep.png ausente
-Dex 0484: Frame walk 320x104 difere do idle 144x104
+Dex 0484: Frame walk 80x104 difere do idle 144x104
+Dex 0484: Grid walk 4x8 difere do idle 1x8
 Dex 0485: Sleep.png ausente
-Dex 0485: Frame walk 160x40 difere do idle 320x40
+Dex 0485: Frame walk 40x40 difere do idle 80x40
 Dex 0486: Sleep.png ausente
-Dex 0486: Frame walk 64x72 difere do idle 512x88
-Dex 0486: Grid walk 3x8 difere do idle 1x8
+Dex 0486: Frame walk 64x72 difere do idle 128x88
+Dex 0486: Grid walk 3x8 difere do idle 4x8
 Dex 0487: Sleep.png ausente
-Dex 0487: Frame walk 256x80 difere do idle 56x80
-Dex 0487: Grid walk 1x8 difere do idle 2x8
+Dex 0487: Grid walk 4x8 difere do idle 2x8
 Dex 0488: Sleep.png ausente
 Dex 0488: Frame walk 48x72 difere do idle 288x64
 Dex 0488: Grid walk 9x8 difere do idle 1x8
 Dex 0489: Sleep.png ausente
-Dex 0489: Frame walk 320x48 difere do idle 512x48
+Dex 0489: Frame walk 320x48 difere do idle 128x48
+Dex 0489: Grid walk 1x8 difere do idle 4x8
 Dex 0490: Sleep.png ausente
+Dex 0490: Frame walk 80x48 difere do idle 400x48
+Dex 0490: Grid walk 4x8 difere do idle 1x8
 Dex 0491: Sleep.png ausente
+Dex 0491: Frame walk 80x80 difere do idle 280x80
+Dex 0491: Grid walk 4x8 difere do idle 1x8
 Dex 0492: Sleep.png ausente
 Dex 0493: Sleep.png ausente
-Dex 0493: Frame walk 384x88 difere do idle 72x88
-Dex 0493: Grid walk 1x8 difere do idle 4x8
 Dex 0494: Sleep.png ausente
-Dex 0494: Frame walk 96x48 difere do idle 32x48
-Dex 0494: Grid walk 1x8 difere do idle 3x8
+Dex 0494: Grid walk 4x8 difere do idle 3x8
 Dex 0495: Sleep.png ausente
-Dex 0495: Frame walk 16x32 difere do idle 128x40
-Dex 0495: Grid walk 8x8 difere do idle 1x8
+Dex 0495: Frame walk 16x32 difere do idle 32x40
+Dex 0495: Grid walk 8x8 difere do idle 4x8
 Dex 0496: Sleep.png ausente
-Dex 0496: Frame walk 128x40 difere do idle 80x48
-Dex 0496: Grid walk 1x8 difere do idle 2x8
+Dex 0496: Frame walk 32x40 difere do idle 80x48
+Dex 0496: Grid walk 4x8 difere do idle 2x8
 Dex 0497: Sleep.png ausente
 Dex 0497: Frame walk 140x56 difere do idle 64x48
 Dex 0497: Grid walk 2x8 difere do idle 1x8
 Dex 0498: Sleep.png ausente
-Dex 0498: Frame walk 96x32 difere do idle 12x48
-Dex 0498: Grid walk 1x8 difere do idle 12x8
+Dex 0498: Frame walk 24x32 difere do idle 12x48
+Dex 0498: Grid walk 4x8 difere do idle 12x8
 Dex 0499: Sleep.png ausente
-Dex 0499: Frame walk 128x40 difere do idle 256x40
+Dex 0499: Frame walk 32x40 difere do idle 64x40
 Dex 0500: Sleep.png ausente
-Dex 0500: Frame walk 160x48 difere do idle 280x64
+Dex 0500: Frame walk 40x48 difere do idle 280x64
+Dex 0500: Grid walk 4x8 difere do idle 1x8
 Dex 0501: Sleep.png ausente
-Dex 0501: Frame walk 96x32 difere do idle 24x40
-Dex 0501: Grid walk 1x8 difere do idle 6x8
+Dex 0501: Grid walk 4x8 difere do idle 6x8
 Dex 0502: Sleep.png ausente
+Dex 0502: Frame walk 24x40 difere do idle 120x48
+Dex 0502: Grid walk 4x8 difere do idle 1x8
 Dex 0503: Sleep.png ausente
-Dex 0503: Frame walk 48x40 difere do idle 192x48
-Dex 0503: Grid walk 4x8 difere do idle 1x8
 Dex 0504: Sleep.png ausente
-Dex 0504: Frame walk 140x48 difere do idle 128x32
-Dex 0504: Grid walk 2x8 difere do idle 1x8
+Dex 0504: Frame walk 140x48 difere do idle 32x32
+Dex 0504: Grid walk 2x8 difere do idle 4x8
 Dex 0505: Sleep.png ausente
-Dex 0505: Frame walk 128x56 difere do idle 192x56
+Dex 0505: Frame walk 32x56 difere do idle 192x56
+Dex 0505: Grid walk 4x8 difere do idle 1x8
 Dex 0506: Sleep.png ausente
 Dex 0507: Sleep.png ausente
 Dex 0507: Frame walk 40x48 difere do idle 144x48
 Dex 0507: Grid walk 4x8 difere do idle 2x8
 Dex 0508: Sleep.png ausente
-Dex 0508: Frame walk 224x56 difere do idle 672x56
+Dex 0508: Frame walk 56x56 difere do idle 672x56
+Dex 0508: Grid walk 4x8 difere do idle 1x8
 Dex 0509: Sleep.png ausente
+Dex 0509: Frame walk 24x40 difere do idle 96x40
+Dex 0509: Grid walk 4x8 difere do idle 1x8
 Dex 0510: Sleep.png ausente
 Dex 0510: Frame walk 20x40 difere do idle 48x48
 Dex 0510: Grid walk 8x8 difere do idle 1x8
 Dex 0511: Sleep.png ausente
-Dex 0511: Frame walk 96x32 difere do idle 24x40
-Dex 0511: Grid walk 1x8 difere do idle 5x8
+Dex 0511: Grid walk 4x8 difere do idle 5x8
 Dex 0512: Sleep.png ausente
 Dex 0513: Sleep.png ausente
-Dex 0513: Frame walk 96x32 difere do idle 24x40
-Dex 0513: Grid walk 1x8 difere do idle 5x8
+Dex 0513: Grid walk 4x8 difere do idle 5x8
 Dex 0515: Sleep.png ausente
-Dex 0515: Frame walk 96x32 difere do idle 24x48
-Dex 0515: Grid walk 1x8 difere do idle 5x8
+Dex 0515: Frame walk 24x32 difere do idle 24x48
+Dex 0515: Grid walk 4x8 difere do idle 5x8
 Dex 0517: Sleep.png ausente
-Dex 0517: Frame walk 192x40 difere do idle 36x40
-Dex 0517: Grid walk 1x8 difere do idle 4x8
 Dex 0518: Sleep.png ausente
-Dex 0518: Frame walk 480x64 difere do idle 240x56
+Dex 0518: Frame walk 120x64 difere do idle 240x56
+Dex 0518: Grid walk 4x8 difere do idle 1x8
 Dex 0519: Sleep.png ausente
 Dex 0519: Frame walk 160x32 difere do idle 60x40
 Dex 0519: Grid walk 1x8 difere do idle 2x8
 Dex 0521: Sleep.png ausente
-Dex 0521: Frame walk 128x48 difere do idle 32x48
-Dex 0521: Grid walk 1x8 difere do idle 4x8
 Dex 0524: Sleep.png ausente
-Dex 0524: Frame walk 96x32 difere do idle 24x32
-Dex 0524: Grid walk 1x8 difere do idle 5x8
+Dex 0524: Grid walk 4x8 difere do idle 5x8
 Dex 0525: Sleep.png ausente
-Dex 0525: Frame walk 160x32 difere do idle 224x40
+Dex 0525: Frame walk 40x32 difere do idle 224x40
+Dex 0525: Grid walk 4x8 difere do idle 1x8
 Dex 0526: Sleep.png ausente
-Dex 0526: Grid walk 1x8 difere do idle 2x8
+Dex 0526: Frame walk 40x48 difere do idle 180x48
+Dex 0526: Grid walk 4x8 difere do idle 2x8
 Dex 0527: Sleep.png ausente
-Dex 0527: Frame walk 32x56 difere do idle 256x48
-Dex 0527: Grid walk 8x8 difere do idle 1x8
+Dex 0527: Frame walk 32x56 difere do idle 64x48
+Dex 0527: Grid walk 8x8 difere do idle 4x8
 Dex 0528: Sleep.png ausente
-Dex 0528: Frame walk 320x64 difere do idle 160x56
+Dex 0528: Frame walk 80x64 difere do idle 40x56
 Dex 0529: Sleep.png ausente
 Dex 0529: Grid walk 8x8 difere do idle 6x8
 Dex 0530: Sleep.png ausente
-Dex 0530: Frame walk 160x48 difere do idle 20x48
-Dex 0530: Grid walk 1x8 difere do idle 8x8
+Dex 0530: Frame walk 40x48 difere do idle 20x48
+Dex 0530: Grid walk 4x8 difere do idle 8x8
 Dex 0531: Sleep.png ausente
 Dex 0531: Frame walk 128x48 difere do idle 16x48
 Dex 0531: Grid walk 1x8 difere do idle 8x8
 Dex 0532: Sleep.png ausente
-Dex 0532: Frame walk 128x40 difere do idle 64x48
+Dex 0532: Frame walk 32x40 difere do idle 64x48
+Dex 0532: Grid walk 4x8 difere do idle 1x8
 Dex 0533: Sleep.png ausente
-Dex 0533: Frame walk 192x48 difere do idle 336x56
+Dex 0533: Frame walk 48x48 difere do idle 336x56
+Dex 0533: Grid walk 4x8 difere do idle 1x8
 Dex 0534: Sleep.png ausente
-Dex 0534: Frame walk 192x48 difere do idle 528x56
+Dex 0534: Frame walk 48x48 difere do idle 528x56
+Dex 0534: Grid walk 4x8 difere do idle 1x8
 Dex 0535: Sleep.png ausente
-Dex 0535: Frame walk 192x32 difere do idle 96x24
+Dex 0535: Frame walk 192x32 difere do idle 24x24
+Dex 0535: Grid walk 1x8 difere do idle 4x8
 Dex 0536: Sleep.png ausente
-Dex 0536: Frame walk 96x32 difere do idle 144x40
+Dex 0536: Frame walk 24x32 difere do idle 144x40
+Dex 0536: Grid walk 4x8 difere do idle 1x8
 Dex 0537: Sleep.png ausente
-Dex 0537: Grid walk 1x8 difere do idle 4x8
+Dex 0537: Frame walk 40x48 difere do idle 120x48
 Dex 0540: Sleep.png ausente
 Dex 0540: Frame walk 40x48 difere do idle 240x48
 Dex 0540: Grid walk 6x8 difere do idle 1x8
 Dex 0541: Sleep.png ausente
 Dex 0542: Sleep.png ausente
-Dex 0542: Frame walk 128x48 difere do idle 16x64
-Dex 0542: Grid walk 1x8 difere do idle 12x8
+Dex 0542: Frame walk 32x48 difere do idle 16x64
+Dex 0542: Grid walk 4x8 difere do idle 12x8
 Dex 0543: Sleep.png ausente
 Dex 0544: Sleep.png ausente
 Dex 0544: Frame walk 120x40 difere do idle 20x40
@@ -1107,23 +1219,27 @@ Dex 0549: Sleep.png ausente
 Dex 0550: Sleep.png ausente
 Dex 0551: Sleep.png ausente
 Dex 0552: Sleep.png ausente
-Dex 0552: Frame walk 128x48 difere do idle 560x48
+Dex 0552: Frame walk 32x48 difere do idle 560x48
+Dex 0552: Grid walk 4x8 difere do idle 1x8
 Dex 0553: Sleep.png ausente
 Dex 0554: Sleep.png ausente
-Dex 0554: Frame walk 256x40 difere do idle 32x40
-Dex 0554: Grid walk 1x8 difere do idle 6x8
+Dex 0554: Frame walk 64x40 difere do idle 32x40
+Dex 0554: Grid walk 4x8 difere do idle 6x8
 Dex 0555: Sleep.png ausente
-Dex 0555: Frame walk 160x40 difere do idle 280x56
+Dex 0555: Frame walk 40x40 difere do idle 280x56
+Dex 0555: Grid walk 4x8 difere do idle 1x8
 Dex 0556: Sleep.png ausente
 Dex 0556: Frame walk 32x32 difere do idle 60x32
 Dex 0556: Grid walk 3x8 difere do idle 2x8
 Dex 0557: Sleep.png ausente
 Dex 0559: Sleep.png ausente
-Dex 0559: Frame walk 96x40 difere do idle 48x40
+Dex 0559: Frame walk 24x40 difere do idle 48x40
+Dex 0559: Grid walk 4x8 difere do idle 1x8
 Dex 0560: Sleep.png ausente
-Dex 0560: Grid walk 1x8 difere do idle 2x8
+Dex 0560: Frame walk 32x48 difere do idle 96x56
+Dex 0560: Grid walk 4x8 difere do idle 2x8
 Dex 0561: Sleep.png ausente
-Dex 0561: Frame walk 160x64 difere do idle 320x64
+Dex 0561: Frame walk 40x64 difere do idle 80x64
 Dex 0562: Sleep.png ausente
 Dex 0563: Sleep.png ausente
 Dex 0566: Sleep.png ausente
@@ -1133,50 +1249,51 @@ Dex 0567: Frame walk 128x56 difere do idle 256x56
 Dex 0568: Sleep.png ausente
 Dex 0569: Sleep.png ausente
 Dex 0570: Sleep.png ausente
-Dex 0570: Frame walk 160x40 difere do idle 96x32
+Dex 0570: Frame walk 160x40 difere do idle 24x32
+Dex 0570: Grid walk 1x8 difere do idle 4x8
 Dex 0571: Sleep.png ausente
 Dex 0572: Sleep.png ausente
-Dex 0572: Frame walk 256x48 difere do idle 128x48
+Dex 0572: Frame walk 64x48 difere do idle 32x48
 Dex 0573: Sleep.png ausente
-Dex 0573: Frame walk 128x40 difere do idle 48x40
-Dex 0573: Grid walk 1x8 difere do idle 4x8
+Dex 0573: Frame walk 32x40 difere do idle 48x40
 Dex 0574: Sleep.png ausente
-Dex 0574: Frame walk 24x40 difere do idle 96x40
-Dex 0574: Grid walk 4x8 difere do idle 1x8
 Dex 0575: Sleep.png ausente
 Dex 0575: Frame walk 16x48 difere do idle 112x48
 Dex 0575: Grid walk 8x8 difere do idle 4x8
 Dex 0576: Sleep.png ausente
 Dex 0577: Sleep.png ausente
-Dex 0577: Frame walk 32x40 difere do idle 96x40
-Dex 0577: Grid walk 10x8 difere do idle 1x8
+Dex 0577: Grid walk 10x8 difere do idle 4x8
 Dex 0577: groundOffsetY alto (25) para frame 40px
 Dex 0578: Sleep.png ausente
 Dex 0578: Frame walk 240x48 difere do idle 144x48
 Dex 0579: Sleep.png ausente
 Dex 0581: Sleep.png ausente
+Dex 0581: Frame walk 32x48 difere do idle 160x56
+Dex 0581: Grid walk 4x8 difere do idle 1x8
 Dex 0582: Sleep.png ausente
-Dex 0582: Frame walk 144x40 difere do idle 96x32
+Dex 0582: Frame walk 144x40 difere do idle 24x32
+Dex 0582: Grid walk 1x8 difere do idle 4x8
 Dex 0583: Sleep.png ausente
 Dex 0584: Sleep.png ausente
-Dex 0584: Frame walk 128x64 difere do idle 800x64
+Dex 0584: Frame walk 32x64 difere do idle 800x64
+Dex 0584: Grid walk 4x8 difere do idle 1x8
 Dex 0585: Sleep.png ausente
 Dex 0586: Sleep.png ausente
 Dex 0586: Frame walk 240x64 difere do idle 560x56
 Dex 0587: Sleep.png ausente
-Dex 0587: Frame walk 128x32 difere do idle 192x48
+Dex 0587: Frame walk 32x32 difere do idle 192x48
+Dex 0587: Grid walk 4x8 difere do idle 1x8
 Dex 0588: Sleep.png ausente
-Dex 0588: Frame walk 96x40 difere do idle 24x48
-Dex 0588: Grid walk 1x8 difere do idle 6x8
+Dex 0588: Grid walk 4x8 difere do idle 6x8
 Dex 0589: Sleep.png ausente
 Dex 0590: Sleep.png ausente
 Dex 0590: Grid walk 4x8 difere do idle 5x8
 Dex 0593: Sleep.png ausente
 Dex 0594: Sleep.png ausente
-Dex 0594: Frame walk 288x48 difere do idle 192x48
+Dex 0594: Frame walk 72x48 difere do idle 48x48
 Dex 0595: Sleep.png ausente
-Dex 0595: Frame walk 96x16 difere do idle 24x24
-Dex 0595: Grid walk 1x8 difere do idle 10x8
+Dex 0595: Frame walk 24x16 difere do idle 24x24
+Dex 0595: Grid walk 4x8 difere do idle 10x8
 Dex 0596: Sleep.png ausente
 Dex 0596: Grid walk 4x8 difere do idle 10x8
 Dex 0597: Sleep.png ausente
@@ -1185,27 +1302,28 @@ Dex 0597: Grid walk 8x8 difere do idle 1x8
 Dex 0598: Sleep.png ausente
 Dex 0598: Frame walk 120x40 difere do idle 80x32
 Dex 0598: Grid walk 2x8 difere do idle 1x8
+Dex 0599: Sleep.png ausente
+Dex 0600: Sleep.png ausente
+Dex 0601: Sleep.png ausente
 Dex 0602: Sleep.png ausente
 Dex 0603: Sleep.png ausente
-Dex 0603: Grid walk 2x8 difere do idle 1x8
+Dex 0603: Frame walk 216x64 difere do idle 48x72
+Dex 0603: Grid walk 2x8 difere do idle 4x8
 Dex 0604: Sleep.png ausente
-Dex 0604: Frame walk 384x56 difere do idle 120x56
-Dex 0604: Grid walk 1x8 difere do idle 2x8
+Dex 0604: Grid walk 4x8 difere do idle 2x8
 Dex 0605: Sleep.png ausente
 Dex 0606: Sleep.png ausente
+Dex 0606: Frame walk 64x56 difere do idle 192x56
+Dex 0606: Grid walk 4x8 difere do idle 1x8
 Dex 0607: Sleep.png ausente
 Dex 0608: Sleep.png ausente
 Dex 0609: Sleep.png ausente
 Dex 0610: Sleep.png ausente
 Dex 0611: Sleep.png ausente
-Dex 0611: Frame walk 128x40 difere do idle 32x48
-Dex 0611: Grid walk 1x8 difere do idle 2x8
+Dex 0611: Grid walk 4x8 difere do idle 2x8
 Dex 0612: Sleep.png ausente
-Dex 0612: Frame walk 160x56 difere do idle 40x56
-Dex 0612: Grid walk 1x8 difere do idle 4x8
 Dex 0613: Sleep.png ausente
-Dex 0613: Frame walk 96x40 difere do idle 24x40
-Dex 0613: Grid walk 1x8 difere do idle 11x8
+Dex 0613: Grid walk 4x8 difere do idle 11x8
 Dex 0614: Sleep.png ausente
 Dex 0614: Frame walk 20x48 difere do idle 140x56
 Dex 0614: Grid walk 8x8 difere do idle 4x8
@@ -1219,7 +1337,8 @@ Dex 0620: Sleep.png ausente
 Dex 0620: Frame walk 40x48 difere do idle 80x48
 Dex 0620: Grid walk 4x8 difere do idle 1x8
 Dex 0621: Sleep.png ausente
-Dex 0621: Frame walk 192x56 difere do idle 288x64
+Dex 0621: Frame walk 48x56 difere do idle 288x64
+Dex 0621: Grid walk 4x8 difere do idle 1x8
 Dex 0622: Sleep.png ausente
 Dex 0622: Frame walk 16x48 difere do idle 80x48
 Dex 0622: Grid walk 8x8 difere do idle 2x8
@@ -1228,17 +1347,19 @@ Dex 0624: Sleep.png ausente
 Dex 0624: Frame walk 24x40 difere do idle 72x40
 Dex 0624: Grid walk 4x8 difere do idle 1x8
 Dex 0625: Sleep.png ausente
+Dex 0625: Frame walk 24x56 difere do idle 120x64
+Dex 0625: Grid walk 4x8 difere do idle 1x8
 Dex 0627: Sleep.png ausente
 Dex 0628: Sleep.png ausente
-Dex 0628: Frame walk 32x48 difere do idle 128x48
-Dex 0628: Grid walk 4x8 difere do idle 1x8
 Dex 0629: Sleep.png ausente
 Dex 0630: Sleep.png ausente
-Dex 0630: Frame walk 160x48 difere do idle 640x64
+Dex 0630: Frame walk 40x48 difere do idle 160x64
 Dex 0631: Sleep.png ausente
 Dex 0631: Frame walk 64x40 difere do idle 336x40
 Dex 0631: Grid walk 3x8 difere do idle 1x8
 Dex 0632: Sleep.png ausente
+Dex 0632: Frame walk 120x40 difere do idle 40x40
+Dex 0632: Grid walk 1x8 difere do idle 4x8
 Dex 0633: Sleep.png ausente
 Dex 0633: Frame walk 96x32 difere do idle 192x32
 Dex 0634: Sleep.png ausente
@@ -1246,14 +1367,16 @@ Dex 0635: Sleep.png ausente
 Dex 0636: Sleep.png ausente
 Dex 0636: Frame walk 96x40 difere do idle 240x40
 Dex 0637: Sleep.png ausente
-Dex 0637: Frame walk 192x48 difere do idle 336x56
+Dex 0637: Frame walk 48x48 difere do idle 336x56
+Dex 0637: Grid walk 4x8 difere do idle 1x8
 Dex 0638: Sleep.png ausente
-Dex 0638: Grid walk 1x8 difere do idle 4x8
+Dex 0638: Frame walk 32x64 difere do idle 112x64
 Dex 0639: Sleep.png ausente
-Dex 0639: Frame walk 20x40 difere do idle 384x40
-Dex 0639: Grid walk 8x8 difere do idle 1x8
+Dex 0639: Frame walk 20x40 difere do idle 96x40
+Dex 0639: Grid walk 8x8 difere do idle 4x8
 Dex 0640: Sleep.png ausente
-Dex 0640: Frame walk 160x56 difere do idle 560x56
+Dex 0640: Frame walk 40x56 difere do idle 560x56
+Dex 0640: Grid walk 4x8 difere do idle 1x8
 Dex 0641: Sleep.png ausente
 Dex 0642: Sleep.png ausente
 Dex 0643: Sleep.png ausente
@@ -1266,27 +1389,36 @@ Dex 0645: Grid walk 9x8 difere do idle 1x8
 Dex 0646: Sleep.png ausente
 Dex 0646: Grid walk 8x8 difere do idle 4x8
 Dex 0647: Sleep.png ausente
-Dex 0647: Grid walk 1x8 difere do idle 4x8
+Dex 0647: Frame walk 32x40 difere do idle 112x40
 Dex 0648: Sleep.png ausente
-Dex 0648: Frame walk 96x40 difere do idle 168x48
+Dex 0648: Frame walk 24x40 difere do idle 168x48
+Dex 0648: Grid walk 4x8 difere do idle 1x8
 Dex 0649: Sleep.png ausente
 Dex 0650: Sleep.png ausente
-Dex 0650: Frame walk 96x32 difere do idle 24x40
-Dex 0650: Grid walk 1x8 difere do idle 6x8
+Dex 0650: Grid walk 4x8 difere do idle 6x8
 Dex 0651: Sleep.png ausente
 Dex 0652: Sleep.png ausente
-Dex 0652: Frame walk 160x56 difere do idle 320x56
+Dex 0652: Frame walk 40x56 difere do idle 80x56
 Dex 0653: Sleep.png ausente
-Dex 0653: Grid walk 2x8 difere do idle 1x8
+Dex 0653: Frame walk 140x40 difere do idle 40x32
+Dex 0653: Grid walk 2x8 difere do idle 4x8
 Dex 0654: Sleep.png ausente
-Dex 0654: Frame walk 96x48 difere do idle 448x48
+Dex 0654: Frame walk 24x48 difere do idle 448x48
+Dex 0654: Grid walk 4x8 difere do idle 1x8
 Dex 0655: Sleep.png ausente
+Dex 0655: Frame walk 96x48 difere do idle 32x48
+Dex 0655: Grid walk 1x8 difere do idle 4x8
 Dex 0656: Sleep.png ausente
 Dex 0657: Sleep.png ausente
-Dex 0657: Frame walk 128x48 difere do idle 600x40
+Dex 0657: Frame walk 32x48 difere do idle 600x40
+Dex 0657: Grid walk 4x8 difere do idle 1x8
 Dex 0658: Sleep.png ausente
-Dex 0658: Frame walk 128x48 difere do idle 224x56
+Dex 0658: Frame walk 32x48 difere do idle 224x56
+Dex 0658: Grid walk 4x8 difere do idle 1x8
 Dex 0659: Sleep.png ausente
+Dex 0660: Sleep.png ausente
+Dex 0660: Frame walk 40x48 difere do idle 440x56
+Dex 0660: Grid walk 4x8 difere do idle 1x8
 Dex 0661: Sleep.png ausente
 Dex 0661: Frame walk 160x32 difere do idle 80x32
 Dex 0661: Grid walk 1x8 difere do idle 2x8
@@ -1295,10 +1427,12 @@ Dex 0662: Frame walk 192x48 difere do idle 48x40
 Dex 0662: Grid walk 1x8 difere do idle 2x8
 Dex 0663: Sleep.png ausente
 Dex 0664: Sleep.png ausente
+Dex 0664: Frame walk 96x40 difere do idle 32x40
+Dex 0664: Grid walk 1x8 difere do idle 4x8
 Dex 0665: Walk-Anim.png ausente
 Dex 0665: Sleep.png ausente
 Dex 0666: Sleep.png ausente
-Dex 0666: Frame walk 480x56 difere do idle 160x56
+Dex 0666: Frame walk 120x56 difere do idle 40x56
 Dex 0667: Sleep.png ausente
 Dex 0667: Frame walk 224x40 difere do idle 84x40
 Dex 0667: Grid walk 1x8 difere do idle 2x8
@@ -1306,8 +1440,8 @@ Dex 0668: Walk-Anim.png ausente
 Dex 0668: Idle-Anim.png ausente
 Dex 0668: Sleep.png ausente
 Dex 0669: Sleep.png ausente
-Dex 0669: Frame walk 24x56 difere do idle 192x56
-Dex 0669: Grid walk 8x8 difere do idle 1x8
+Dex 0669: Frame walk 24x56 difere do idle 48x56
+Dex 0669: Grid walk 8x8 difere do idle 4x8
 Dex 0669: groundOffsetY alto (34) para frame 56px
 Dex 0670: Sleep.png ausente
 Dex 0671: Sleep.png ausente
@@ -1317,14 +1451,17 @@ Dex 0673: Sleep.png ausente
 Dex 0673: Frame walk 40x64 difere do idle 16x56
 Dex 0673: Grid walk 7x8 difere do idle 10x8
 Dex 0674: Sleep.png ausente
-Dex 0674: Frame walk 96x40 difere do idle 24x40
-Dex 0674: Grid walk 1x8 difere do idle 6x8
+Dex 0674: Grid walk 4x8 difere do idle 6x8
 Dex 0675: Sleep.png ausente
-Dex 0675: Frame walk 160x56 difere do idle 240x56
+Dex 0675: Frame walk 40x56 difere do idle 240x56
+Dex 0675: Grid walk 4x8 difere do idle 1x8
 Dex 0676: Sleep.png ausente
+Dex 0676: Frame walk 32x48 difere do idle 128x48
+Dex 0676: Grid walk 4x8 difere do idle 1x8
 Dex 0677: Sleep.png ausente
 Dex 0678: Sleep.png ausente
-Dex 0678: Frame walk 128x48 difere do idle 192x56
+Dex 0678: Frame walk 32x48 difere do idle 192x56
+Dex 0678: Grid walk 4x8 difere do idle 1x8
 Dex 0679: Sleep.png ausente
 Dex 0680: Sleep.png ausente
 Dex 0681: Sleep.png ausente
@@ -1334,11 +1471,13 @@ Dex 0682: Grid walk 12x8 difere do idle 1x8
 Dex 0683: Walk-Anim.png ausente
 Dex 0683: Sleep.png ausente
 Dex 0684: Sleep.png ausente
+Dex 0684: Frame walk 24x24 difere do idle 120x24
+Dex 0684: Grid walk 4x8 difere do idle 1x8
 Dex 0685: Sleep.png ausente
-Dex 0685: Frame walk 32x40 difere do idle 512x48
-Dex 0685: Grid walk 4x8 difere do idle 1x8
+Dex 0685: Frame walk 32x40 difere do idle 128x48
 Dex 0686: Sleep.png ausente
-Dex 0686: Frame walk 96x40 difere do idle 168x48
+Dex 0686: Frame walk 24x40 difere do idle 168x48
+Dex 0686: Grid walk 4x8 difere do idle 1x8
 Dex 0687: Sleep.png ausente
 Dex 0687: Frame walk 20x56 difere do idle 80x56
 Dex 0687: Grid walk 8x8 difere do idle 2x8
@@ -1350,84 +1489,91 @@ Dex 0689: Frame walk 20x56 difere do idle 400x56
 Dex 0689: Grid walk 8x8 difere do idle 1x8
 Dex 0690: Sleep.png ausente
 Dex 0691: Sleep.png ausente
-Dex 0691: Frame walk 100x64 difere do idle 320x64
-Dex 0691: Grid walk 2x8 difere do idle 1x8
+Dex 0691: Grid walk 2x8 difere do idle 4x8
 Dex 0692: Sleep.png ausente
-Dex 0692: Frame walk 160x24 difere do idle 16x24
-Dex 0692: Grid walk 1x8 difere do idle 4x8
+Dex 0692: Frame walk 40x24 difere do idle 16x24
 Dex 0693: Sleep.png ausente
 Dex 0694: Sleep.png ausente
-Dex 0694: Frame walk 24x32 difere do idle 96x32
-Dex 0694: Grid walk 4x8 difere do idle 1x8
 Dex 0695: Sleep.png ausente
-Dex 0695: Grid walk 1x8 difere do idle 4x8
+Dex 0695: Frame walk 40x40 difere do idle 140x48
 Dex 0696: Sleep.png ausente
-Dex 0696: Frame walk 16x40 difere do idle 256x48
-Dex 0696: Grid walk 8x8 difere do idle 1x8
+Dex 0696: Frame walk 16x40 difere do idle 64x48
+Dex 0696: Grid walk 8x8 difere do idle 4x8
 Dex 0697: Sleep.png ausente
 Dex 0697: Frame walk 28x72 difere do idle 196x72
 Dex 0697: Grid walk 8x8 difere do idle 4x8
 Dex 0698: Sleep.png ausente
-Dex 0698: Frame walk 128x48 difere do idle 64x48
+Dex 0698: Frame walk 32x48 difere do idle 64x48
+Dex 0698: Grid walk 4x8 difere do idle 1x8
 Dex 0699: Sleep.png ausente
 Dex 0699: Frame walk 64x80 difere do idle 168x80
 Dex 0699: Grid walk 3x8 difere do idle 4x8
 Dex 0700: Sleep.png ausente
-Dex 0700: Frame walk 128x48 difere do idle 256x48
+Dex 0700: Frame walk 32x48 difere do idle 256x48
+Dex 0700: Grid walk 4x8 difere do idle 1x8
 Dex 0701: Sleep.png ausente
 Dex 0701: Frame walk 16x40 difere do idle 60x48
 Dex 0701: Grid walk 8x8 difere do idle 4x8
 Dex 0702: Sleep.png ausente
-Dex 0702: Frame walk 192x32 difere do idle 96x32
+Dex 0702: Frame walk 48x32 difere do idle 24x32
 Dex 0703: Sleep.png ausente
 Dex 0703: Frame walk 168x32 difere do idle 144x48
 Dex 0704: Sleep.png ausente
 Dex 0704: Frame walk 192x32 difere do idle 72x24
 Dex 0705: Sleep.png ausente
 Dex 0706: Sleep.png ausente
-Dex 0706: Frame walk 160x48 difere do idle 280x64
+Dex 0706: Frame walk 40x48 difere do idle 280x64
+Dex 0706: Grid walk 4x8 difere do idle 1x8
 Dex 0707: Sleep.png ausente
-Dex 0707: Frame walk 144x40 difere do idle 96x40
+Dex 0707: Frame walk 144x40 difere do idle 24x40
+Dex 0707: Grid walk 1x8 difere do idle 4x8
 Dex 0708: Sleep.png ausente
 Dex 0709: Sleep.png ausente
 Dex 0709: Frame walk 20x56 difere do idle 100x56
 Dex 0709: Grid walk 8x8 difere do idle 4x8
 Dex 0710: Sleep.png ausente
-Dex 0710: Frame walk 24x56 difere do idle 192x56
-Dex 0710: Grid walk 8x8 difere do idle 1x8
+Dex 0710: Frame walk 24x56 difere do idle 48x56
+Dex 0710: Grid walk 8x8 difere do idle 4x8
 Dex 0711: Sleep.png ausente
+Dex 0711: Frame walk 240x56 difere do idle 48x56
+Dex 0711: Grid walk 1x8 difere do idle 4x8
 Dex 0712: Sleep.png ausente
-Dex 0712: Frame walk 96x32 difere do idle 32x32
-Dex 0712: Grid walk 1x8 difere do idle 4x8
 Dex 0714: Sleep.png ausente
+Dex 0714: Frame walk 64x72 difere do idle 320x72
+Dex 0714: Grid walk 4x8 difere do idle 1x8
 Dex 0715: Sleep.png ausente
-Dex 0715: Frame walk 160x64 difere do idle 320x64
+Dex 0715: Frame walk 40x64 difere do idle 80x64
 Dex 0716: Sleep.png ausente
+Dex 0716: Frame walk 64x120 difere do idle 336x120
+Dex 0716: Grid walk 4x8 difere do idle 1x8
 Dex 0717: Sleep.png ausente
 Dex 0718: Sleep.png ausente
+Dex 0718: Frame walk 192x80 difere do idle 64x80
+Dex 0718: Grid walk 1x8 difere do idle 4x8
 Dex 0719: Sleep.png ausente
-Dex 0719: Frame walk 32x56 difere do idle 192x56
-Dex 0719: Grid walk 5x8 difere do idle 1x8
+Dex 0719: Frame walk 32x56 difere do idle 48x56
+Dex 0719: Grid walk 5x8 difere do idle 4x8
 Dex 0720: Sleep.png ausente
-Dex 0720: Frame walk 32x48 difere do idle 512x48
-Dex 0720: Grid walk 8x8 difere do idle 1x8
+Dex 0720: Frame walk 32x48 difere do idle 128x48
+Dex 0720: Grid walk 8x8 difere do idle 4x8
 Dex 0721: Sleep.png ausente
-Dex 0721: Frame walk 224x64 difere do idle 56x64
-Dex 0721: Grid walk 1x8 difere do idle 8x8
+Dex 0721: Grid walk 4x8 difere do idle 8x8
 Dex 0722: Sleep.png ausente
-Dex 0722: Frame walk 96x32 difere do idle 144x32
+Dex 0722: Frame walk 24x32 difere do idle 144x32
+Dex 0722: Grid walk 4x8 difere do idle 1x8
 Dex 0723: Sleep.png ausente
 Dex 0724: Sleep.png ausente
 Dex 0724: Frame walk 24x48 difere do idle 320x48
 Dex 0724: Grid walk 4x8 difere do idle 1x8
 Dex 0725: Sleep.png ausente
-Dex 0725: Frame walk 160x40 difere do idle 96x24
+Dex 0725: Frame walk 160x40 difere do idle 24x24
+Dex 0725: Grid walk 1x8 difere do idle 4x8
 Dex 0726: Sleep.png ausente
-Dex 0726: Frame walk 160x48 difere do idle 40x48
-Dex 0726: Grid walk 1x8 difere do idle 8x8
+Dex 0726: Grid walk 4x8 difere do idle 8x8
 Dex 0727: Sleep.png ausente
 Dex 0728: Sleep.png ausente
-Dex 0728: Frame walk 128x24 difere do idle 64x24
+Dex 0728: Frame walk 32x24 difere do idle 64x24
+Dex 0728: Grid walk 4x8 difere do idle 1x8
 Dex 0729: Sleep.png ausente
 Dex 0729: Frame walk 40x48 difere do idle 16x40
 Dex 0729: Grid walk 5x8 difere do idle 4x8
@@ -1441,53 +1587,58 @@ Dex 0737: Sleep.png ausente
 Dex 0737: Frame walk 40x32 difere do idle 16x24
 Dex 0737: Grid walk 6x8 difere do idle 3x8
 Dex 0738: Sleep.png ausente
-Dex 0738: Frame walk 768x64 difere do idle 480x56
+Dex 0738: Frame walk 192x64 difere do idle 120x56
 Dex 0739: Sleep.png ausente
 Dex 0739: Frame walk 40x40 difere do idle 120x40
 Dex 0739: Grid walk 4x8 difere do idle 1x8
 Dex 0740: Sleep.png ausente
-Dex 0740: Frame walk 64x48 difere do idle 192x48
-Dex 0740: Grid walk 3x8 difere do idle 1x8
+Dex 0740: Grid walk 3x8 difere do idle 4x8
 Dex 0741: Walk-Anim.png ausente
 Dex 0741: Idle-Anim.png ausente
 Dex 0741: Sleep.png ausente
 Dex 0742: Sleep.png ausente
 Dex 0742: Grid walk 1x8 difere do idle 2x8
 Dex 0743: Sleep.png ausente
-Dex 0743: Frame walk 144x48 difere do idle 288x48
+Dex 0743: Frame walk 144x48 difere do idle 72x48
+Dex 0743: Grid walk 1x8 difere do idle 4x8
 Dex 0744: Sleep.png ausente
 Dex 0745: Sleep.png ausente
 Dex 0745: Frame walk 64x56 difere do idle 168x56
 Dex 0745: Grid walk 3x8 difere do idle 4x8
 Dex 0746: Sleep.png ausente
-Dex 0746: Frame walk 96x40 difere do idle 192x40
+Dex 0746: Frame walk 24x40 difere do idle 48x40
 Dex 0747: Sleep.png ausente
-Dex 0747: Frame walk 192x32 difere do idle 96x24
+Dex 0747: Frame walk 192x32 difere do idle 24x24
+Dex 0747: Grid walk 1x8 difere do idle 4x8
 Dex 0749: Sleep.png ausente
-Dex 0749: Grid walk 1x8 difere do idle 4x8
+Dex 0749: Frame walk 32x40 difere do idle 112x40
 Dex 0750: Sleep.png ausente
 Dex 0750: Frame walk 64x64 difere do idle 196x64
 Dex 0750: Grid walk 3x8 difere do idle 4x8
 Dex 0751: Sleep.png ausente
-Dex 0751: Frame walk 96x40 difere do idle 192x56
+Dex 0751: Frame walk 24x40 difere do idle 192x56
+Dex 0751: Grid walk 4x8 difere do idle 1x8
 Dex 0752: Sleep.png ausente
-Dex 0752: Frame walk 192x48 difere do idle 480x48
+Dex 0752: Frame walk 48x48 difere do idle 480x48
+Dex 0752: Grid walk 4x8 difere do idle 1x8
 Dex 0753: Sleep.png ausente
+Dex 0753: Frame walk 24x40 difere do idle 120x40
+Dex 0753: Grid walk 4x8 difere do idle 1x8
 Dex 0754: Sleep.png ausente
 Dex 0754: Frame walk 32x48 difere do idle 144x64
 Dex 0754: Grid walk 4x8 difere do idle 1x8
 Dex 0755: Sleep.png ausente
-Dex 0755: Frame walk 32x48 difere do idle 192x56
-Dex 0755: Grid walk 5x8 difere do idle 1x8
+Dex 0755: Frame walk 32x48 difere do idle 48x56
+Dex 0755: Grid walk 5x8 difere do idle 4x8
 Dex 0757: Sleep.png ausente
-Dex 0757: Frame walk 160x40 difere do idle 20x40
-Dex 0757: Grid walk 1x8 difere do idle 4x8
+Dex 0757: Frame walk 40x40 difere do idle 20x40
 Dex 0758: Sleep.png ausente
 Dex 0758: Frame walk 64x40 difere do idle 144x48
 Dex 0758: Grid walk 3x8 difere do idle 2x8
 Dex 0759: Sleep.png ausente
 Dex 0760: Sleep.png ausente
-Dex 0760: Frame walk 160x56 difere do idle 560x56
+Dex 0760: Frame walk 40x56 difere do idle 560x56
+Dex 0760: Grid walk 4x8 difere do idle 1x8
 Dex 0761: Sleep.png ausente
 Dex 0762: Sleep.png ausente
 Dex 0762: Grid walk 3x8 difere do idle 2x8
@@ -1498,15 +1649,17 @@ Dex 0764: Sleep.png ausente
 Dex 0764: Frame walk 100x64 difere do idle 16x56
 Dex 0764: Grid walk 4x8 difere do idle 8x8
 Dex 0766: Sleep.png ausente
-Dex 0766: Frame walk 160x48 difere do idle 80x48
+Dex 0766: Frame walk 40x48 difere do idle 80x48
+Dex 0766: Grid walk 4x8 difere do idle 1x8
 Dex 0767: Sleep.png ausente
 Dex 0768: Sleep.png ausente
-Dex 0768: Frame walk 160x56 difere do idle 100x56
-Dex 0768: Grid walk 1x8 difere do idle 4x8
+Dex 0768: Frame walk 40x56 difere do idle 100x56
 Dex 0769: Sleep.png ausente
 Dex 0769: Frame walk 60x40 difere do idle 48x24
 Dex 0769: Grid walk 2x8 difere do idle 1x8
 Dex 0770: Sleep.png ausente
+Dex 0770: Frame walk 200x40 difere do idle 40x32
+Dex 0770: Grid walk 1x8 difere do idle 4x8
 Dex 0771: Sleep.png ausente
 Dex 0771: Grid walk 3x8 difere do idle 7x8
 Dex 0772: Sleep.png ausente
@@ -1518,98 +1671,114 @@ Dex 0775: Sleep.png ausente
 Dex 0775: Frame walk 192x32 difere do idle 48x32
 Dex 0775: Grid walk 1x8 difere do idle 4x8
 Dex 0776: Sleep.png ausente
-Dex 0776: Frame walk 160x56 difere do idle 400x56
+Dex 0776: Frame walk 40x56 difere do idle 400x56
+Dex 0776: Grid walk 4x8 difere do idle 1x8
 Dex 0777: Sleep.png ausente
+Dex 0777: Frame walk 64x48 difere do idle 192x56
+Dex 0777: Grid walk 4x8 difere do idle 1x8
 Dex 0778: Sleep.png ausente
 Dex 0779: Sleep.png ausente
-Dex 0779: Frame walk 60x56 difere do idle 320x56
-Dex 0779: Grid walk 8x8 difere do idle 1x8
+Dex 0779: Grid walk 8x8 difere do idle 4x8
 Dex 0780: Sleep.png ausente
 Dex 0781: Sleep.png ausente
 Dex 0782: Sleep.png ausente
-Dex 0782: Frame walk 32x40 difere do idle 128x40
-Dex 0782: Grid walk 3x8 difere do idle 1x8
+Dex 0782: Grid walk 3x8 difere do idle 4x8
 Dex 0783: Sleep.png ausente
-Dex 0783: Frame walk 128x48 difere do idle 192x56
+Dex 0783: Frame walk 32x48 difere do idle 192x56
+Dex 0783: Grid walk 4x8 difere do idle 1x8
 Dex 0784: Sleep.png ausente
-Dex 0784: Frame walk 160x56 difere do idle 240x56
+Dex 0784: Frame walk 40x56 difere do idle 240x56
+Dex 0784: Grid walk 4x8 difere do idle 1x8
 Dex 0785: Sleep.png ausente
-Dex 0785: Frame walk 24x80 difere do idle 192x88
-Dex 0785: Grid walk 8x8 difere do idle 1x8
+Dex 0785: Frame walk 24x80 difere do idle 48x88
+Dex 0785: Grid walk 8x8 difere do idle 4x8
 Dex 0786: Sleep.png ausente
-Dex 0786: Frame walk 32x56 difere do idle 192x64
-Dex 0786: Grid walk 5x8 difere do idle 1x8
+Dex 0786: Frame walk 32x56 difere do idle 48x64
+Dex 0786: Grid walk 5x8 difere do idle 4x8
 Dex 0787: Sleep.png ausente
 Dex 0788: Sleep.png ausente
 Dex 0789: Sleep.png ausente
 Dex 0790: Sleep.png ausente
-Dex 0790: Frame walk 32x48 difere do idle 96x40
-Dex 0790: Grid walk 10x8 difere do idle 1x8
+Dex 0790: Grid walk 10x8 difere do idle 4x8
 Dex 0791: Sleep.png ausente
-Dex 0791: Frame walk 192x72 difere do idle 64x72
-Dex 0791: Grid walk 1x8 difere do idle 6x8
+Dex 0791: Grid walk 4x8 difere do idle 6x8
 Dex 0792: Sleep.png ausente
-Dex 0792: Frame walk 320x104 difere do idle 40x96
-Dex 0792: Grid walk 1x8 difere do idle 8x8
+Dex 0792: Frame walk 80x104 difere do idle 40x96
+Dex 0792: Grid walk 4x8 difere do idle 8x8
 Dex 0793: Sleep.png ausente
 Dex 0794: Sleep.png ausente
-Dex 0794: Frame walk 336x72 difere do idle 1152x72
+Dex 0794: Grid walk 1x8 difere do idle 4x8
 Dex 0795: Sleep.png ausente
-Dex 0795: Frame walk 192x72 difere do idle 288x72
+Dex 0795: Frame walk 48x72 difere do idle 288x72
+Dex 0795: Grid walk 4x8 difere do idle 1x8
 Dex 0796: Sleep.png ausente
+Dex 0796: Frame walk 64x64 difere do idle 336x56
+Dex 0796: Grid walk 4x8 difere do idle 1x8
 Dex 0797: Sleep.png ausente
-Dex 0797: Frame walk 1024x112 difere do idle 96x112
-Dex 0797: Grid walk 1x8 difere do idle 3x8
+Dex 0797: Frame walk 256x112 difere do idle 96x112
+Dex 0797: Grid walk 4x8 difere do idle 3x8
 Dex 0798: Sleep.png ausente
 Dex 0799: Sleep.png ausente
 Dex 0799: Frame walk 160x88 difere do idle 420x88
 Dex 0799: Grid walk 3x8 difere do idle 4x8
 Dex 0800: Sleep.png ausente
 Dex 0801: Sleep.png ausente
-Dex 0801: Frame walk 96x48 difere do idle 64x48
+Dex 0801: Frame walk 24x48 difere do idle 64x48
+Dex 0801: Grid walk 4x8 difere do idle 1x8
 Dex 0802: Sleep.png ausente
-Dex 0802: Frame walk 96x40 difere do idle 168x40
+Dex 0802: Frame walk 24x40 difere do idle 168x40
+Dex 0802: Grid walk 4x8 difere do idle 1x8
 Dex 0803: Sleep.png ausente
-Dex 0803: Frame walk 240x48 difere do idle 96x48
+Dex 0803: Frame walk 240x48 difere do idle 24x48
+Dex 0803: Grid walk 1x8 difere do idle 4x8
 Dex 0804: Sleep.png ausente
-Dex 0804: Frame walk 192x56 difere do idle 140x72
-Dex 0804: Grid walk 1x8 difere do idle 2x8
+Dex 0804: Frame walk 48x56 difere do idle 140x72
+Dex 0804: Grid walk 4x8 difere do idle 2x8
 Dex 0805: Sleep.png ausente
-Dex 0805: Frame walk 256x96 difere do idle 72x64
-Dex 0805: Grid walk 1x8 difere do idle 8x8
+Dex 0805: Frame walk 64x96 difere do idle 72x64
+Dex 0805: Grid walk 4x8 difere do idle 8x8
 Dex 0806: Sleep.png ausente
-Dex 0806: Frame walk 192x64 difere do idle 80x56
-Dex 0806: Grid walk 1x8 difere do idle 3x8
+Dex 0806: Frame walk 48x64 difere do idle 80x56
+Dex 0806: Grid walk 4x8 difere do idle 3x8
 Dex 0807: Sleep.png ausente
-Dex 0807: Frame walk 192x40 difere do idle 288x48
+Dex 0807: Frame walk 48x40 difere do idle 288x48
+Dex 0807: Grid walk 4x8 difere do idle 1x8
 Dex 0808: Sleep.png ausente
 Dex 0808: Frame walk 448x32 difere do idle 48x32
 Dex 0809: Sleep.png ausente
-Dex 0809: Frame walk 256x56 difere do idle 98x64
-Dex 0809: Grid walk 1x8 difere do idle 4x8
+Dex 0809: Frame walk 64x56 difere do idle 98x64
 Dex 0810: Sleep.png ausente
 Dex 0810: Frame walk 32x48 difere do idle 48x32
 Dex 0810: Grid walk 7x8 difere do idle 1x8
 Dex 0811: Sleep.png ausente
-Dex 0811: Frame walk 96x56 difere do idle 176x56
-Dex 0811: Grid walk 1x8 difere do idle 2x8
+Dex 0811: Frame walk 24x56 difere do idle 176x56
+Dex 0811: Grid walk 4x8 difere do idle 2x8
 Dex 0812: Sleep.png ausente
-Dex 0812: Frame walk 192x64 difere do idle 40x64
+Dex 0812: Grid walk 4x8 difere do idle 1x8
 Dex 0813: Sleep.png ausente
 Dex 0814: Sleep.png ausente
 Dex 0815: Sleep.png ausente
 Dex 0815: Grid walk 4x8 difere do idle 2x8
 Dex 0816: Sleep.png ausente
 Dex 0817: Sleep.png ausente
+Dex 0817: Frame walk 32x32 difere do idle 160x40
+Dex 0817: Grid walk 4x8 difere do idle 1x8
 Dex 0818: Sleep.png ausente
-Dex 0818: Frame walk 192x56 difere do idle 440x64
+Dex 0818: Frame walk 48x56 difere do idle 440x64
+Dex 0818: Grid walk 4x8 difere do idle 1x8
 Dex 0819: Sleep.png ausente
-Dex 0819: Frame walk 128x40 difere do idle 192x48
+Dex 0819: Frame walk 32x40 difere do idle 192x48
+Dex 0819: Grid walk 4x8 difere do idle 1x8
+Dex 0820: Sleep.png ausente
+Dex 0820: Frame walk 48x48 difere do idle 96x48
+Dex 0820: Grid walk 4x8 difere do idle 1x8
 Dex 0821: Sleep.png ausente
 Dex 0822: Sleep.png ausente
-Dex 0822: Frame walk 192x56 difere do idle 128x40
+Dex 0822: Frame walk 192x56 difere do idle 32x40
+Dex 0822: Grid walk 1x8 difere do idle 4x8
 Dex 0823: Sleep.png ausente
-Dex 0823: Frame walk 240x64 difere do idle 128x48
+Dex 0823: Frame walk 240x64 difere do idle 32x48
+Dex 0823: Grid walk 1x8 difere do idle 4x8
 Dex 0824: Sleep.png ausente
 Dex 0824: Frame walk 192x48 difere do idle 48x40
 Dex 0825: Sleep.png ausente
@@ -1617,17 +1786,18 @@ Dex 0825: Frame walk 12x24 difere do idle 60x24
 Dex 0825: Grid walk 8x8 difere do idle 2x8
 Dex 0826: Sleep.png ausente
 Dex 0827: Sleep.png ausente
-Dex 0827: Frame walk 80x48 difere do idle 128x32
-Dex 0827: Grid walk 2x8 difere do idle 1x8
+Dex 0827: Frame walk 80x48 difere do idle 32x32
+Dex 0827: Grid walk 2x8 difere do idle 4x8
 Dex 0828: Sleep.png ausente
-Dex 0828: Frame walk 192x56 difere do idle 384x56
+Dex 0828: Frame walk 48x56 difere do idle 96x56
 Dex 0829: Sleep.png ausente
-Dex 0829: Frame walk 256x48 difere do idle 64x40
+Dex 0829: Grid walk 4x8 difere do idle 1x8
 Dex 0830: Sleep.png ausente
 Dex 0830: Frame walk 192x40 difere do idle 32x40
 Dex 0830: Grid walk 1x8 difere do idle 4x8
 Dex 0831: Sleep.png ausente
-Dex 0831: Frame walk 128x32 difere do idle 192x40
+Dex 0831: Frame walk 32x32 difere do idle 192x40
+Dex 0831: Grid walk 4x8 difere do idle 1x8
 Dex 0833: Sleep.png ausente
 Dex 0833: Frame walk 96x32 difere do idle 48x32
 Dex 0834: Sleep.png ausente
@@ -1638,50 +1808,56 @@ Dex 0835: Frame walk 112x48 difere do idle 48x32
 Dex 0835: Grid walk 2x8 difere do idle 1x8
 Dex 0840: Sleep.png ausente
 Dex 0841: Sleep.png ausente
-Dex 0841: Frame walk 320x56 difere do idle 160x48
+Dex 0841: Frame walk 80x56 difere do idle 40x48
 Dex 0842: Sleep.png ausente
 Dex 0843: Sleep.png ausente
 Dex 0843: Frame walk 288x48 difere do idle 64x40
 Dex 0844: Sleep.png ausente
 Dex 0844: Frame walk 84x56 difere do idle 24x48
 Dex 0845: Sleep.png ausente
-Dex 0845: Frame walk 160x56 difere do idle 64x64
+Dex 0845: Frame walk 40x56 difere do idle 64x64
+Dex 0845: Grid walk 4x8 difere do idle 1x8
 Dex 0846: Sleep.png ausente
 Dex 0848: Sleep.png ausente
 Dex 0848: Frame walk 32x32 difere do idle 64x32
 Dex 0848: Grid walk 3x8 difere do idle 1x8
 Dex 0849: Sleep.png ausente
-Dex 0849: Frame walk 128x72 difere do idle 320x72
+Dex 0849: Frame walk 32x72 difere do idle 320x72
+Dex 0849: Grid walk 4x8 difere do idle 1x8
 Dex 0850: Sleep.png ausente
 Dex 0850: Grid walk 8x8 difere do idle 4x8
 Dex 0851: Sleep.png ausente
-Dex 0851: Frame walk 32x48 difere do idle 224x64
-Dex 0851: Grid walk 8x8 difere do idle 1x8
+Dex 0851: Frame walk 32x48 difere do idle 56x64
+Dex 0851: Grid walk 8x8 difere do idle 4x8
 Dex 0852: Sleep.png ausente
 Dex 0852: Frame walk 80x40 difere do idle 48x32
 Dex 0852: Grid walk 2x8 difere do idle 1x8
 Dex 0853: Sleep.png ausente
-Dex 0853: Frame walk 160x32 difere do idle 240x40
+Dex 0853: Frame walk 40x32 difere do idle 240x40
+Dex 0853: Grid walk 4x8 difere do idle 1x8
 Dex 0854: Sleep.png ausente
+Dex 0854: Frame walk 192x40 difere do idle 48x40
+Dex 0854: Grid walk 1x8 difere do idle 4x8
 Dex 0855: Sleep.png ausente
 Dex 0855: Frame walk 36x40 difere do idle 12x40
 Dex 0855: Grid walk 4x8 difere do idle 10x8
 Dex 0856: Sleep.png ausente
-Dex 0856: Frame walk 128x40 difere do idle 32x48
-Dex 0856: Grid walk 1x8 difere do idle 6x8
+Dex 0856: Grid walk 4x8 difere do idle 6x8
 Dex 0857: Sleep.png ausente
 Dex 0858: Sleep.png ausente
-Dex 0858: Frame walk 224x64 difere do idle 504x64
+Dex 0858: Frame walk 56x64 difere do idle 504x64
+Dex 0858: Grid walk 4x8 difere do idle 1x8
 Dex 0859: Sleep.png ausente
+Dex 0859: Frame walk 24x40 difere do idle 120x40
+Dex 0859: Grid walk 4x8 difere do idle 1x8
 Dex 0860: Sleep.png ausente
 Dex 0860: Frame walk 12x40 difere do idle 84x48
 Dex 0860: Grid walk 8x8 difere do idle 2x8
 Dex 0861: Sleep.png ausente
-Dex 0861: Frame walk 160x56 difere do idle 100x56
-Dex 0861: Grid walk 1x8 difere do idle 4x8
+Dex 0861: Frame walk 40x56 difere do idle 100x56
 Dex 0862: Sleep.png ausente
 Dex 0864: Sleep.png ausente
-Dex 0864: Frame walk 320x64 difere do idle 160x56
+Dex 0864: Frame walk 80x64 difere do idle 40x56
 Dex 0865: Sleep.png ausente
 Dex 0867: Sleep.png ausente
 Dex 0867: Frame walk 36x56 difere do idle 96x48
@@ -1704,42 +1880,44 @@ Dex 0874: Sleep.png ausente
 Dex 0874: Frame walk 32x88 difere do idle 20x88
 Dex 0874: Grid walk 6x8 difere do idle 8x8
 Dex 0875: Sleep.png ausente
-Dex 0875: Frame walk 96x56 difere do idle 192x64
+Dex 0875: Frame walk 24x56 difere do idle 48x64
 Dex 0876: Sleep.png ausente
-Dex 0876: Frame walk 96x48 difere do idle 36x48
-Dex 0876: Grid walk 1x8 difere do idle 4x8
+Dex 0876: Frame walk 24x48 difere do idle 36x48
 Dex 0877: Sleep.png ausente
 Dex 0877: Grid walk 7x8 difere do idle 1x8
 Dex 0879: Sleep.png ausente
-Dex 0879: Frame walk 256x72 difere do idle 64x72
+Dex 0879: Grid walk 4x8 difere do idle 1x8
 Dex 0880: Sleep.png ausente
-Dex 0880: Frame walk 224x48 difere do idle 504x56
+Dex 0880: Frame walk 56x48 difere do idle 504x56
+Dex 0880: Grid walk 4x8 difere do idle 1x8
 Dex 0881: Sleep.png ausente
-Dex 0881: Frame walk 128x56 difere do idle 176x56
-Dex 0881: Grid walk 1x8 difere do idle 2x8
+Dex 0881: Frame walk 32x56 difere do idle 176x56
+Dex 0881: Grid walk 4x8 difere do idle 2x8
 Dex 0882: Sleep.png ausente
-Dex 0882: Frame walk 160x64 difere do idle 400x64
+Dex 0882: Frame walk 40x64 difere do idle 400x64
+Dex 0882: Grid walk 4x8 difere do idle 1x8
 Dex 0883: Sleep.png ausente
-Dex 0883: Frame walk 160x48 difere do idle 360x56
+Dex 0883: Frame walk 40x48 difere do idle 360x56
+Dex 0883: Grid walk 4x8 difere do idle 1x8
 Dex 0884: Sleep.png ausente
-Dex 0884: Frame walk 160x48 difere do idle 80x48
+Dex 0884: Frame walk 40x48 difere do idle 80x48
+Dex 0884: Grid walk 4x8 difere do idle 1x8
 Dex 0885: Sleep.png ausente
 Dex 0886: Sleep.png ausente
 Dex 0887: Sleep.png ausente
-Dex 0887: Frame walk 384x80 difere do idle 24x72
-Dex 0887: Grid walk 1x8 difere do idle 8x8
+Dex 0887: Frame walk 96x80 difere do idle 24x72
+Dex 0887: Grid walk 4x8 difere do idle 8x8
 Dex 0888: Sleep.png ausente
 Dex 0888: Grid walk 3x8 difere do idle 8x8
 Dex 0890: Sleep.png ausente
-Dex 0890: Frame walk 156x120 difere do idle 416x128
-Dex 0890: Grid walk 4x8 difere do idle 1x8
+Dex 0890: Frame walk 156x120 difere do idle 104x128
 Dex 0891: Sleep.png ausente
 Dex 0892: Sleep.png ausente
 Dex 0894: Sleep.png ausente
 Dex 0894: Grid walk 6x8 difere do idle 4x8
 Dex 0895: Sleep.png ausente
 Dex 0897: Sleep.png ausente
-Dex 0897: Grid walk 1x8 difere do idle 4x8
+Dex 0897: Frame walk 40x56 difere do idle 140x56
 Dex 0898: Sleep.png ausente
 Dex 0899: Sleep.png ausente
 Dex 0899: Frame walk 240x64 difere do idle 560x48
@@ -1747,37 +1925,47 @@ Dex 0900: Sleep.png ausente
 Dex 0901: Sleep.png ausente
 Dex 0901: Grid walk 3x8 difere do idle 6x8
 Dex 0902: Sleep.png ausente
-Dex 0902: Frame walk 448x72 difere do idle 84x72
-Dex 0902: Grid walk 1x8 difere do idle 4x8
 Dex 0903: Sleep.png ausente
-Dex 0903: Frame walk 128x56 difere do idle 192x56
+Dex 0903: Frame walk 32x56 difere do idle 192x56
+Dex 0903: Grid walk 4x8 difere do idle 1x8
 Dex 0904: Sleep.png ausente
 Dex 0905: Sleep.png ausente
 Dex 0906: Sleep.png ausente
 Dex 0907: Sleep.png ausente
 Dex 0908: Sleep.png ausente
-Dex 0908: Grid walk 1x8 difere do idle 2x8
+Dex 0908: Frame walk 40x64 difere do idle 180x56
+Dex 0908: Grid walk 4x8 difere do idle 2x8
 Dex 0909: Sleep.png ausente
 Dex 0910: Sleep.png ausente
-Dex 0910: Frame walk 128x48 difere do idle 64x48
+Dex 0910: Frame walk 32x48 difere do idle 64x48
+Dex 0910: Grid walk 4x8 difere do idle 1x8
 Dex 0911: Sleep.png ausente
-Dex 0911: Grid walk 1x8 difere do idle 4x8
+Dex 0911: Frame walk 48x56 difere do idle 168x56
 Dex 0912: Sleep.png ausente
+Dex 0913: Sleep.png ausente
+Dex 0913: Frame walk 24x48 difere do idle 84x56
+Dex 0913: Grid walk 4x8 difere do idle 2x8
 Dex 0914: Sleep.png ausente
-Dex 0914: Frame walk 256x72 difere do idle 80x64
+Dex 0914: Grid walk 4x8 difere do idle 1x8
 Dex 0915: Sleep.png ausente
+Dex 0917: Sleep.png ausente
+Dex 0917: Frame walk 32x40 difere do idle 224x40
+Dex 0917: Grid walk 4x8 difere do idle 1x8
 Dex 0918: Sleep.png ausente
 Dex 0919: Sleep.png ausente
 Dex 0919: Frame walk 224x32 difere do idle 144x24
 Dex 0920: Sleep.png ausente
-Dex 0920: Frame walk 128x48 difere do idle 224x56
+Dex 0920: Frame walk 32x48 difere do idle 224x56
+Dex 0920: Grid walk 4x8 difere do idle 1x8
 Dex 0921: Sleep.png ausente
 Dex 0921: Frame walk 40x48 difere do idle 192x40
 Dex 0921: Grid walk 7x8 difere do idle 1x8
 Dex 0922: Sleep.png ausente
-Dex 0922: Frame walk 128x40 difere do idle 192x48
+Dex 0922: Frame walk 32x40 difere do idle 192x48
+Dex 0922: Grid walk 4x8 difere do idle 1x8
 Dex 0923: Sleep.png ausente
-Dex 0923: Frame walk 128x48 difere do idle 192x56
+Dex 0923: Frame walk 32x48 difere do idle 192x56
+Dex 0923: Grid walk 4x8 difere do idle 1x8
 Dex 0924: Sleep.png ausente
 Dex 0925: Sleep.png ausente
 Dex 0925: Grid walk 2x8 difere do idle 8x8
@@ -1785,11 +1973,10 @@ Dex 0926: Sleep.png ausente
 Dex 0926: Frame walk 32x32 difere do idle 168x32
 Dex 0926: Grid walk 6x8 difere do idle 1x8
 Dex 0927: Sleep.png ausente
-Dex 0927: Frame walk 160x40 difere do idle 60x40
-Dex 0927: Grid walk 1x8 difere do idle 4x8
+Dex 0927: Frame walk 40x40 difere do idle 60x40
 Dex 0928: Sleep.png ausente
-Dex 0928: Frame walk 24x32 difere do idle 192x32
-Dex 0928: Grid walk 8x8 difere do idle 1x8
+Dex 0928: Frame walk 24x32 difere do idle 48x32
+Dex 0928: Grid walk 8x8 difere do idle 4x8
 Dex 0929: Walk-Anim.png ausente
 Dex 0929: Sleep.png ausente
 Dex 0930: Sleep.png ausente
@@ -1799,36 +1986,41 @@ Dex 0932: Sleep.png ausente
 Dex 0932: Frame walk 32x40 difere do idle 120x32
 Dex 0932: Grid walk 8x8 difere do idle 1x8
 Dex 0933: Sleep.png ausente
-Dex 0933: Frame walk 16x32 difere do idle 128x40
-Dex 0933: Grid walk 8x8 difere do idle 1x8
+Dex 0933: Frame walk 16x32 difere do idle 32x40
+Dex 0933: Grid walk 8x8 difere do idle 4x8
 Dex 0934: Sleep.png ausente
-Dex 0934: Grid walk 1x8 difere do idle 2x8
+Dex 0934: Frame walk 32x64 difere do idle 112x64
+Dex 0934: Grid walk 4x8 difere do idle 2x8
 Dex 0935: Sleep.png ausente
 Dex 0936: Sleep.png ausente
-Dex 0936: Frame walk 128x56 difere do idle 480x56
+Dex 0936: Frame walk 32x56 difere do idle 480x56
+Dex 0936: Grid walk 4x8 difere do idle 1x8
 Dex 0937: Sleep.png ausente
-Dex 0937: Frame walk 128x56 difere do idle 240x56
-Dex 0937: Grid walk 1x8 difere do idle 2x8
+Dex 0937: Frame walk 32x56 difere do idle 240x56
+Dex 0937: Grid walk 4x8 difere do idle 2x8
 Dex 0938: Sleep.png ausente
-Dex 0938: Frame walk 192x48 difere do idle 96x48
+Dex 0938: Frame walk 48x48 difere do idle 24x48
 Dex 0939: Sleep.png ausente
 Dex 0939: Frame walk 336x72 difere do idle 64x48
 Dex 0940: Sleep.png ausente
 Dex 0941: Sleep.png ausente
 Dex 0941: Frame walk 240x56 difere do idle 48x48
 Dex 0941: Grid walk 1x8 difere do idle 2x8
+Dex 0945: Walk-Anim.png ausente
+Dex 0945: Sleep.png ausente
 Dex 0948: Sleep.png ausente
-Dex 0948: Frame walk 96x48 difere do idle 24x48
+Dex 0948: Grid walk 4x8 difere do idle 1x8
 Dex 0951: Sleep.png ausente
-Dex 0951: Frame walk 24x40 difere do idle 96x40
-Dex 0951: Grid walk 12x8 difere do idle 1x8
+Dex 0951: Grid walk 12x8 difere do idle 4x8
 Dex 0952: Sleep.png ausente
-Dex 0952: Frame walk 160x40 difere do idle 400x40
+Dex 0952: Frame walk 40x40 difere do idle 400x40
+Dex 0952: Grid walk 4x8 difere do idle 1x8
 Dex 0955: Sleep.png ausente
 Dex 0957: Sleep.png ausente
 Dex 0958: Sleep.png ausente
 Dex 0959: Sleep.png ausente
-Dex 0959: Frame walk 320x96 difere do idle 880x96
+Dex 0959: Frame walk 80x96 difere do idle 880x96
+Dex 0959: Grid walk 4x8 difere do idle 1x8
 Dex 0960: Sleep.png ausente
 Dex 0960: Grid walk 2x8 difere do idle 1x8
 Dex 0961: Sleep.png ausente
@@ -1837,8 +2029,7 @@ Dex 0961: Grid walk 6x8 difere do idle 1x8
 Dex 0963: Sleep.png ausente
 Dex 0964: Sleep.png ausente
 Dex 0965: Sleep.png ausente
-Dex 0965: Frame walk 80x48 difere do idle 320x48
-Dex 0965: Grid walk 2x8 difere do idle 1x8
+Dex 0965: Grid walk 2x8 difere do idle 4x8
 Dex 0966: Sleep.png ausente
 Dex 0967: Sleep.png ausente
 Dex 0967: Frame walk 288x56 difere do idle 560x48
@@ -1852,52 +2043,62 @@ Dex 0972: Sleep.png ausente
 Dex 0974: Sleep.png ausente
 Dex 0974: Frame walk 680x48 difere do idle 288x40
 Dex 0975: Sleep.png ausente
-Dex 0975: Frame walk 352x64 difere do idle 1232x64
+Dex 0975: Frame walk 88x64 difere do idle 1232x64
+Dex 0975: Grid walk 4x8 difere do idle 1x8
 Dex 0976: Sleep.png ausente
-Dex 0976: Frame walk 192x48 difere do idle 64x56
-Dex 0976: Grid walk 1x8 difere do idle 6x8
+Dex 0976: Grid walk 4x8 difere do idle 6x8
+Dex 0977: Sleep.png ausente
+Dex 0977: Frame walk 240x96 difere do idle 480x96
+Dex 0977: Grid walk 4x8 difere do idle 1x8
 Dex 0978: Sleep.png ausente
 Dex 0978: Frame walk 192x32 difere do idle 36x24
 Dex 0978: Grid walk 1x8 difere do idle 2x8
 Dex 0979: Sleep.png ausente
-Dex 0979: Frame walk 192x72 difere do idle 72x72
-Dex 0979: Grid walk 1x8 difere do idle 2x8
+Dex 0979: Frame walk 48x72 difere do idle 72x72
+Dex 0979: Grid walk 4x8 difere do idle 2x8
 Dex 0980: Sleep.png ausente
-Dex 0980: Frame walk 192x40 difere do idle 528x40
+Dex 0980: Frame walk 48x40 difere do idle 528x40
+Dex 0980: Grid walk 4x8 difere do idle 1x8
 Dex 0981: Sleep.png ausente
-Dex 0981: Frame walk 224x96 difere do idle 576x96
+Dex 0981: Frame walk 56x96 difere do idle 144x96
 Dex 0982: Sleep.png ausente
 Dex 0982: Frame walk 60x40 difere do idle 24x32
 Dex 0983: Sleep.png ausente
 Dex 0983: Frame walk 288x72 difere do idle 80x64
 Dex 0984: Sleep.png ausente
-Dex 0984: Frame walk 256x48 difere do idle 576x56
+Dex 0984: Frame walk 64x48 difere do idle 576x56
+Dex 0984: Grid walk 4x8 difere do idle 1x8
 Dex 0985: Sleep.png ausente
+Dex 0985: Frame walk 56x48 difere do idle 280x48
+Dex 0985: Grid walk 4x8 difere do idle 1x8
 Dex 0987: Sleep.png ausente
-Dex 0987: Frame walk 320x64 difere do idle 160x64
-Dex 0987: Grid walk 1x8 difere do idle 2x8
+Dex 0987: Frame walk 80x64 difere do idle 160x64
+Dex 0987: Grid walk 4x8 difere do idle 2x8
 Dex 0988: Sleep.png ausente
-Dex 0988: Frame walk 192x72 difere do idle 384x72
+Dex 0988: Frame walk 48x72 difere do idle 96x72
 Dex 0989: Sleep.png ausente
-Dex 0989: Frame walk 160x64 difere do idle 240x64
+Dex 0989: Frame walk 40x64 difere do idle 240x64
+Dex 0989: Grid walk 4x8 difere do idle 1x8
 Dex 0990: Walk-Anim.png ausente
 Dex 0990: Sleep.png ausente
 Dex 0991: Sleep.png ausente
 Dex 0992: Sleep.png ausente
 Dex 0994: Sleep.png ausente
+Dex 0994: Frame walk 288x64 difere do idle 96x64
+Dex 0994: Grid walk 1x8 difere do idle 4x8
 Dex 0995: Sleep.png ausente
-Dex 0995: Frame walk 160x48 difere do idle 40x48
+Dex 0995: Grid walk 4x8 difere do idle 1x8
 Dex 0996: Sleep.png ausente
 Dex 0997: Sleep.png ausente
-Dex 0997: Grid walk 1x8 difere do idle 4x8
+Dex 0997: Frame walk 32x48 difere do idle 112x48
 Dex 0998: Sleep.png ausente
-Dex 0998: Frame walk 192x56 difere do idle 48x56
-Dex 0998: Grid walk 1x8 difere do idle 10x8
+Dex 0998: Grid walk 4x8 difere do idle 10x8
 Dex 0999: Walk-Anim.png ausente
 Dex 0999: Idle-Anim.png ausente
 Dex 0999: Sleep.png ausente
 Dex 1000: Sleep.png ausente
-Dex 1000: Grid walk 1x8 difere do idle 2x8
+Dex 1000: Frame walk 24x56 difere do idle 84x64
+Dex 1000: Grid walk 4x8 difere do idle 2x8
 Dex 1003: Walk-Anim.png ausente
 Dex 1003: Sleep.png ausente
 Dex 1004: Sleep.png ausente
@@ -1905,10 +2106,10 @@ Dex 1005: Sleep.png ausente
 Dex 1005: Frame walk 96x96 difere do idle 896x64
 Dex 1005: Grid walk 4x8 difere do idle 1x8
 Dex 1006: Sleep.png ausente
-Dex 1006: Frame walk 96x48 difere do idle 24x56
-Dex 1006: Grid walk 1x8 difere do idle 8x8
+Dex 1006: Grid walk 4x8 difere do idle 8x8
 Dex 1007: Sleep.png ausente
-Dex 1007: Frame walk 256x80 difere do idle 384x88
+Dex 1007: Frame walk 64x80 difere do idle 384x88
+Dex 1007: Grid walk 4x8 difere do idle 1x8
 Dex 1008: Walk-Anim.png ausente
 Dex 1008: Idle-Anim.png ausente
 Dex 1008: Sleep.png ausente
@@ -1916,11 +2117,13 @@ Dex 1009: Sleep.png ausente
 Dex 1009: Frame walk 96x72 difere do idle 252x80
 Dex 1009: Grid walk 3x8 difere do idle 4x8
 Dex 1011: Sleep.png ausente
+Dex 1011: Frame walk 32x40 difere do idle 96x48
+Dex 1011: Grid walk 4x8 difere do idle 1x8
 Dex 1015: Sleep.png ausente
-Dex 1015: Frame walk 96x48 difere do idle 36x48
-Dex 1015: Grid walk 1x8 difere do idle 4x8
+Dex 1015: Frame walk 24x48 difere do idle 36x48
 Dex 1016: Sleep.png ausente
-Dex 1016: Frame walk 128x48 difere do idle 240x56
+Dex 1016: Frame walk 32x48 difere do idle 240x56
+Dex 1016: Grid walk 4x8 difere do idle 1x8
 Dex 1017: Sleep.png ausente
 Dex 1017: Frame walk 340x72 difere do idle 60x56
 Dex 1017: Grid walk 2x8 difere do idle 4x8
@@ -1928,13 +2131,11 @@ Dex 1018: Sleep.png ausente
 Dex 1018: Frame walk 40x56 difere do idle 400x64
 Dex 1018: Grid walk 4x8 difere do idle 1x8
 Dex 1019: Sleep.png ausente
-Dex 1019: Frame walk 192x56 difere do idle 60x56
-Dex 1019: Grid walk 1x8 difere do idle 2x8
+Dex 1019: Grid walk 4x8 difere do idle 2x8
 Dex 1020: Walk-Anim.png ausente
 Dex 1020: Sleep.png ausente
 Dex 1021: Walk-Anim.png ausente
 Dex 1021: Sleep.png ausente
 Dex 1024: Sleep.png ausente
 Dex 1025: Sleep.png ausente
-Dex 1025: Frame walk 32x48 difere do idle 96x40
-Dex 1025: Grid walk 10x8 difere do idle 1x8
+Dex 1025: Grid walk 10x8 difere do idle 4x8

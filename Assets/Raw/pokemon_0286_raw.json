@@ -4,22 +4,22 @@
   "walk": {
     "fileName": "Walk-Anim.png",
     "frame": {
-      "width": 160,
+      "width": 40,
       "height": 48
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },
   "idle": {
     "fileName": "Idle-Anim.png",
     "frame": {
-      "width": 480,
+      "width": 120,
       "height": 48
     },
     "grid": {
-      "columns": 1,
+      "columns": 4,
       "rows": 8
     }
   },
@@ -32,7 +32,7 @@
   },
   "offsets": {
     "groundOffsetY": 18,
-    "centerOffsetX": -1
+    "centerOffsetX": 0
   },
   "bodyType": 2,
   "notes": []

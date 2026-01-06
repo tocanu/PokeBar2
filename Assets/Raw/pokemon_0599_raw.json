@@ -1,21 +1,39 @@
 {
   "dexNumber": 599,
   "species": "0599",
-  "walk": {},
-  "idle": {},
+  "walk": {
+    "fileName": "Walk-Anim.png",
+    "frame": {
+      "width": 80,
+      "height": 48
+    },
+    "grid": {
+      "columns": 4,
+      "rows": 8
+    }
+  },
+  "idle": {
+    "fileName": "Idle-Anim.png",
+    "frame": {
+      "width": 80,
+      "height": 40
+    },
+    "grid": {
+      "columns": 4,
+      "rows": 8
+    }
+  },
   "sleep": {},
   "animations": {
-    "hasWalk": false,
-    "hasIdle": false,
+    "hasWalk": true,
+    "hasIdle": true,
     "hasSleep": false,
     "emotes": []
   },
   "offsets": {
-    "groundOffsetY": 0,
+    "groundOffsetY": 23,
     "centerOffsetX": 0
   },
-  "bodyType": 0,
-  "notes": [
-    "Sprite folder missing in SpriteCollab clone."
-  ]
+  "bodyType": 2,
+  "notes": []
 }
