@@ -1,9 +1,48 @@
 # Build artifacts
 **/bin/
 **/obj/
-.vs/
+**/.vs/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.exe
 
-# Generated offsets and pipeline outputs
-Assets/Raw/
-Assets/Final/
-Pokebar.Editor/Assets/Final/
+# Visual Studio temporary files
+*.g.cs
+*.g.i.cs
+*_wpftmp.csproj
+*_wpftmp.AssemblyInfo.cs
+*_wpftmp.GlobalUsings.g.cs
+*.MarkupCompile.cache
+*.MarkupCompile.lref
+*.AssemblyInfoInputs.cache
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.assets.cache
+*.csproj.nuget.dgspec.json
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets
+project.assets.json
+project.nuget.cache
+*.genruntimeconfig.cache
+*.csproj.AssemblyReference.cache
+*.csproj.CoreCompileInputs.cache
+*.csproj.FileListAbsolute.txt
+apphost.exe
+ref/
+refint/
+
+# Generated offsets and pipeline outputs (keep structure, ignore data)
+Assets/Raw/*.json
+Assets/Raw/*.csv
+Assets/Raw/*.txt
+Assets/Final/*.json
+Pokebar.Editor/Assets/Final/*.json
+
+# User-specific files
+*.userprefs
+*.pidb
+*.log
+.DS_Store
+Thumbs.db

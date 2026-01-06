@@ -82,7 +82,15 @@ public static class SpriteDirectoryHelper
 
             if (formDirs.Length > 0)
             {
-                // Tem formas: varre cada subpasta
+                // Tem formas: primeiro retorna a pasta raiz como forma base "0000"
+                // (caso existam sprites diretamente na pasta do Dex)
+                var hasRootSprites = Directory.GetFiles(dexPath, "*.png").Length > 0;
+                if (hasRootSprites)
+                {
+                    yield return (dex, "0000", dexPath);
+                }
+
+                // Depois retorna cada subpasta de forma
                 foreach (var formPath in formDirs)
                 {
                     var formId = Path.GetFileName(formPath);
