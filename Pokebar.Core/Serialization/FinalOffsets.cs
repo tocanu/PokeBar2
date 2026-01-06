@@ -4,7 +4,7 @@ using Pokebar.Core.Models;
 namespace Pokebar.Core.Serialization;
 
 public record OffsetAdjustment(
-    int DexNumber,
+    string UniqueId,
     int GroundOffsetY,
     int CenterOffsetX,
     bool Reviewed,
@@ -24,15 +24,15 @@ public record OffsetAdjustment(
 
 public static class FinalOffsets
 {
-    public static IReadOnlyDictionary<int, OffsetAdjustment> Load(string path)
+    public static IReadOnlyDictionary<string, OffsetAdjustment> Load(string path)
     {
-        if (!File.Exists(path)) return new Dictionary<int, OffsetAdjustment>();
+        if (!File.Exists(path)) return new Dictionary<string, OffsetAdjustment>();
         var json = File.ReadAllText(path);
         var items = JsonSerializer.Deserialize<OffsetAdjustment[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Array.Empty<OffsetAdjustment>();
 
-        // Em caso de chaves duplicadas no arquivo, mantÃ©m a Ãºltima ocorrÃªncia.
+        // Em caso de chaves duplicadas no arquivo, mantém a última ocorrência.
         return items
-            .GroupBy(i => i.DexNumber)
+            .GroupBy(i => i.UniqueId)
             .ToDictionary(g => g.Key, g => g.Last());
     }
 }

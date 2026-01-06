@@ -10,15 +10,19 @@ public abstract class BaseEntity
     private double _frameHeight;
     private double _frameGroundLine;
 
-    protected BaseEntity(int dex)
+    protected BaseEntity(int dex, string formId = "0000")
     {
         Dex = dex;
+        FormId = formId;
+        UniqueId = new Pokebar.Core.Models.PokemonVariant(dex, formId).UniqueId;
         AnimationPlayer = new AnimationPlayer();
         AnimationPlayer.FrameChanged += OnFrameChanged;
         State = EntityState.Idle;
     }
 
     public int Dex { get; protected set; }
+    public string FormId { get; protected set; }
+    public string UniqueId { get; protected set; }
     public double X { get; set; }
     public double Y { get; set; }
     public double VelocityX { get; set; }

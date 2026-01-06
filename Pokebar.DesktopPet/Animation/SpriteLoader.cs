@@ -24,7 +24,7 @@ public class SpriteLoader
 {
     private static readonly string[] FightCandidates = SpriteFileNames.AttackAnimations;
 
-    private readonly IReadOnlyDictionary<int, OffsetAdjustment> _offsets;
+    private readonly IReadOnlyDictionary<string, OffsetAdjustment> _offsets;
     private readonly string _spriteBasePath;
 
     public SpriteLoader(string offsetsJsonPath, string spriteBasePath)
@@ -32,12 +32,12 @@ public class SpriteLoader
         _spriteBasePath = spriteBasePath;
         _offsets = File.Exists(offsetsJsonPath)
             ? FinalOffsets.Load(offsetsJsonPath)
-            : new Dictionary<int, OffsetAdjustment>();
+            : new Dictionary<string, OffsetAdjustment>();
     }
 
-    public bool TryGetOffset(int dex, [NotNullWhen(true)] out OffsetAdjustment? offset)
+    public bool TryGetOffset(string uniqueId, [NotNullWhen(true)] out OffsetAdjustment? offset)
     {
-        if (_offsets.TryGetValue(dex, out var found))
+        if (_offsets.TryGetValue(uniqueId, out var found))
         {
             offset = found;
             return true;
@@ -49,50 +49,54 @@ public class SpriteLoader
 
     public AnimationClip? LoadAnimation(
         int dex,
+        string formId,
         AnimationType type,
         int[]? rowsToUse = null,
         int[]? columnsToUse = null,
         bool requireSelection = false)
     {
+        var uniqueId = new PokemonVariant(dex, formId).UniqueId;
         if (type == AnimationType.Fight)
         {
-            return LoadFightAnimation(dex);
+            return LoadFightAnimation(dex, formId, uniqueId);
         }
 
-        _offsets.TryGetValue(dex, out var offset);
-        var spritePath = ResolveSpritePath(dex, offset, type);
-        return LoadClipFromPath(dex, spritePath, offset, type, rowsToUse, columnsToUse, requireSelection);
+        _offsets.TryGetValue(uniqueId, out var offset);
+        var spritePath = ResolveSpritePath(dex, formId, offset, type);
+        return LoadClipFromPath(dex, formId, uniqueId, spritePath, offset, type, rowsToUse, columnsToUse, requireSelection);
     }
 
-    private AnimationClip? LoadFightAnimation(int dex)
+    private AnimationClip? LoadFightAnimation(int dex, string formId, string uniqueId)
     {
-        _offsets.TryGetValue(dex, out var offset);
-        var fightPath = ResolveFightSpritePath(dex, offset);
+        _offsets.TryGetValue(uniqueId, out var offset);
+        var fightPath = ResolveFightSpritePath(dex, formId, offset);
         
         // Tenta carregar fight animation usando apenas linha 3 (direita, 0-based = 2)
-        // Usaremos flip para virar quando necessÃ¡rio, igual ao walk fallback
+        // Usaremos flip para virar quando necessário, igual ao walk fallback
         if (!string.IsNullOrEmpty(fightPath) && File.Exists(fightPath))
         {
             // Tenta carregar apenas linha 3 (direita)
-            var fightRight = LoadClipFromPath(dex, fightPath, offset, AnimationType.Fight, new[] { 2 }, null, false);
+            var fightRight = LoadClipFromPath(dex, formId, uniqueId, fightPath, offset, AnimationType.Fight, new[] { 2 }, null, false);
             if (fightRight != null)
                 return fightRight;
             
             // Se nÃ£o funcionar, tenta carregar linha 4 (0-based = 3, frente)
-            var fightFront = LoadClipFromPath(dex, fightPath, offset, AnimationType.Fight, new[] { 3 }, null, false);
+            var fightFront = LoadClipFromPath(dex, formId, uniqueId, fightPath, offset, AnimationType.Fight, new[] { 3 }, null, false);
             if (fightFront != null)
                 return fightFront;
             
-            // Ãšltimo recurso: carrega primeira linha disponÃ­vel
-            var fightClip = LoadClipFromPath(dex, fightPath, offset, AnimationType.Fight, new[] { 0 }, null, false);
+            // Último recurso: carrega primeira linha disponível
+            var fightClip = LoadClipFromPath(dex, formId, uniqueId, fightPath, offset, AnimationType.Fight, new[] { 0 }, null, false);
             if (fightClip != null)
                 return fightClip;
         }
 
         // Fallback: usa walk animation linha 4 (0-based = 3) com colunas centrais
-        var walkPath = ResolveSpritePath(dex, offset, AnimationType.Walk);
+        var walkPath = ResolveSpritePath(dex, formId, offset, AnimationType.Walk);
         var walkFallback = LoadClipFromPath(
             dex,
+            formId,
+            uniqueId,
             walkPath,
             offset,
             AnimationType.Fight,
@@ -102,11 +106,13 @@ public class SpriteLoader
         if (walkFallback != null)
             return walkFallback;
 
-        return LoadAnimation(dex, AnimationType.Idle);
+        return LoadAnimation(dex, formId, AnimationType.Idle);
     }
 
     private AnimationClip? LoadClipFromPath(
         int dex,
+        string formId,
+        string uniqueId,
         string? spritePath,
         OffsetAdjustment? offset,
         AnimationType type,
@@ -147,15 +153,26 @@ public class SpriteLoader
         var groundLine = frame.Height - groundOffset;
         var groundLines = Enumerable.Repeat((double)groundLine, frames.Count).ToList();
 
-        var clipName = $"{type}-{dex:D4}";
+        var clipName = $"{type}-{uniqueId}";
         return new AnimationClip(clipName, frames, groundLines);
     }
 
-    private string? ResolveSpritePath(int dex, OffsetAdjustment? offset, AnimationType type)
+    private string? ResolveSpritePath(int dex, string formId, OffsetAdjustment? offset, AnimationType type)
     {
-        var dir = Path.Combine(_spriteBasePath, dex.ToString("D4"));
+        var dexPath = dex.ToString("D4");
+        var dir = Path.Combine(_spriteBasePath, dexPath);
         if (!Directory.Exists(dir))
             return null;
+        
+        // Se não é forma base, procurar na subpasta
+        if (formId != "0000")
+        {
+            var formDir = Path.Combine(dir, formId);
+            if (Directory.Exists(formDir))
+            {
+                dir = formDir;
+            }
+        }
 
         var order = new List<string>();
         if (offset != null)
@@ -198,11 +215,22 @@ public class SpriteLoader
         return null;
     }
 
-    private string? ResolveFightSpritePath(int dex, OffsetAdjustment? offset)
+    private string? ResolveFightSpritePath(int dex, string formId, OffsetAdjustment? offset)
     {
-        var dir = Path.Combine(_spriteBasePath, dex.ToString("D4"));
+        var dexPath = dex.ToString("D4");
+        var dir = Path.Combine(_spriteBasePath, dexPath);
         if (!Directory.Exists(dir))
             return null;
+        
+        // Se não é forma base, procurar na subpasta
+        if (formId != "0000")
+        {
+            var formDir = Path.Combine(dir, formId);
+            if (Directory.Exists(formDir))
+            {
+                dir = formDir;
+            }
+        }
 
         var order = new List<string>();
         if (!string.IsNullOrWhiteSpace(offset?.FightSpriteFile))

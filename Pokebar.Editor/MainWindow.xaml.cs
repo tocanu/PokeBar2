@@ -17,7 +17,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 {
     public ObservableCollection<PokemonEntry> Entries { get; } = new();
 
-    private readonly Dictionary<int, OffsetAdjustment> _adjustments = new();
+    private readonly Dictionary<string, OffsetAdjustment> _adjustments = new();
     private readonly List<string> _finalTargets;
     private readonly List<string> _runtimeTargets;
     private readonly string _finalPath;
@@ -151,9 +151,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void LoadPreview(PokemonEntry entry)
     {
         _currentEntry = entry;
-        SelectedEntryText = $"Dex {entry.DexNumber:D4} - {entry.Species}";
+        SelectedEntryText = $"{entry.UniqueId} - {entry.Species}";
         OffsetAdjustment? adj = null;
-        if (_adjustments.TryGetValue(entry.DexNumber, out var loaded))
+        if (_adjustments.TryGetValue(entry.UniqueId, out var loaded))
         {
             adj = loaded;
             SelectedGroundOffset = adj.GroundOffsetY;
@@ -182,7 +182,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         try
         {
-            var sprite = ResolveSpritePath(entry.DexNumber, adj?.PrimarySpriteFile ?? entry.PrimarySpriteFile, entry.SpriteFiles);
+            var sprite = ResolveSpritePath(entry.DexNumber, entry.FormId, adj?.PrimarySpriteFile ?? entry.PrimarySpriteFile, entry.SpriteFiles);
             if (sprite is not null && File.Exists(sprite))
             {
                 SelectedSpritePath = sprite;
@@ -201,7 +201,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 BuildPreview(sheet, SelectedGroundOffset, preferStandardGrid, frameWOverride, frameHOverride, gridColsOverride, gridRowsOverride, out var frameH, out var frameW);
                 SelectedFrameHeight = frameH;
 
-                if (!_adjustments.ContainsKey(entry.DexNumber))
+                if (!_adjustments.ContainsKey(entry.UniqueId))
                 {
                     HitboxWidth = frameW;
                     HitboxHeight = frameH;
@@ -242,8 +242,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void SaveCurrentAdjustment()
     {
         if (_currentEntry is null) return;
-        _adjustments.TryGetValue(_currentEntry.DexNumber, out var existing);
-        _adjustments[_currentEntry.DexNumber] = BuildAdjustment(
+        _adjustments.TryGetValue(_currentEntry.UniqueId, out var existing);
+        _adjustments[_currentEntry.UniqueId] = BuildAdjustment(
             _currentEntry,
             existing,
             SelectedGroundOffset,
@@ -424,7 +424,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var hasAttack = existing?.HasAttackAnimation ?? false;
 
         return new OffsetAdjustment(
-            entry.DexNumber,
+            entry.UniqueId,
             groundOffset,
             centerOffset,
             reviewed,
@@ -519,9 +519,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         return Entries.Select(e =>
         {
-            _adjustments.TryGetValue(e.DexNumber, out var adj);
+            _adjustments.TryGetValue(e.UniqueId, out var adj);
             return BuildExportAdjustment(e, adj);
-        }).OrderBy(r => r.DexNumber).ToList();
+        }).OrderBy(r => r.UniqueId).ToList();
     }
 
     private void PersistAdjustments(string successMessage)
@@ -582,8 +582,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void SnapshotCurrent()
     {
         if (_currentEntry is null) return;
-        _adjustments.TryGetValue(_currentEntry.DexNumber, out var existing);
-        _adjustments[_currentEntry.DexNumber] = BuildAdjustment(
+        _adjustments.TryGetValue(_currentEntry.UniqueId, out var existing);
+        _adjustments[_currentEntry.UniqueId] = BuildAdjustment(
             _currentEntry,
             existing,
             SelectedGroundOffset,
@@ -596,14 +596,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ScheduleAutoSave();
     }
 
-    private static string? ResolveSpritePath(int dex, string? primaryFile, IReadOnlyList<string> emotes)
+    private static string? ResolveSpritePath(int dex, string formId, string? primaryFile, IReadOnlyList<string> emotes)
     {
-        var baseDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "SpriteCollab", "sprite", dex.ToString("D4")));
+        var dexPath = dex.ToString("D4");
+        var baseDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "SpriteCollab", "sprite", dexPath));
         if (!Directory.Exists(baseDir))
         {
-            var alt = Path.GetFullPath(Path.Combine("SpriteCollab", "sprite", dex.ToString("D4")));
+            var alt = Path.GetFullPath(Path.Combine("SpriteCollab", "sprite", dexPath));
             if (!Directory.Exists(alt)) return null;
             baseDir = alt;
+        }
+        
+        // Se não é forma base, procurar na subpasta
+        if (formId != "0000")
+        {
+            var formDir = Path.Combine(baseDir, formId);
+            if (Directory.Exists(formDir))
+            {
+                baseDir = formDir;
+            }
         }
 
         var order = new List<string>();
@@ -649,6 +660,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 public class PokemonEntry
 {
     public int DexNumber { get; }
+    public string FormId { get; }
+    public string UniqueId { get; }
     public string Species { get; }
     public bool HasWalk { get; }
     public bool HasIdle { get; }
@@ -670,6 +683,8 @@ public class PokemonEntry
     public PokemonEntry(PokemonSpriteMetadata meta)
     {
         DexNumber = meta.DexNumber;
+        FormId = meta.Form ?? "0000";
+        UniqueId = new PokemonVariant(meta.DexNumber, FormId).UniqueId;
         Species = meta.Species;
         HasWalk = meta.Animations.HasWalk;
         HasIdle = meta.Animations.HasIdle;

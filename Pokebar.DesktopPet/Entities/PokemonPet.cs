@@ -13,7 +13,7 @@ public class PokemonPet : BaseEntity
     private bool _isWalking;
     private bool _useDirectionalWalk;
 
-    public PokemonPet(int dex) : base(dex)
+    public PokemonPet(int dex, string formId = "0000") : base(dex, formId)
     {
     }
 
@@ -38,23 +38,23 @@ public class PokemonPet : BaseEntity
         var walkRowRight = config.Sprite.WalkRowRight;
         var walkRowLeft = config.Sprite.WalkRowLeft;
         
-        _walkRightClip = loader.LoadAnimation(Dex, AnimationType.Walk, new[] { walkRowRight }, requireSelection: true);
-        _walkLeftClip = loader.LoadAnimation(Dex, AnimationType.Walk, new[] { walkRowLeft }, requireSelection: true);
+        _walkRightClip = loader.LoadAnimation(Dex, FormId, AnimationType.Walk, new[] { walkRowRight }, requireSelection: true);
+        _walkLeftClip = loader.LoadAnimation(Dex, FormId, AnimationType.Walk, new[] { walkRowLeft }, requireSelection: true);
         _useDirectionalWalk = _walkRightClip != null && _walkLeftClip != null;
 
         if (!_useDirectionalWalk)
         {
-            _walkFallbackClip = loader.LoadAnimation(Dex, AnimationType.Walk);
+            _walkFallbackClip = loader.LoadAnimation(Dex, FormId, AnimationType.Walk);
             _walkRightClip = null;
             _walkLeftClip = null;
         }
 
-        _idleClip = loader.LoadAnimation(Dex, AnimationType.Idle);
+        _idleClip = loader.LoadAnimation(Dex, FormId, AnimationType.Idle);
         
         // Para fight, não tentar carregar direcional - sempre usar fallback com flip
-        _fightFallbackClip = loader.LoadAnimation(Dex, AnimationType.Fight);
+        _fightFallbackClip = loader.LoadAnimation(Dex, FormId, AnimationType.Fight);
         
-        if (loader.TryGetOffset(Dex, out var offset))
+        if (loader.TryGetOffset(UniqueId, out var offset))
             SetHitbox(offset.HitboxX, offset.HitboxY, offset.HitboxWidth, offset.HitboxHeight);
 
         if (_walkFallbackClip == null && !_useDirectionalWalk)

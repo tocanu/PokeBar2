@@ -248,11 +248,19 @@ try
     var adjustments = FinalOffsets.Load(adjustmentsPath);
     var merged = new List<OffsetAdjustment>();
 
-    foreach (var dex in expectedDex.OrderBy(d => d))
+    // Processar todas as variantes encontradas (base + formas)
+    foreach (var variant in allVariants.OrderBy(v => v.DexNumber).ThenBy(v => v.FormId))
     {
-        var rawPath = Path.Combine(outputDir, $"pokemon_{dex:D4}_raw.json");
+        var dex = variant.DexNumber;
+        var formId = variant.FormId;
+        var uniqueId = new PokemonVariant(dex, formId).UniqueId;
+        var rawPath = Path.Combine(outputDir, $"pokemon_{uniqueId}_raw.json");
         var meta = MetadataJson.DeserializeFromFile(rawPath);
         var dexDir = Path.Combine(spriteRoot, dex.ToString("D4"));
+        if (formId != "0000")
+        {
+            dexDir = Path.Combine(dexDir, formId);
+        }
         var walkSpriteFile = meta?.Walk.FileName ?? FindFile(dexDir, "Walk-Anim.png");
         var idleSpriteFile = meta?.Idle.FileName ?? FindFile(dexDir, "Idle-Anim.png");
         var fightSpriteFile = FindFightFile(dexDir);
@@ -264,7 +272,7 @@ try
             ? (HitboxX: 0, HitboxY: 0, HitboxWidth: metaFrame.Width, HitboxHeight: metaFrame.Height)
             : (HitboxX: 0, HitboxY: 0, HitboxWidth: 0, HitboxHeight: 0);
 
-        if (adjustments.TryGetValue(dex, out var adj))
+        if (adjustments.TryGetValue(uniqueId, out var adj))
         {
             var primaryFile = adj.PrimarySpriteFile ?? metaPrimaryFile ?? walkSpriteFile ?? idleSpriteFile;
             var mergedWalkFile = adj.WalkSpriteFile ?? walkSpriteFile;
@@ -286,7 +294,7 @@ try
                 : metaGrid?.Rows ?? adj.GridRows;
 
             merged.Add(new OffsetAdjustment(
-                dex,
+                uniqueId,
                 adj.GroundOffsetY,
                 adj.CenterOffsetX,
                 adj.Reviewed,
@@ -307,7 +315,7 @@ try
         else
         {
             merged.Add(new OffsetAdjustment(
-                dex,
+                uniqueId,
                 baseOffsets.GroundOffsetY,
                 baseOffsets.CenterOffsetX,
                 false,

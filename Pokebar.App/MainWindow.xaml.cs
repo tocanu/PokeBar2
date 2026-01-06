@@ -15,7 +15,7 @@ namespace Pokebar.App;
 
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
-    private readonly IReadOnlyDictionary<int, OffsetAdjustment> _offsets;
+    private readonly IReadOnlyDictionary<string, OffsetAdjustment> _offsets;
     private readonly List<BitmapSource> _frames = new();
     private readonly List<double> _frameGroundLines = new();
     private DispatcherTimer? _timer;
@@ -72,8 +72,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _frames.Clear();
         _frameGroundLines.Clear();
 
+        var uniqueId = new PokemonVariant(dex, "0000").UniqueId;
         OffsetAdjustment? adj = null;
-        if (_offsets.TryGetValue(dex, out var existing))
+        if (_offsets.TryGetValue(uniqueId, out var existing))
         {
             adj = existing;
         }
@@ -111,7 +112,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var frameW = frame.Width;
         var frameH = frame.Height;
         var offset = adj ?? new OffsetAdjustment(
-            dex,
+            uniqueId,
             0,
             0,
             false,
@@ -166,7 +167,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         return null;
     }
 
-    private static (IReadOnlyDictionary<int, OffsetAdjustment> Offsets, string Path, string Info) LoadOffsets()
+    private static (IReadOnlyDictionary<string, OffsetAdjustment> Offsets, string Path, string Info) LoadOffsets()
     {
         var baseDir = AppContext.BaseDirectory;
         var candidates = new[]
@@ -198,7 +199,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
         }
 
-        return (new Dictionary<int, OffsetAdjustment>(), "(nÃ£o encontrado)", "Arquivo de offsets nÃ£o encontrado. Rode pipeline/editor.");
+        return (new Dictionary<string, OffsetAdjustment>(), "(não encontrado)", "Arquivo de offsets não encontrado. Rode pipeline/editor.");
     }
 
     private void BuildAnimationFrames(BitmapSource sheet, SpriteGrid grid, FrameSize frame, OffsetAdjustment offset, bool preferStandardGrid)
