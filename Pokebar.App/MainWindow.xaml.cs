@@ -48,7 +48,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (!int.TryParse(DexInput, out var dex) || !DexConstants.IsValid(dex))
         {
-            Status = "Dex invÃ¡lido.";
+            Status = "Dex inválido.";
             OnPropertyChanged(nameof(Status));
             return;
         }

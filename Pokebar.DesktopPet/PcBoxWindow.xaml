@@ -1,0 +1,149 @@
+<Window x:Class="Pokebar.DesktopPet.PcBoxWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pokebar — PC Box"
+        Width="540" Height="460"
+        Style="{StaticResource FR_Window}"
+        WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="OnWindowDrag">
+
+    <!-- OUTER FRAME (dark blue border like GBA) -->
+    <Border Style="{StaticResource FR_OuterFrame}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ═══ HEADER BAR (red/orange with page navigation) ═══ -->
+            <Border Grid.Row="0" Style="{StaticResource FR_HeaderBar}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Arrow -->
+                    <Button Grid.Column="0" Content="◀" 
+                            Style="{StaticResource FR_ArrowButton}"
+                            Click="OnPrevPage" Margin="0,0,8,0"
+                            x:Name="PrevButton"/>
+
+                    <!-- Page Title / Counter -->
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" 
+                                Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="PageText" Text="001-030"
+                                   Style="{StaticResource FR_Title}"
+                                   FontSize="18"/>
+                    </StackPanel>
+
+                    <!-- Right Arrow -->
+                    <Button Grid.Column="2" Content="▶" 
+                            Style="{StaticResource FR_ArrowButton}"
+                            Click="OnNextPage" Margin="8,0,0,0"
+                            x:Name="NextButton"/>
+
+                    <!-- Gear menu (ações do tray no PC Box) -->
+                    <Button Grid.Column="3" Content="⚙"
+                            Style="{StaticResource FR_ArrowButton}"
+                            Click="OnGearClick" Margin="8,0,0,0"
+                            x:Name="GearButton"
+                            ToolTip="Menu"/>
+                </Grid>
+            </Border>
+
+            <!-- ═══ POKEMON GRID AREA (green grass background) ═══ -->
+            <Border Grid.Row="1" Style="{StaticResource FR_InnerPanel}" Margin="3">
+                <!-- Checkerboard grass pattern -->
+                <Border.Background>
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,16,16"
+                                  ViewportUnits="Absolute" Stretch="None">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="#90D070">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,16,16"/>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing Brush="#80C860">
+                                    <GeometryDrawing.Geometry>
+                                        <GeometryGroup>
+                                            <RectangleGeometry Rect="0,0,8,8"/>
+                                            <RectangleGeometry Rect="8,8,8,8"/>
+                                        </GeometryGroup>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Background>
+
+                <ItemsControl x:Name="PokemonGrid">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="6" Rows="5"
+                                         SnapsToDevicePixels="True"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{Binding Background}"
+                                    BorderBrush="{Binding BorderColor}" 
+                                    BorderThickness="2"
+                                    Margin="2" Cursor="Hand"
+                                    SnapsToDevicePixels="True"
+                                    MouseLeftButtonDown="OnPokemonClick"
+                                    Tag="{Binding Dex}"
+                                    ToolTip="{Binding Label}">
+                                <Grid>
+                                    <Image Source="{Binding Sprite}" 
+                                           Width="48" Height="48"
+                                           Stretch="Uniform" Margin="4"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                    <!-- Dex number -->
+                                    <TextBlock Text="{Binding Label}" 
+                                               FontFamily="Consolas" FontSize="9"
+                                               Foreground="#283848"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Bottom"
+                                               Margin="0,0,0,1"
+                                               Background="#B0D8E8D0"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <!-- ═══ FOOTER ═══ -->
+            <Border Grid.Row="2" Style="{StaticResource FR_InnerPanel}"
+                    Margin="3,0,3,3" Padding="8,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="SelectedText" Grid.Column="0"
+                               Text="" Style="{StaticResource FR_Label}"
+                               VerticalAlignment="Center"/>
+
+                    <Button x:Name="SelectButton" Grid.Column="1"
+                            Content="SELECT" Style="{StaticResource FR_ButtonRed}"
+                            Click="OnSelectClick" Margin="0,0,6,0"
+                            IsEnabled="False"/>
+
+                    <Button x:Name="CloseButton" Grid.Column="2"
+                            Content="CLOSE" Style="{StaticResource FR_Button}"
+                            Click="OnCloseClick"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

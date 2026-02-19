@@ -9,11 +9,18 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight">
     <Grid x:Name="RootGrid" Width="20" Height="20">
-        <Ellipse Fill="White" Stroke="Black" StrokeThickness="1"/>
-        <Rectangle Fill="#D32F2F" Height="10" VerticalAlignment="Top"/>
+        <Grid.Clip>
+            <EllipseGeometry x:Name="BallClip" Center="10,10" RadiusX="10" RadiusY="10"/>
+        </Grid.Clip>
+        <Ellipse Fill="White" Stroke="Black" StrokeThickness="1.5"/>
+        <Rectangle x:Name="TopHalf" Fill="#D32F2F" Height="10" VerticalAlignment="Top"/>
         <Rectangle Fill="Black" Height="2" VerticalAlignment="Center"/>
-        <Ellipse Fill="White" Stroke="Black" StrokeThickness="1"
-                 Width="6" Height="6"
+        <Ellipse Fill="White" Stroke="#333" StrokeThickness="1.5"
+                 Width="7" Height="7"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"/>
+        <Ellipse Fill="White" Stroke="Black" StrokeThickness="1.5"
+                 Width="4" Height="4"
                  HorizontalAlignment="Center"
                  VerticalAlignment="Center"/>
     </Grid>

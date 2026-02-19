@@ -3,7 +3,7 @@
 namespace Pokebar.DesktopPet.Animation;
 
 /// <summary>
-/// Player de animaÃ§Ã£o que gerencia o estado atual e transiÃ§Ãµes
+/// Player de animação que gerencia o estado atual e transições
 /// </summary>
 public class AnimationPlayer
 {
@@ -17,6 +17,12 @@ public class AnimationPlayer
     public bool IsPlaying => _isPlaying;
 
     public event Action<BitmapSource, double>? FrameChanged;
+
+    /// <summary>
+    /// Disparado quando uma animação não-loop termina (último frame atingido).
+    /// Usado para transições: yawn → sleep, hop → idle, etc.
+    /// </summary>
+    public event Action? AnimationFinished;
 
     public void Play(AnimationClip clip, bool restart = false)
     {
@@ -68,6 +74,7 @@ public class AnimationPlayer
                 {
                     _currentFrame = _currentClip.FrameCount - 1;
                     _isPlaying = false;
+                    AnimationFinished?.Invoke();
                 }
             }
 

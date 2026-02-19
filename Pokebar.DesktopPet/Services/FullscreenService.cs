@@ -1,5 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
+using Pokebar.Core.Models;
+using Serilog;
 
 namespace Pokebar.DesktopPet.Services;
 
@@ -53,10 +56,35 @@ public static class FullscreenService
     [DllImport("user32.dll", SetLastError = true)]
     private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
-    public static HashSet<IntPtr> GetFullscreenMonitors(IEnumerable<IntPtr> ignoreWindows)
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    /// <summary>
+    /// Retorna monitores que estão em fullscreen, respeitando whitelist/blacklist.
+    /// </summary>
+    public static HashSet<IntPtr> GetFullscreenMonitors(
+        IEnumerable<IntPtr> ignoreWindows,
+        FullscreenConfig? config = null)
     {
+        var mode = config?.Mode ?? "hide";
+
+        // Se modo é "show", nunca bloqueia nenhum monitor
+        if (mode.Equals("show", StringComparison.OrdinalIgnoreCase))
+            return new HashSet<IntPtr>();
+
         var ignore = new HashSet<IntPtr>(ignoreWindows);
         var monitors = new HashSet<IntPtr>();
+
+        // Pré-computar listas para comparação case-insensitive
+        var whitelist = config?.Whitelist
+            .Select(s => s.Trim().ToLowerInvariant())
+            .Where(s => s.Length > 0)
+            .ToHashSet() ?? new HashSet<string>();
+
+        var blacklist = config?.Blacklist
+            .Select(s => s.Trim().ToLowerInvariant())
+            .Where(s => s.Length > 0)
+            .ToHashSet() ?? new HashSet<string>();
 
         EnumWindows((hWnd, lParam) =>
         {
@@ -76,13 +104,55 @@ public static class FullscreenService
             if (monitor == IntPtr.Zero)
                 return true;
 
-            if (IsFullscreenRect(rect, monitor))
-                monitors.Add(monitor);
+            if (!IsFullscreenRect(rect, monitor))
+                return true;
+
+            // Janela está em fullscreen — aplicar regras de whitelist/blacklist
+            var processName = GetProcessNameForWindow(hWnd);
+
+            switch (mode.ToLowerInvariant())
+            {
+                case "whitelist":
+                    // Só bloqueia se o processo NÃO está na whitelist
+                    if (!whitelist.Contains(processName))
+                        monitors.Add(monitor);
+                    break;
+
+                case "blacklist":
+                    // Só bloqueia se o processo ESTÁ na blacklist
+                    if (blacklist.Contains(processName))
+                        monitors.Add(monitor);
+                    break;
+
+                case "hide":
+                default:
+                    // Bloqueia sempre em fullscreen
+                    monitors.Add(monitor);
+                    break;
+            }
 
             return true;
         }, IntPtr.Zero);
 
         return monitors;
+    }
+
+    /// <summary>
+    /// Obtém o nome do processo (sem extensão, lowercase) de uma janela.
+    /// </summary>
+    private static string GetProcessNameForWindow(IntPtr hWnd)
+    {
+        try
+        {
+            GetWindowThreadProcessId(hWnd, out var pid);
+            if (pid == 0) return string.Empty;
+            var process = Process.GetProcessById((int)pid);
+            return process.ProcessName.ToLowerInvariant();
+        }
+        catch
+        {
+            return string.Empty;
+        }
     }
 
     private static bool IsIgnoredWindow(IntPtr hWnd)

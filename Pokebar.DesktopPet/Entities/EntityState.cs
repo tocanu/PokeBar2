@@ -7,5 +7,7 @@ public enum EntityState
     Fighting = 2,
     Fainted = 3,
     Captured = 4,
-    Dead = 5
+    Dead = 5,
+    Sleeping = 6,
+    SpecialIdle = 7
 }

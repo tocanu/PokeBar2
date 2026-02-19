@@ -28,7 +28,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private string _rawPath = string.Empty;
     private string _status = string.Empty;
     private ImageSource? _previewImage;
-    private string _selectedEntryText = "Selecione um PokÃ©mon";
+    private string _selectedEntryText = "Selecione um Pokémon";
     private string _selectedSpritePath = string.Empty;
     private double _groundLineY;
     private int _selectedGroundOffset;
@@ -211,7 +211,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             else
             {
-                SelectedSpritePath = "Sprite nÃ£o encontrado";
+                SelectedSpritePath = "Sprite não encontrado";
             }
         }
         catch (Exception ex)
@@ -643,7 +643,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var current = Path.GetFullPath("Assets/Raw");
         if (Directory.Exists(current)) return current;
-        throw new DirectoryNotFoundException("Assets/Raw nÃ£o encontrado.");
+        throw new DirectoryNotFoundException("Assets/Raw não encontrado.");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

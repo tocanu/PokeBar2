@@ -46,3 +46,6 @@ Pokebar.Editor/Assets/Final/*.json
 *.log
 .DS_Store
 Thumbs.db
+
+# Temp build output
+_tmp_out/

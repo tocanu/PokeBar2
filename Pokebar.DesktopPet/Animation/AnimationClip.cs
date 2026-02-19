@@ -3,8 +3,8 @@
 namespace Pokebar.DesktopPet.Animation;
 
 /// <summary>
-/// Representa um clip de animaÃ§Ã£o (walk, idle, sleep, etc)
-/// ContÃ©m todos os frames e metadados da animaÃ§Ã£o
+/// Representa um clip de animação (walk, idle, sleep, etc)
+/// Contém todos os frames e metadados da animação
 /// </summary>
 public class AnimationClip
 {

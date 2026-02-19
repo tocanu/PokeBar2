@@ -26,7 +26,10 @@ public static class FinalOffsets
 {
     public static IReadOnlyDictionary<string, OffsetAdjustment> Load(string path)
     {
-        if (!File.Exists(path)) return new Dictionary<string, OffsetAdjustment>();
+        if (!File.Exists(path))
+        {
+            return new Dictionary<string, OffsetAdjustment>();
+        }
         var json = File.ReadAllText(path);
         var items = JsonSerializer.Deserialize<OffsetAdjustment[]>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Array.Empty<OffsetAdjustment>();
 

@@ -25,27 +25,27 @@ var groundOffsets = new List<int>();
 var centerOffsets = new List<int>();
 var geometries = new Dictionary<string, SpriteGeometry>();
 
-// Se nÃ£o informar nada, usa SpriteCollab/sprite no repo.
+// Se não informar nada, usa SpriteCollab/sprite no repo.
 var spriteRoot = args.Length > 0
     ? Path.GetFullPath(args[0])
     : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "SpriteCollab", "sprite"));
 
-// SaÃ­da padrÃ£o Ã© Assets/Raw
+// Saída padrão é Assets/Raw
 var outputDir = args.Length > 1
     ? Path.GetFullPath(args[1])
     : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Raw"));
 
 if (!Directory.Exists(spriteRoot))
 {
-    Console.WriteLine($"Raiz dos sprites nÃ£o encontrada: {spriteRoot}");
-    Console.WriteLine("Passe explicitamente o caminho do diretÃ³rio 'sprite' do SpriteCollab.");
+    Console.WriteLine($"Raiz dos sprites não encontrada: {spriteRoot}");
+    Console.WriteLine("Passe explicitamente o caminho do diretório 'sprite' do SpriteCollab.");
     return;
 }
 
 Directory.CreateDirectory(outputDir);
 
 Console.WriteLine($"Raiz dos sprites: {spriteRoot}");
-Console.WriteLine($"DiretÃ³rio de saÃ­da dos JSONs: {outputDir}");
+Console.WriteLine($"Diretório de saída dos JSONs: {outputDir}");
 
 // Enumera todos os Pokémon e suas formas
 var allVariants = SpriteDirectoryHelper.EnumerateSpriteFolders(spriteRoot).ToList();
@@ -71,7 +71,7 @@ foreach (var (dex, formId, dir) in allVariants)
             sleepInfo.Frame is not null ? (sleepFile, sleepInfo.Grid, sleepInfo.Frame) :
             (null, null, null);
 
-        // Usar linhas 3 e 7 (0-based 2 e 6) para cÃ¡lculo de offsets do walk; se nÃ£o existirem, usa todas.
+        // Usar linhas 3 e 7 (0-based 2 e 6) para cálculo de offsets do walk; se não existirem, usa todas.
         int[]? rowsToUse = offsetsSource.Item1 == walkFile ? new[] { 2, 6 } : null;
 
         var geometry = offsetsSource.Item1 is not null && offsetsSource.Item2 is not null && offsetsSource.Item3 is not null
@@ -117,7 +117,7 @@ foreach (var (dex, formId, dir) in allVariants)
         if (idleFile is null) anomalies.Add($"{variantId}: {SpriteFileNames.Idle} ausente");
         if (sleepFile is null) anomalies.Add($"{variantId}: {SpriteFileNames.Sleep} ausente");
 
-        // sem filtro de linhas especÃ­fico; usamos todos os frames disponÃ­veis
+        // sem filtro de linhas específico; usamos todos os frames disponíveis
 
         if (walkInfo.Frame is not null && idleInfo.Frame is not null &&
             (DiffRatio(walkInfo.Frame.Width, idleInfo.Frame.Width) > 0.25 ||
@@ -154,7 +154,7 @@ foreach (var (dex, formId, dir) in allVariants)
     }
 }
 
-// Gera placeholders para os que nÃ£o vieram no repositÃ³rio clonado
+// Gera placeholders para os que não vieram no repositório clonado
 var missing = expectedDex.Except(foundDex).OrderBy(x => x).ToList();
 foreach (var dex in missing)
 {
@@ -244,7 +244,7 @@ var csvLines = new[]
 File.WriteAllLines(summaryCsvPath, csvLines);
 Console.WriteLine($"Resumo salvo em: {summaryJsonPath} e {summaryCsvPath}");
 
-// Merge offsets com ajustes finais (se existirem) e gera arquivo Ãºnico para runtime
+// Merge offsets com ajustes finais (se existirem) e gera arquivo único para runtime
 try
 {
     var finalDir = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Final");
@@ -418,7 +418,7 @@ static BodyTypeSuggestion SuggestBodyType(FrameSize? frame)
 [SupportedOSPlatform("windows")]
 static Bitmap SafeBitmap(string path)
 {
-    // Garante formato 32bpp para acesso rÃ¡pido.
+    // Garante formato 32bpp para acesso rápido.
     var original = new Bitmap(path);
     if (original.PixelFormat == PixelFormat.Format32bppArgb || original.PixelFormat == PixelFormat.Format32bppPArgb)
     {

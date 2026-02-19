@@ -36,6 +36,9 @@ public class CombatManager
 
     public bool IsActive => _active != null;
 
+    /// <summary>Dispara quando uma batalha termina. bool = playerWon.</summary>
+    public event Action<bool>? BattleEnded;
+
     public void Update(double deltaTime, PlayerPet player, IEnumerable<EnemyPet> enemies)
     {
         if (_cooldownRemaining > 0)
@@ -108,16 +111,26 @@ public class CombatManager
         player.VelocityX = 0;
         enemy.VelocityX = 0;
 
-        // Posiciona frente a frente com espaÃ§amento
+        // Posiciona frente a frente com espaçamento, mantendo posições relativas
         var mid = (player.X + enemy.X) / 2;
-        player.X = mid - (_spacing / 2);
-        enemy.X = mid + (_spacing / 2);
+        if (player.X <= enemy.X)
+        {
+            // Player já está à esquerda — manter assim
+            player.X = mid - (_spacing / 2);
+            enemy.X = mid + (_spacing / 2);
+        }
+        else
+        {
+            // Player está à direita — manter assim (não trocar)
+            player.X = mid + (_spacing / 2);
+            enemy.X = mid - (_spacing / 2);
+        }
 
-        // Define direÃ§Ãµes para se encararem (ANTES de trocar estado/animaÃ§Ã£o)
+        // Define direções para se encararem (ANTES de trocar estado/animação)
         player.FacingRight = player.X < enemy.X;
         enemy.FacingRight = enemy.X < player.X;
 
-        // Agora inicia o combate (troca estado e animaÃ§Ã£o)
+        // Agora inicia o combate (troca estado e animação)
         player.StartFighting();
         enemy.StartFighting();
     }
@@ -153,6 +166,7 @@ public class CombatManager
 
         _active = null;
         _cooldownRemaining = _cooldownDuration;
+        BattleEnded?.Invoke(playerWins);
     }
 
     private static void RestoreAfterCombat(PokemonPet pet, EntityState previousState, double previousVelocity)

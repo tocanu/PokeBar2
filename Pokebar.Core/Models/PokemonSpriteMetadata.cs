@@ -1,8 +1,8 @@
 ﻿namespace Pokebar.Core.Models;
 
 /// <summary>
-/// Dados brutos detectados pelo pipeline para um PokÃ©mon especÃ­fico.
-/// MantÃ©m o mÃ­nimo necessÃ¡rio para salvar em JSON "raw" e alimentar o editor.
+/// Dados brutos detectados pelo pipeline para um Pokémon específico.
+/// Mantém o mínimo necessário para salvar em JSON "raw" e alimentar o editor.
 /// </summary>
 public record PokemonSpriteMetadata(
     int DexNumber,
@@ -17,7 +17,7 @@ public record PokemonSpriteMetadata(
     IReadOnlyList<string> Notes);
 
 /// <summary>
-/// InformaÃ§Ãµes de uma spritesheet (arquivo + grid + tamanho do frame).
+/// Informações de uma spritesheet (arquivo + grid + tamanho do frame).
 /// </summary>
 public record SpriteSheetInfo(
     string? FileName,
@@ -30,12 +30,12 @@ public record SpriteSheetInfo(
 public record SpriteGrid(int Columns, int Rows);
 
 /// <summary>
-/// DimensÃµes de um frame individual.
+/// Dimensões de um frame individual.
 /// </summary>
 public record FrameSize(int Width, int Height);
 
 /// <summary>
-/// Resumo das animaÃ§Ãµes disponÃ­veis e arquivos extras (emotes).
+/// Resumo das animações disponíveis e arquivos extras (emotes).
 /// </summary>
 public record AnimationSummary(bool HasWalk, bool HasIdle, bool HasSleep, IReadOnlyList<string> Emotes);
 

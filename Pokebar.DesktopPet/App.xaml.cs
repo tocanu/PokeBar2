@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Data;
 using System.Windows;
 using System.Windows.Threading;
+using Pokebar.Core.Localization;
 using Pokebar.DesktopPet.Logging;
 using Serilog;
 
@@ -11,7 +12,7 @@ namespace Pokebar.DesktopPet;
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -19,6 +20,10 @@ public partial class App : Application
 
         // Configurar logging antes de qualquer outra coisa
         LoggerSetup.ConfigureLogger();
+
+        // Inicializar localização (detecta idioma do sistema ou salvo)
+        _ = Localizer.Instance;
+        Log.Information("Locale: {Culture}", Localizer.Instance.Culture);
 
         // Captura global de exceções não tratadas
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -42,9 +47,9 @@ public partial class App : Application
 
         if (e.IsTerminating)
         {
-            MessageBox.Show(
-                $"Erro fatal não tratado:\n{exception?.Message}\n\nO aplicativo será encerrado.\nVerifique os logs em %AppData%\\Pokebar\\Logs",
-                "Pokebar - Erro Fatal",
+            System.Windows.MessageBox.Show(
+                Localizer.Get("error.fatal.message", exception?.Message ?? "Unknown"),
+                Localizer.Get("error.fatal.title"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -54,9 +59,9 @@ public partial class App : Application
     {
         Log.Error(e.Exception, "Unhandled exception in UI thread");
 
-        MessageBox.Show(
-            $"Erro não tratado na interface:\n{e.Exception.Message}\n\nVerifique os logs em %AppData%\\Pokebar\\Logs",
-            "Pokebar - Erro",
+        System.Windows.MessageBox.Show(
+            Localizer.Get("error.ui.message", e.Exception.Message),
+            Localizer.Get("error.ui.title"),
             MessageBoxButton.OK,
             MessageBoxImage.Warning);
 

@@ -1,0 +1,133 @@
+<Window x:Class="Pokebar.DesktopPet.OnboardingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pokebar — Welcome!"
+        Width="440" Height="380"
+        Style="{StaticResource FR_Window}"
+        WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="OnWindowDrag">
+
+    <!-- OUTER FRAME -->
+    <Border Style="{StaticResource FR_OuterFrame}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ═══ HEADER BAR ═══ -->
+            <Border Grid.Row="0" Style="{StaticResource FR_HeaderBar}">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="POKEBAR DESKTOP PET"
+                               Style="{StaticResource FR_Title}" FontSize="18"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="SubtitleText" Text="Your desktop Pokémon pet!"
+                               Style="{StaticResource FR_SmallText}"
+                               Foreground="#FFF8E8" Opacity="0.85"
+                               HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ CONTENT PAGES ═══ -->
+            <Border Grid.Row="1" Style="{StaticResource FR_InnerPanel}" Margin="3">
+                <Grid>
+                    <!-- Page 0: Welcome -->
+                    <StackPanel x:Name="Page0" Visibility="Visible" VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
+                        <Border Background="#40283848"
+                                BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                                BorderThickness="2" Width="72" Height="72"
+                                HorizontalAlignment="Center"
+                                SnapsToDevicePixels="True">
+                            <Image x:Name="PreviewImage" Width="64" Height="64"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        </Border>
+                        <TextBlock x:Name="WelcomeText"
+                                   Text="A Pikachu will walk across your taskbar, battle wild Pokémon and capture new friends!"
+                                   Style="{StaticResource FR_Label}" FontSize="12"
+                                   TextWrapping="Wrap" TextAlignment="Center"
+                                   MaxWidth="340" Margin="0,12,0,0"/>
+                    </StackPanel>
+
+                    <!-- Page 1: Controls -->
+                    <StackPanel x:Name="Page1" Visibility="Collapsed" VerticalAlignment="Center">
+                        <TextBlock x:Name="ControlsTitle" Text="Controls"
+                                   Style="{StaticResource FR_Label}" FontSize="14"
+                                   FontWeight="Bold" HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"/>
+                        <StackPanel Margin="24,0">
+                            <TextBlock x:Name="CtrlPause" Style="{StaticResource FR_SmallText}"
+                                       Foreground="{StaticResource FR_TextDarkBrush}"
+                                       Margin="0,3" Text="⏸ Ctrl+Shift+P — Pause / Resume"/>
+                            <TextBlock x:Name="CtrlDiag" Style="{StaticResource FR_SmallText}"
+                                       Foreground="{StaticResource FR_TextDarkBrush}"
+                                       Margin="0,3" Text="🔧 Ctrl+Shift+D — Diagnostics"/>
+                            <TextBlock x:Name="CtrlScreenshot" Style="{StaticResource FR_SmallText}"
+                                       Foreground="{StaticResource FR_TextDarkBrush}"
+                                       Margin="0,3" Text="📷 Ctrl+Shift+S — Screenshot"/>
+                            <TextBlock x:Name="CtrlBox" Style="{StaticResource FR_SmallText}"
+                                       Foreground="{StaticResource FR_TextDarkBrush}"
+                                       Margin="0,3" Text="📦 Ctrl+Shift+B — PC Box"/>
+                            <TextBlock x:Name="CtrlTray" Style="{StaticResource FR_SmallText}"
+                                       Foreground="{StaticResource FR_TextDarkBrush}"
+                                       Margin="0,3" Text="🖱 Right-click tray — Full menu"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Page 2: Ready -->
+                    <StackPanel x:Name="Page2" Visibility="Collapsed" VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
+                        <TextBlock Text="✅" FontSize="48" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="ReadyText"
+                                   Text="All set! Your Pokémon is waiting on the taskbar."
+                                   Style="{StaticResource FR_Label}" FontSize="13"
+                                   TextWrapping="Wrap" TextAlignment="Center"
+                                   MaxWidth="300" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ═══ FOOTER ═══ -->
+            <Border Grid.Row="2" Style="{StaticResource FR_InnerPanel}"
+                    Margin="3,0,3,3" Padding="8,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Page dots -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="Dot0" Width="10" Height="10"
+                                Background="{StaticResource FR_AccentRedBrush}"
+                                BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                                BorderThickness="1" Margin="0,0,4,0"
+                                SnapsToDevicePixels="True"/>
+                        <Border x:Name="Dot1" Width="10" Height="10"
+                                Background="{StaticResource FR_PanelBgBrush}"
+                                BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                                BorderThickness="1" Margin="0,0,4,0"
+                                SnapsToDevicePixels="True"/>
+                        <Border x:Name="Dot2" Width="10" Height="10"
+                                Background="{StaticResource FR_PanelBgBrush}"
+                                BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                                BorderThickness="1"
+                                SnapsToDevicePixels="True"/>
+                    </StackPanel>
+
+                    <Button x:Name="SkipButton" Grid.Column="2"
+                            Content="SKIP" Style="{StaticResource FR_Button}"
+                            Click="OnSkipClick" Margin="0,0,6,0"/>
+
+                    <Button x:Name="NextButton" Grid.Column="3"
+                            Content="NEXT ▶" Style="{StaticResource FR_ButtonRed}"
+                            Click="OnNextClick"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

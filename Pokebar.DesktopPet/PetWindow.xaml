@@ -11,11 +11,18 @@
     <Canvas x:Name="RootCanvas" Width="200" Height="200">
         <Image x:Name="PokemonImage"
                Stretch="None"
-               RenderTransformOrigin="0.5,0.5">
+               RenderTransformOrigin="0.5,0.5"
+               Cursor="Hand"
+               MouseLeftButtonDown="OnSpriteMouseClick">
             <Image.RenderTransform>
                 <ScaleTransform x:Name="FlipTransform" ScaleX="1" ScaleY="1"/>
             </Image.RenderTransform>
         </Image>
+        <Rectangle x:Name="DebugHitbox"
+                   Stroke="Lime"
+                   StrokeThickness="1"
+                   Fill="Transparent"
+                   Visibility="Collapsed"/>
         <Border x:Name="DebugPanel"
                 Background="#AA000000"
                 Padding="4"

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Pokebar.Core.Models;
 
@@ -25,14 +26,17 @@ public static class GameplayConfigLoader
         try
         {
             if (!File.Exists(filePath))
+            {
                 return new GameplayConfig();
+            }
 
             var json = File.ReadAllText(filePath);
             return JsonSerializer.Deserialize<GameplayConfig>(json, JsonOptions) 
                    ?? new GameplayConfig();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Trace.TraceError("Falha ao carregar GameplayConfig em '{0}': {1}", filePath, ex);
             // Em caso de erro, retorna configuração padrão
             return new GameplayConfig();
         }
@@ -45,7 +49,9 @@ public static class GameplayConfigLoader
     {
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(directory))
+        {
             Directory.CreateDirectory(directory);
+        }
 
         var json = JsonSerializer.Serialize(config, JsonOptions);
         File.WriteAllText(filePath, json);
@@ -73,16 +79,46 @@ public static class GameplayConfigLoader
 
     /// <summary>
     /// Carrega configuração do caminho padrão ou cria se não existir.
+    /// Ao criar pela primeira vez, tenta copiar o gameplay_default.json do Assets.
     /// </summary>
     public static GameplayConfig LoadOrCreateDefault()
     {
         var path = GetDefaultConfigPath();
         if (!File.Exists(path))
         {
-            var config = new GameplayConfig();
-            Save(path, config);
-            return config;
+            // Tentar copiar gameplay_default.json dos Assets como base
+            var defaultConfig = TryLoadBundledDefault();
+            Save(path, defaultConfig);
+            return defaultConfig;
         }
         return Load(path);
+    }
+
+    /// <summary>
+    /// Procura gameplay_default.json no diretório do executável e subpastas comuns.
+    /// Se encontrado, carrega; caso contrário, retorna config padrão com hard-coded defaults.
+    /// </summary>
+    private static GameplayConfig TryLoadBundledDefault()
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var candidates = new[]
+        {
+            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "Assets", "gameplay_default.json")),
+            Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "Assets", "gameplay_default.json")),
+            Path.GetFullPath(Path.Combine(baseDir, "Assets", "gameplay_default.json")),
+            Path.GetFullPath(Path.Combine("Assets", "gameplay_default.json"))
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (File.Exists(candidate))
+            {
+                var loaded = Load(candidate);
+                Trace.TraceInformation("Loaded bundled default config from '{0}'", candidate);
+                return loaded;
+            }
+        }
+
+        return new GameplayConfig();
     }
 }

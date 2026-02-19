@@ -13,16 +13,18 @@ public class CaptureManager
     private readonly int _shakeCount;
     private readonly double _shakeAmplitude;
     private readonly GameplayConfig _config;
+    private readonly double _baseSuccessRate;
+    private readonly Random _random = new();
     private CaptureSequence? _active;
     private bool _hidden;
 
     public CaptureManager(
         GameplayConfig config,
-        double travelDuration = 0.35,
-        double absorbDuration = 0.35,
-        double shakeDuration = 0.2,
+        double travelDuration = 0.6,
+        double absorbDuration = 0.5,
+        double shakeDuration = 0.25,
         int shakeCount = 3,
-        double shakeAmplitude = 4)
+        double shakeAmplitude = 6)
     {
         _config = config;
         _travelDuration = travelDuration;
@@ -30,18 +32,29 @@ public class CaptureManager
         _shakeDuration = shakeDuration;
         _shakeCount = Math.Max(1, shakeCount);
         _shakeAmplitude = shakeAmplitude;
+        _baseSuccessRate = Math.Clamp(config.Capture.BaseSuccessRate, 0.0, 1.0);
     }
 
     public bool IsActive => _active != null;
 
     public event Action<EnemyPet>? CaptureCompleted;
+    public event Action<EnemyPet>? CaptureFailed;
 
-    public bool TryStartCapture(PlayerPet player, EnemyPet enemy, PetWindow? enemyWindow, double dpiScale)
+    public bool TryStartCapture(PlayerPet player, EnemyPet enemy, PetWindow? enemyWindow, double dpiScale,
+        double playerScreenCenterX = 0, double playerScreenCenterY = 0)
     {
         if (enemy.State != EntityState.Fainted || enemy.IsCaptureInProgress)
             return false;
 
-        Log.Information("Capture attempt started: Player throwing Pokéball at enemy Dex {EnemyDex}", enemy.Dex);
+        // Consumir pokeball - sem bola, sem captura
+        if (!player.TryConsumePokeball())
+        {
+            Log.Debug("Capture blocked: no Pokéballs available (Player has {Pokeballs})", player.Pokeballs);
+            return false;
+        }
+
+        Log.Information("Capture attempt started: Player throwing Pokéball at enemy Dex {EnemyDex} (Pokéballs remaining: {Pokeballs})", 
+            enemy.Dex, player.Pokeballs);
         enemy.BeginCapture();
 
         if (enemyWindow == null)
@@ -54,17 +67,26 @@ public class CaptureManager
 
         enemyWindow.SetCaptureScale(1);
         var ballWindow = new CaptureBallWindow(_config);
+
+        // Usar posições de tela reais (DIPs) lidas diretamente das janelas
+        var (enemyCenterX, enemyCenterY) = enemyWindow.GetScreenCenter();
+        var enemyGroundY = enemyWindow.GetScreenGroundY();
+
+        Log.Debug("Capture ball: Player({PlayerX:F0},{PlayerY:F0}) → Enemy({EnemyX:F0},{EnemyY:F0}), BallSize={Size}",
+            playerScreenCenterX, playerScreenCenterY, enemyCenterX, enemyCenterY, _config.Capture.BallSizePx);
+
+        // Posicionar a bola ANTES de Show para garantir posição inicial correta
+        ballWindow.UpdatePosition(playerScreenCenterX, playerScreenCenterY);
         ballWindow.Show();
         ballWindow.SetHidden(_hidden);
 
         var sequence = new CaptureSequence(enemy, enemyWindow, ballWindow)
         {
-            DpiScale = dpiScale,
-            StartX = player.X,
-            StartY = GetCenterY(player),
-            TargetX = enemy.X,
-            TargetY = GetCenterY(enemy),
-            DropY = enemy.Y - (_config.Capture.BallSizePx / 2)
+            StartX = playerScreenCenterX,
+            StartY = playerScreenCenterY,
+            TargetX = enemyCenterX,
+            TargetY = enemyCenterY,
+            DropY = enemyGroundY
         };
 
         _active = sequence;
@@ -119,7 +141,14 @@ public class CaptureManager
         var progress = Math.Clamp(_active.Elapsed / _travelDuration, 0, 1);
         var x = Lerp(_active.StartX, _active.TargetX, progress);
         var y = Lerp(_active.StartY, _active.TargetY, progress);
-        _active.BallWindow.UpdatePosition(x, y, _active.DpiScale);
+
+        // Arco parabólico: bola sobe e desce durante Travel (altura máx no meio)
+        var arcHeight = 60.0; // DIPs de altura do arco
+        var arc = -4.0 * arcHeight * progress * (progress - 1.0); // parábola: 0 → arcHeight → 0
+        y -= arc;
+
+        _active.BallWindow.UpdatePosition(x, y);
+        _active.BallWindow.EnsureTopmost();
 
         if (progress >= 1)
         {
@@ -136,7 +165,8 @@ public class CaptureManager
         var progress = Math.Clamp(_active.Elapsed / _absorbDuration, 0, 1);
         var scale = 1 - progress;
         _active.EnemyWindow.SetCaptureScale(scale);
-        _active.BallWindow.UpdatePosition(_active.TargetX, _active.TargetY, _active.DpiScale);
+        _active.BallWindow.UpdatePosition(_active.TargetX, _active.TargetY);
+        _active.BallWindow.EnsureTopmost();
 
         if (progress >= 1)
         {
@@ -167,7 +197,8 @@ public class CaptureManager
         var direction = (shakeIndex % 2 == 0) ? -1 : 1;
         var offset = Math.Sin(local * Math.PI) * _shakeAmplitude * direction;
         var x = _active.TargetX + offset;
-        _active.BallWindow.UpdatePosition(x, _active.DropY, _active.DpiScale);
+        _active.BallWindow.UpdatePosition(x, _active.DropY);
+        _active.BallWindow.EnsureTopmost();
     }
 
     private void FinishCapture()
@@ -175,19 +206,27 @@ public class CaptureManager
         if (_active == null)
             return;
 
-        Log.Information("Capture successful! Enemy Dex {Dex} captured", _active.Enemy.Dex);
-        _active.Enemy.MarkCaptured();
-        _active.BallWindow.Close();
-        CaptureCompleted?.Invoke(_active.Enemy);
-        _active = null;
-    }
+        // Verificar taxa de sucesso
+        var success = _random.NextDouble() < _baseSuccessRate;
 
-    private double GetCenterY(BaseEntity entity)
-    {
-        var center = entity.GetCenterY();
-        if (center <= 0)
-            return entity.Y - _config.Capture.BallSizePx;
-        return center;
+        if (success)
+        {
+            Log.Information("Capture successful! Enemy Dex {Dex} captured (rate: {Rate:P0})", _active.Enemy.Dex, _baseSuccessRate);
+            _active.Enemy.MarkCaptured();
+            _active.BallWindow.Close();
+            CaptureCompleted?.Invoke(_active.Enemy);
+        }
+        else
+        {
+            Log.Information("Capture failed! Enemy Dex {Dex} broke free (rate: {Rate:P0})", _active.Enemy.Dex, _baseSuccessRate);
+            _active.Enemy.IsCaptureInProgress = false;
+            _active.EnemyWindow.SetCaptureScale(1);
+            _active.EnemyWindow.SetHidden(false);
+            _active.BallWindow.Close();
+            CaptureFailed?.Invoke(_active.Enemy);
+        }
+
+        _active = null;
     }
 
     private static double Lerp(double from, double to, double t) => from + ((to - from) * t);
@@ -207,7 +246,6 @@ public class CaptureManager
         public CapturePhase Phase { get; set; } = CapturePhase.Travel;
         public double Elapsed { get; set; }
         public double ShakeElapsed { get; set; }
-        public double DpiScale { get; set; } = 1.0;
         public double StartX { get; set; }
         public double StartY { get; set; }
         public double TargetX { get; set; }

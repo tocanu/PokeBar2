@@ -40,7 +40,7 @@ public static class WindowHelper
 
         var exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         
-        // Adiciona WS_EX_LAYERED (necessÃ¡rio para transparÃªncia)
+        // Adiciona WS_EX_LAYERED (necessário para transparência)
         // Adiciona WS_EX_TOOLWINDOW (esconde do Alt-Tab)
         exStyle |= WS_EX_LAYERED | WS_EX_TOOLWINDOW;
         
@@ -49,7 +49,7 @@ public static class WindowHelper
 
     /// <summary>
     /// Ativa ou desativa o modo click-through (WS_EX_TRANSPARENT)
-    /// Quando ativo, cliques passam atravÃ©s da janela para o que estÃ¡ atrÃ¡s
+    /// Quando ativo, cliques passam através da janela para o que está atrás
     /// </summary>
     public static void SetClickThrough(Window window, bool enabled)
     {
@@ -67,7 +67,7 @@ public static class WindowHelper
     }
 
     /// <summary>
-    /// ForÃ§a a janela a ficar sempre no topo (topmost)
+    /// Força a janela a ficar sempre no topo (topmost)
     /// </summary>
     public static void EnsureTopmost(IntPtr hwnd)
     {

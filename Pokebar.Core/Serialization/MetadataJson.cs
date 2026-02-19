@@ -5,8 +5,8 @@ using Pokebar.Core.Models;
 namespace Pokebar.Core.Serialization;
 
 /// <summary>
-/// UtilitÃ¡rios centralizados para serializar/deserializar metadados de sprites.
-/// MantÃ©m opÃ§Ãµes consistentes (camelCase, ignore nulls, identado).
+/// Utilitários centralizados para serializar/deserializar metadados de sprites.
+/// Mantém opções consistentes (camelCase, ignore nulls, identado).
 /// </summary>
 public static class MetadataJson
 {

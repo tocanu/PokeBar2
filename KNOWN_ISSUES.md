@@ -1,6 +1,6 @@
 # 🐛 PROBLEMAS CONHECIDOS
 
-## ✅ RESOLVIDOS
+## ✅ Resolvidos
 
 ### **Conflito de indexação: Pipeline suporta variantes, Editor/Runtime indexam só por Dex**
 
@@ -34,12 +34,6 @@ O pipeline gerava variantes (0025_0006) mas Editor/Runtime usavam apenas Dex (in
 
 ---
 
-## ⚠️ Média Prioridade
-
----
-
-## ✅ Resolvidos
-
 ### **EnumerateSpriteFolders ignorava sprites na pasta raiz quando havia subpastas**
 
 **Status:** ✅ Resolvido em commit `[hash]`
@@ -51,6 +45,18 @@ O pipeline gerava variantes (0025_0006) mas Editor/Runtime usavam apenas Dex (in
 Adicionada verificação `hasRootSprites` para incluir pasta raiz como forma "0000" antes de processar subpastas.
 
 **Commit:** `[hash do próximo commit]`
+
+---
+
+### **Tratamento de erro silencioso em GameplayConfigLoader**
+
+**Status:** ✅ Resolvido
+
+**Descrição:**
+O `catch` em `Pokebar.Core/Serialization/GameplayConfigLoader.cs` não logava falhas, dificultando diagnóstico em produção.
+
+**Solução:**
+Adicionado log via `Trace.TraceError` no `catch` ao carregar configurações.
 
 ---
 
@@ -90,7 +96,44 @@ Implementar recursão profunda no `EnumerateSpriteFolders` com formato:
 
 ---
 
-## 📝 Notas de Implementação
+### **Mojibake em docs e comentários**
+
+**Status:** ABERTO
+
+**Descrição:**
+Há sinais de mojibake apesar do padrão de encoding declarado (ex.: `ENCODING_STANDARD.md`, `.editorconfig`, `Pokebar.Core/Serialization/FinalOffsets.cs`).
+
+**Impacto:**
+- Dificulta leitura e manutenção
+- Indica inconsistência de encoding na pipeline de edição
+
+---
+
+### **Falta de testes automatizados**
+
+**Status:** ABERTO
+
+**Descrição:**
+Não há projetos de testes no repositório (nenhum `*Test*` encontrado).
+
+**Impacto:**
+- Maior risco de regressões
+- Dificulta evolução segura das fases do roadmap
+
+---
+
+### **Classes WPF muito carregadas**
+
+**Status:** ABERTO
+
+**Descrição:**
+Classes como `Pokebar.DesktopPet/MainWindow.xaml.cs` concentram muita lógica.
+
+**Impacto:**
+- Aumenta acoplamento
+- Manutenção e testes ficam mais difíceis
+
+---
 
 ## 📝 Notas de Implementação
 

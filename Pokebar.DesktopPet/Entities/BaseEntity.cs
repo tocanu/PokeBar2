@@ -47,7 +47,7 @@ public abstract class BaseEntity
         X += VelocityX * deltaTime;
         Y += VelocityY * deltaTime;
 
-        // NÃ£o mudar direÃ§Ã£o durante combate ou captura
+        // Não mudar direção durante combate ou captura
         if (State != EntityState.Fighting && State != EntityState.Captured)
         {
             if (VelocityX > 0)

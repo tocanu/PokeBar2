@@ -1,0 +1,425 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         POKEBAR FIRE RED THEME — GBA-style pixel art UI
+         Based on Pokémon Fire Red / Leaf Green PC Box aesthetic
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- ── COLOR PALETTE (Fire Red authentic) ── -->
+    <Color x:Key="FR_BgDark">#2B3A4E</Color>
+    <Color x:Key="FR_BgMedium">#3B5068</Color>
+    <Color x:Key="FR_BgLight">#4A6480</Color>
+    <Color x:Key="FR_PanelBg">#D8E8D0</Color>
+    <Color x:Key="FR_PanelBgAlt">#C0D8B0</Color>
+    <Color x:Key="FR_BorderDark">#283848</Color>
+    <Color x:Key="FR_BorderLight">#88A878</Color>
+    <Color x:Key="FR_HeaderBg">#E86850</Color>
+    <Color x:Key="FR_HeaderBgAlt">#D05840</Color>
+    <Color x:Key="FR_AccentRed">#E04038</Color>
+    <Color x:Key="FR_AccentBlue">#3890F8</Color>
+    <Color x:Key="FR_AccentGold">#F8D030</Color>
+    <Color x:Key="FR_AccentGreen">#78C850</Color>
+    <Color x:Key="FR_TextDark">#283848</Color>
+    <Color x:Key="FR_TextLight">#F8F8F8</Color>
+    <Color x:Key="FR_TextMuted">#586878</Color>
+    <Color x:Key="FR_SelectionBg">#88C8E8</Color>
+    <Color x:Key="FR_CardBg">#E8F0E0</Color>
+    <Color x:Key="FR_CardBorder">#98B888</Color>
+    <Color x:Key="FR_BoxGrass1">#90D070</Color>
+    <Color x:Key="FR_BoxGrass2">#78C058</Color>
+    <Color x:Key="FR_BtnNormal">#4088C8</Color>
+    <Color x:Key="FR_BtnHover">#50A0E0</Color>
+    <Color x:Key="FR_BtnPressed">#306898</Color>
+    <Color x:Key="FR_Disabled">#A0A0A0</Color>
+
+    <!-- ── BRUSHES ── -->
+    <SolidColorBrush x:Key="FR_BgDarkBrush" Color="{StaticResource FR_BgDark}"/>
+    <SolidColorBrush x:Key="FR_BgMediumBrush" Color="{StaticResource FR_BgMedium}"/>
+    <SolidColorBrush x:Key="FR_BgLightBrush" Color="{StaticResource FR_BgLight}"/>
+    <SolidColorBrush x:Key="FR_PanelBgBrush" Color="{StaticResource FR_PanelBg}"/>
+    <SolidColorBrush x:Key="FR_PanelBgAltBrush" Color="{StaticResource FR_PanelBgAlt}"/>
+    <SolidColorBrush x:Key="FR_BorderDarkBrush" Color="{StaticResource FR_BorderDark}"/>
+    <SolidColorBrush x:Key="FR_BorderLightBrush" Color="{StaticResource FR_BorderLight}"/>
+    <SolidColorBrush x:Key="FR_HeaderBgBrush" Color="{StaticResource FR_HeaderBg}"/>
+    <SolidColorBrush x:Key="FR_AccentRedBrush" Color="{StaticResource FR_AccentRed}"/>
+    <SolidColorBrush x:Key="FR_AccentBlueBrush" Color="{StaticResource FR_AccentBlue}"/>
+    <SolidColorBrush x:Key="FR_AccentGoldBrush" Color="{StaticResource FR_AccentGold}"/>
+    <SolidColorBrush x:Key="FR_AccentGreenBrush" Color="{StaticResource FR_AccentGreen}"/>
+    <SolidColorBrush x:Key="FR_TextDarkBrush" Color="{StaticResource FR_TextDark}"/>
+    <SolidColorBrush x:Key="FR_TextLightBrush" Color="{StaticResource FR_TextLight}"/>
+    <SolidColorBrush x:Key="FR_TextMutedBrush" Color="{StaticResource FR_TextMuted}"/>
+    <SolidColorBrush x:Key="FR_SelectionBgBrush" Color="{StaticResource FR_SelectionBg}"/>
+    <SolidColorBrush x:Key="FR_CardBgBrush" Color="{StaticResource FR_CardBg}"/>
+    <SolidColorBrush x:Key="FR_CardBorderBrush" Color="{StaticResource FR_CardBorder}"/>
+    <SolidColorBrush x:Key="FR_BoxGrass1Brush" Color="{StaticResource FR_BoxGrass1}"/>
+    <SolidColorBrush x:Key="FR_BoxGrass2Brush" Color="{StaticResource FR_BoxGrass2}"/>
+    <SolidColorBrush x:Key="FR_BtnNormalBrush" Color="{StaticResource FR_BtnNormal}"/>
+    <SolidColorBrush x:Key="FR_BtnHoverBrush" Color="{StaticResource FR_BtnHover}"/>
+    <SolidColorBrush x:Key="FR_BtnPressedBrush" Color="{StaticResource FR_BtnPressed}"/>
+    <SolidColorBrush x:Key="FR_DisabledBrush" Color="{StaticResource FR_Disabled}"/>
+
+    <!-- ── PIXEL RENDERING ── -->
+    <!-- Apply NearestNeighbor globally for pixel-perfect sprites -->
+
+    <!-- ── GBA-STYLE WINDOW (borderless with pixel border) ── -->
+    <Style x:Key="FR_Window" TargetType="Window">
+        <Setter Property="WindowStyle" Value="None"/>
+        <Setter Property="ResizeMode" Value="NoResize"/>
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{StaticResource FR_BgMedium}" Offset="0"/>
+                    <GradientStop Color="{StaticResource FR_BgDark}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor"/>
+    </Style>
+
+    <!-- ── GBA OUTER FRAME (double-border like the game) ── -->
+    <Style x:Key="FR_OuterFrame" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderDarkBrush}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="2"/>
+        <Setter Property="Padding" Value="3"/>
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{StaticResource FR_BgLight}" Offset="0"/>
+                    <GradientStop Color="{StaticResource FR_BgMedium}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── GBA INNER PANEL (the cream/green content area) ── -->
+    <Style x:Key="FR_InnerPanel" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderLightBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="1"/>
+        <Setter Property="Padding" Value="6"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <!-- ── HEADER BAR (red/orange bar like FR menus) ── -->
+    <Style x:Key="FR_HeaderBar" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="{StaticResource FR_HeaderBg}" Offset="0"/>
+                    <GradientStop Color="{StaticResource FR_HeaderBgAlt}" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderDarkBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <!-- ── GBA BUTTON (like Fire Red menu items) ── -->
+    <Style x:Key="FR_Button" TargetType="Button">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextLightBrush}"/>
+        <Setter Property="Padding" Value="14,6"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" 
+                            Background="{StaticResource FR_BtnNormalBrush}"
+                            BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                            BorderThickness="2"
+                            CornerRadius="1"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_BtnHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_BtnPressedBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_DisabledBrush}"/>
+                            <Setter Property="Foreground" 
+                                    Value="{StaticResource FR_TextMutedBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── RED ACCENT BUTTON ── -->
+    <Style x:Key="FR_ButtonRed" TargetType="Button" BasedOn="{StaticResource FR_Button}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" 
+                            Background="{StaticResource FR_AccentRedBrush}"
+                            BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                            BorderThickness="2"
+                            CornerRadius="1"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="#F05048"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="#C03030"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_DisabledBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── ARROW BUTTON (◀ ▶ for box pagination) ── -->
+    <Style x:Key="FR_ArrowButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" 
+                            Background="{StaticResource FR_PanelBgBrush}"
+                            BorderBrush="{StaticResource FR_CardBorderBrush}"
+                            BorderThickness="2"
+                            CornerRadius="1"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_SelectionBgBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_AccentBlueBrush}"/>
+                            <Setter Property="Foreground" 
+                                    Value="{StaticResource FR_TextLightBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── GBA CHECKBOX ── -->
+    <Style x:Key="FR_CheckBox" TargetType="CheckBox">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="Box" Width="18" Height="18" 
+                                Background="{StaticResource FR_PanelBgBrush}"
+                                BorderBrush="{StaticResource FR_BorderDarkBrush}" 
+                                BorderThickness="2"
+                                CornerRadius="1" Margin="0,0,8,0"
+                                SnapsToDevicePixels="True">
+                            <TextBlock x:Name="Check" Text="✓" FontWeight="Bold"
+                                       Foreground="{StaticResource FR_AccentGreenBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="13" Visibility="Collapsed"
+                                       FontFamily="Consolas"/>
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Box" Property="Background" 
+                                    Value="{StaticResource FR_CardBgBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" 
+                                    Value="{StaticResource FR_AccentBlueBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── GBA SLIDER ── -->
+    <Style x:Key="FR_Slider" TargetType="Slider">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Border Height="6" VerticalAlignment="Center"
+                                Background="{StaticResource FR_PanelBgAltBrush}"
+                                BorderBrush="{StaticResource FR_CardBorderBrush}"
+                                BorderThickness="1" CornerRadius="1"/>
+                        <Track x:Name="PART_Track">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Width="16" Height="20"
+                                                    Background="{StaticResource FR_AccentBlueBrush}"
+                                                    BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                                                    BorderThickness="2" CornerRadius="1"
+                                                    SnapsToDevicePixels="True"/>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── GBA TAB CONTROL ── -->
+    <Style x:Key="FR_TabControl" TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <Style x:Key="FR_TabItem" TargetType="TabItem">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="Bd" Padding="10,5" Margin="0,0,2,0"
+                            Background="{StaticResource FR_PanelBgAltBrush}"
+                            BorderBrush="{StaticResource FR_CardBorderBrush}"
+                            BorderThickness="2,2,2,0" CornerRadius="2,2,0,0"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter ContentSource="Header" 
+                                          HorizontalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_PanelBgBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" 
+                                    Value="{StaticResource FR_BorderDarkBrush}"/>
+                            <Setter Property="Foreground" 
+                                    Value="{StaticResource FR_TextDarkBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_SelectionBgBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── GBA TEXT LABEL ── -->
+    <Style x:Key="FR_Title" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextLightBrush}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+    </Style>
+
+    <Style x:Key="FR_Label" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+    </Style>
+
+    <Style x:Key="FR_SmallText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextMutedBrush}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+    </Style>
+
+    <!-- ── SCROLLBAR (thin, styled) ── -->
+    <Style x:Key="FR_ScrollViewer" TargetType="ScrollViewer">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <!-- ── POKEMON CARD (for PC Box grid) ── -->
+    <Style x:Key="FR_PokemonCard" TargetType="Border">
+        <Setter Property="Width" Value="64"/>
+        <Setter Property="Height" Value="64"/>
+        <Setter Property="Margin" Value="3"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource FR_SelectionBgBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ── COMBOBOX (basic GBA styling) ── -->
+    <Style x:Key="FR_ComboBox" TargetType="ComboBox">
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource FR_CardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="6,4"/>
+    </Style>
+
+</ResourceDictionary>

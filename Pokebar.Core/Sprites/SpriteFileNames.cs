@@ -59,10 +59,14 @@ public static class SpriteFileNames
             yield return Sleep;
             
             foreach (var attack in AttackAnimations)
+            {
                 yield return attack;
+            }
             
             foreach (var emote in EmoteAnimations)
+            {
                 yield return emote;
+            }
         }
     }
 
@@ -102,7 +106,9 @@ public static class SpriteFileNames
             var match = availableFiles.FirstOrDefault(f => 
                 string.Equals(f, variant, StringComparison.OrdinalIgnoreCase));
             if (match != null)
+            {
                 return match;
+            }
         }
         return null;
     }
@@ -117,7 +123,9 @@ public static class SpriteFileNames
             var match = availableFiles.FirstOrDefault(f => 
                 string.Equals(f, attack, StringComparison.OrdinalIgnoreCase));
             if (match != null)
+            {
                 return match;
+            }
         }
         return null;
     }

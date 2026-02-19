@@ -65,7 +65,9 @@ public static class SpriteDirectoryHelper
     public static IEnumerable<(int DexNumber, string FormId, string Path)> EnumerateSpriteFolders(string spriteRoot)
     {
         if (!Directory.Exists(spriteRoot))
+        {
             yield break;
+        }
 
         var dexDirs = Directory.GetDirectories(spriteRoot)
             .Select(Path.GetFileName)
@@ -120,19 +122,25 @@ public static class SpriteDirectoryHelper
         var dexPath = Path.Combine(spriteRoot, dexStr);
 
         if (!Directory.Exists(dexPath))
+        {
             return null;
+        }
 
         // Se não especificou forma, tenta forma padrão primeiro
         if (string.IsNullOrEmpty(formId))
         {
             var defaultForm = Path.Combine(dexPath, "0000");
             if (Directory.Exists(defaultForm))
+            {
                 return defaultForm;
+            }
 
             // Se não tem subpastas, a pasta principal é a forma padrão
             var subdirs = Directory.GetDirectories(dexPath);
             if (subdirs.Length == 0)
+            {
                 return dexPath;
+            }
 
             // Se tem subpastas, pega a primeira
             return subdirs.FirstOrDefault();
@@ -152,7 +160,9 @@ public static class SpriteDirectoryHelper
         var dexPath = Path.Combine(spriteRoot, dexStr);
 
         if (!Directory.Exists(dexPath))
+        {
             return Enumerable.Empty<string>();
+        }
 
         var formDirs = Directory.GetDirectories(dexPath);
 
