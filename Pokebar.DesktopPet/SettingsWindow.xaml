@@ -24,7 +24,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="HeaderText" Text="SETTINGS"
-                               Style="{StaticResource FR_Title}" FontSize="18"
+                               Style="{StaticResource FR_Title}" FontSize="12"
                                VerticalAlignment="Center"/>
                     <!-- Live pet preview -->
                     <Border Grid.Column="1" Background="#40283848"
@@ -130,6 +130,51 @@
                                           Content="Debug Overlay" Margin="0,0,0,6"
                                           Checked="OnDebugChanged" 
                                           Unchecked="OnDebugChanged"/>
+
+                                <!-- Desktop Icon Interaction -->
+                                <Border BorderBrush="{StaticResource FR_CardBorderBrush}" 
+                                        BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,8,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="DESKTOP ICONS" 
+                                                   Style="{StaticResource FR_Label}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="Pet interacts with desktop icons."
+                                                   Style="{StaticResource FR_SmallText}" Margin="0,0,0,8"/>
+
+                                        <TextBlock Text="Mode:" Style="{StaticResource FR_SmallText}" Margin="0,0,0,2"/>
+                                        <ComboBox x:Name="IconModeCombo"
+                                                  Style="{StaticResource FR_ComboBox}"
+                                                  Margin="0,0,0,8"
+                                                  SelectionChanged="OnIconModeChanged">
+                                            <ComboBoxItem Content="Off" Tag="off"/>
+                                            <ComboBoxItem Content="Fake Drag (visual only)" Tag="fake"/>
+                                            <ComboBoxItem Content="Real Drag (moves icons)" Tag="real"/>
+                                        </ComboBox>
+
+                                        <TextBlock Text="Frequency:" Style="{StaticResource FR_SmallText}" Margin="0,0,0,2"/>
+                                        <ComboBox x:Name="IconFreqCombo"
+                                                  Style="{StaticResource FR_ComboBox}"
+                                                  Margin="0,0,0,8"
+                                                  SelectionChanged="OnIconFreqChanged">
+                                            <ComboBoxItem Content="Rarely" Tag="rarely"/>
+                                            <ComboBoxItem Content="Sometimes" Tag="sometimes"/>
+                                            <ComboBoxItem Content="Always" Tag="always"/>
+                                        </ComboBox>
+
+                                        <TextBlock x:Name="IconAutoArrangeWarning"
+                                                   Text="⚠ Auto-arrange detected! Real mode disabled."
+                                                   Style="{StaticResource FR_SmallText}"
+                                                   Foreground="#FFA040"
+                                                   Visibility="Collapsed"
+                                                   Margin="0,0,0,6"/>
+
+                                        <Button x:Name="BtnRestoreLayout"
+                                                Content="RESTORE ICON LAYOUT"
+                                                Style="{StaticResource FR_Button}"
+                                                Click="OnRestoreLayoutClick"
+                                                Margin="0,4,0,0"
+                                                Visibility="Collapsed"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
@@ -139,6 +184,14 @@
                              Style="{StaticResource FR_TabItem}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="6">
                             <StackPanel x:Name="StatsPanel"/>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Pokédex -->
+                    <TabItem x:Name="TabPokedex" Header="POKÉDEX" 
+                             Style="{StaticResource FR_TabItem}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="6">
+                            <StackPanel x:Name="PokedexPanel"/>
                         </ScrollViewer>
                     </TabItem>
 
@@ -159,7 +212,7 @@
                                                     <ColumnDefinition Width="30"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding Icon}" FontSize="18"
+                                                <TextBlock Text="{Binding Icon}" FontSize="14"
                                                            VerticalAlignment="Center"/>
                                                 <StackPanel Grid.Column="1">
                                                     <TextBlock Text="{Binding Title}" 

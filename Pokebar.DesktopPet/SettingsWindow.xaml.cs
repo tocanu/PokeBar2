@@ -19,6 +19,8 @@ public partial class SettingsWindow : Window
     private readonly SaveData _saveData;
     private readonly SpriteCache _spriteCache;
     private readonly List<Achievement> _allAchievements;
+    private readonly HashSet<int> _pokedexSeen;
+    private readonly HashSet<int> _pokedexCaptured;
 
     // Valores editados
     private double _editedSpeed;
@@ -30,6 +32,8 @@ public partial class SettingsWindow : Window
     private bool _editedDebug;
     private string? _editedLanguage;
     private string? _editedProfileId;
+    private string _editedIconMode = "off";
+    private string _editedIconFreq = "rarely";
     private bool _dirty;
 
     /// <summary>True se houve mudanças que requerem restart.</summary>
@@ -47,7 +51,9 @@ public partial class SettingsWindow : Window
         SaveData saveData,
         SpriteCache spriteCache,
         int activeDex,
-        List<Achievement>? achievements = null)
+        List<Achievement>? achievements = null,
+        HashSet<int>? pokedexSeen = null,
+        HashSet<int>? pokedexCaptured = null)
     {
         InitializeComponent();
 
@@ -56,11 +62,14 @@ public partial class SettingsWindow : Window
         _saveData = saveData;
         _spriteCache = spriteCache;
         _allAchievements = achievements ?? new List<Achievement>();
+        _pokedexSeen = pokedexSeen ?? new HashSet<int>();
+        _pokedexCaptured = pokedexCaptured ?? new HashSet<int>();
 
         LoadPreview(activeDex);
         LoadCurrentValues();
         PopulateProfiles();
         PopulateStats();
+        PopulatePokedex();
         PopulateAchievements();
         ApplyLocale();
     }
@@ -71,6 +80,7 @@ public partial class SettingsWindow : Window
         TabGeneral.Header = Localizer.Get("settings.tab_general");
         TabBehavior.Header = Localizer.Get("settings.tab_behavior");
         TabStats.Header = Localizer.Get("settings.tab_stats");
+        TabPokedex.Header = Localizer.Get("settings.tab_pokedex");
         TabAchievements.Header = Localizer.Get("settings.tab_achievements");
         LblProfile.Text = Localizer.Get("settings.profile");
         LblLanguage.Text = Localizer.Get("settings.language");
@@ -136,6 +146,28 @@ public partial class SettingsWindow : Window
                 }
             }
         }
+
+        // Desktop icon mode/frequency combos
+        _editedIconMode = _config.DesktopIcons.Mode;
+        _editedIconFreq = _config.DesktopIcons.Frequency;
+        for (int i = 0; i < IconModeCombo.Items.Count; i++)
+        {
+            if (IconModeCombo.Items[i] is ComboBoxItem item && item.Tag is string tag &&
+                tag.Equals(_editedIconMode, StringComparison.OrdinalIgnoreCase))
+            {
+                IconModeCombo.SelectedIndex = i;
+                break;
+            }
+        }
+        for (int i = 0; i < IconFreqCombo.Items.Count; i++)
+        {
+            if (IconFreqCombo.Items[i] is ComboBoxItem item && item.Tag is string tag &&
+                tag.Equals(_editedIconFreq, StringComparison.OrdinalIgnoreCase))
+            {
+                IconFreqCombo.SelectedIndex = i;
+                break;
+            }
+        }
     }
 
     private void PopulateProfiles()
@@ -166,10 +198,17 @@ public partial class SettingsWindow : Window
         AddStatRow("❌", Localizer.Get("stats.capture_failed"), stats.TotalCaptureFailed.ToString());
         AddStatRow("⚔", Localizer.Get("stats.battles"), stats.TotalBattles.ToString());
         AddStatRow("🥇", Localizer.Get("stats.battles_won"), stats.TotalBattlesWon.ToString());
+        AddStatRow("�", Localizer.Get("stats.battles_lost"), stats.TotalBattlesLost.ToString());
         AddStatRow("🔴", Localizer.Get("stats.pokeballs_used"), stats.TotalPokeballsUsed.ToString());
+        AddStatRow("✨", Localizer.Get("stats.shiny_captured"), stats.TotalShinyCaptured.ToString());
+        AddStatRow("🚶", Localizer.Get("stats.distance_walked"), FormatDistance(stats.TotalDistanceWalked));
+        AddStatRow("📅", Localizer.Get("stats.daily_streak"), $"{_saveData.DailyStreak} {Localizer.Get("stats.days")}");
+        AddStatRow("📋", Localizer.Get("stats.daily_quests_done"), stats.TotalDailyQuestsCompleted.ToString());
         AddStatRow("⏱", Localizer.Get("stats.playtime"), FormatPlaytime(stats.TotalPlayTimeSeconds));
         AddStatRow("📦", Localizer.Get("stats.party_size"), _saveData.Party.Count.ToString());
         AddStatRow("🎮", Localizer.Get("stats.pokeballs"), _saveData.Pokeballs.ToString());
+        AddStatRow("👁", Localizer.Get("stats.pokedex_seen"), _pokedexSeen.Count.ToString());
+        AddStatRow("📕", Localizer.Get("stats.pokedex_captured"), _pokedexCaptured.Count.ToString());
     }
 
     private void AddStatRow(string icon, string label, string value)
@@ -201,6 +240,157 @@ public partial class SettingsWindow : Window
         return ts.TotalHours >= 1
             ? $"{(int)ts.TotalHours}h {ts.Minutes}m"
             : $"{ts.Minutes}m {ts.Seconds}s";
+    }
+
+    private static string FormatDistance(double pixels)
+    {
+        if (pixels >= 100000)
+            return $"{pixels / 1000.0:F1}k px";
+        return $"{pixels:F0} px";
+    }
+
+    private void PopulatePokedex()
+    {
+        PokedexPanel.Children.Clear();
+
+        // Header summary
+        var summaryGrid = new Grid { Margin = new Thickness(0, 0, 0, 10) };
+        summaryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        summaryGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        var seenTb = new TextBlock
+        {
+            Text = $"👁 {Localizer.Get("pokedex.seen")}: {_pokedexSeen.Count}",
+            FontSize = 14,
+            FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x28, 0x38, 0x48)),
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+        };
+        Grid.SetColumn(seenTb, 0);
+
+        var capturedTb = new TextBlock
+        {
+            Text = $"📕 {Localizer.Get("pokedex.captured")}: {_pokedexCaptured.Count}",
+            FontSize = 14,
+            FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x28, 0x38, 0x48)),
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+        };
+        Grid.SetColumn(capturedTb, 1);
+
+        summaryGrid.Children.Add(seenTb);
+        summaryGrid.Children.Add(capturedTb);
+        PokedexPanel.Children.Add(summaryGrid);
+
+        // Grid de dex entries (mini sprites)
+        var wrapPanel = new WrapPanel { HorizontalAlignment = System.Windows.HorizontalAlignment.Center };
+
+        // Mostrar todos os dex vistos ou capturados, ordenados
+        var allDex = new SortedSet<int>(_pokedexSeen);
+        foreach (var d in _pokedexCaptured) allDex.Add(d);
+
+        foreach (var dex in allDex)
+        {
+            var isCaptured = _pokedexCaptured.Contains(dex);
+            var isSeen = _pokedexSeen.Contains(dex);
+
+            BitmapSource? sprite = null;
+            if (isCaptured)
+            {
+                try
+                {
+                    var anims = _spriteCache.GetAnimations(dex, "0000", _config);
+                    sprite = anims.Idle?.Frames.Count > 0 ? anims.Idle.Frames[0]
+                           : anims.WalkRight?.Frames.Count > 0 ? anims.WalkRight.Frames[0]
+                           : null;
+                }
+                catch { /* sem sprite */ }
+            }
+
+            var bgColor = isCaptured
+                ? System.Windows.Media.Color.FromArgb(0x60, 0xF8, 0xD0, 0x30)  // gold
+                : System.Windows.Media.Color.FromArgb(0x40, 0xA0, 0xA0, 0xA0); // gray
+
+            var borderColor = isCaptured
+                ? System.Windows.Media.Color.FromRgb(0xE0, 0x40, 0x38)
+                : System.Windows.Media.Color.FromRgb(0x80, 0x90, 0x80);
+
+            var border = new Border
+            {
+                Width = 42,
+                Height = 42,
+                Background = new SolidColorBrush(bgColor),
+                BorderBrush = new SolidColorBrush(borderColor),
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(1),
+                SnapsToDevicePixels = true,
+                ToolTip = isCaptured ? $"#{dex:D3} ✓" : $"#{dex:D3} ?"
+            };
+
+            var grid = new Grid();
+
+            if (sprite != null)
+            {
+                var img = new System.Windows.Controls.Image
+                {
+                    Source = sprite,
+                    Width = 32,
+                    Height = 32,
+                    Stretch = System.Windows.Media.Stretch.Uniform,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                };
+                System.Windows.Media.RenderOptions.SetBitmapScalingMode(img, System.Windows.Media.BitmapScalingMode.NearestNeighbor);
+                grid.Children.Add(img);
+            }
+            else
+            {
+                // Silhouette/question mark for seen-only
+                var qm = new TextBlock
+                {
+                    Text = "?",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x60, 0x70, 0x60)),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                };
+                grid.Children.Add(qm);
+            }
+
+            // Dex number label
+            var label = new TextBlock
+            {
+                Text = $"{dex:D3}",
+                FontSize = 7,
+                FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x28, 0x38, 0x48)),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0xB0, 0xD8, 0xE8, 0xD0))
+            };
+            grid.Children.Add(label);
+
+            border.Child = grid;
+            wrapPanel.Children.Add(border);
+        }
+
+        if (allDex.Count == 0)
+        {
+            var emptyTb = new TextBlock
+            {
+                Text = Localizer.Get("pokedex.empty"),
+                FontSize = 13,
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x80, 0x90, 0x80)),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 20, 0, 0)
+            };
+            PokedexPanel.Children.Add(emptyTb);
+        }
+        else
+        {
+            PokedexPanel.Children.Add(wrapPanel);
+        }
     }
 
     private void PopulateAchievements()
@@ -288,6 +478,41 @@ public partial class SettingsWindow : Window
         _dirty = true;
     }
 
+    private void OnIconModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (IconModeCombo.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            _editedIconMode = tag;
+            _dirty = true;
+        }
+    }
+
+    private void OnIconFreqChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (IconFreqCombo.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            _editedIconFreq = tag;
+            _dirty = true;
+        }
+    }
+
+    /// <summary>Fires when user clicks Restore Layout button.</summary>
+    public event Action? RestoreLayoutRequested;
+
+    private void OnRestoreLayoutClick(object sender, RoutedEventArgs e)
+    {
+        RestoreLayoutRequested?.Invoke();
+    }
+
+    /// <summary>Show auto-arrange warning and restore button when applicable.</summary>
+    public void SetIconInteractionState(bool autoArrangeDetected, bool hasLayout)
+    {
+        if (autoArrangeDetected)
+            IconAutoArrangeWarning.Visibility = Visibility.Visible;
+        if (hasLayout)
+            BtnRestoreLayout.Visibility = Visibility.Visible;
+    }
+
     private void OnSaveClick(object sender, RoutedEventArgs e)
     {
         if (!_dirty)
@@ -308,6 +533,11 @@ public partial class SettingsWindow : Window
                 MinimalMode = _editedMinimal,
                 ToastNotificationsEnabled = _editedToast,
                 TrayIconEnabled = _editedTray
+            },
+            DesktopIcons = _config.DesktopIcons with
+            {
+                Mode = _editedIconMode,
+                Frequency = _editedIconFreq
             }
         };
 

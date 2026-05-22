@@ -28,6 +28,9 @@ public record Quest
 
     /// <summary>Quantidade da recompensa.</summary>
     public int RewardAmount { get; init; } = 1;
+
+    /// <summary>Se esta é uma daily quest (reseta diariamente).</summary>
+    public bool IsDaily { get; init; }
 }
 
 /// <summary>

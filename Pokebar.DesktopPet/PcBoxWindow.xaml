@@ -37,7 +37,7 @@
                                 Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="PageText" Text="001-030"
                                    Style="{StaticResource FR_Title}"
-                                   FontSize="18"/>
+                                   FontSize="12"/>
                     </StackPanel>
 
                     <!-- Right Arrow -->
@@ -107,7 +107,7 @@
                                            VerticalAlignment="Center"/>
                                     <!-- Dex number -->
                                     <TextBlock Text="{Binding Label}" 
-                                               FontFamily="Consolas" FontSize="9"
+                                               Style="{StaticResource FR_SmallText}"
                                                Foreground="#283848"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Bottom"
@@ -125,21 +125,26 @@
                     Margin="3,0,3,3" Padding="8,6">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock x:Name="SelectedText" Grid.Column="0"
+                    <Button x:Name="HistoryButton" Grid.Column="0"
+                            Content="📜 HISTORY" Style="{StaticResource FR_Button}"
+                            Click="OnHistoryToggle" Margin="0,0,6,0"/>
+
+                    <TextBlock x:Name="SelectedText" Grid.Column="1"
                                Text="" Style="{StaticResource FR_Label}"
                                VerticalAlignment="Center"/>
 
-                    <Button x:Name="SelectButton" Grid.Column="1"
+                    <Button x:Name="SelectButton" Grid.Column="2"
                             Content="SELECT" Style="{StaticResource FR_ButtonRed}"
                             Click="OnSelectClick" Margin="0,0,6,0"
                             IsEnabled="False"/>
 
-                    <Button x:Name="CloseButton" Grid.Column="2"
+                    <Button x:Name="CloseButton" Grid.Column="3"
                             Content="CLOSE" Style="{StaticResource FR_Button}"
                             Click="OnCloseClick"/>
                 </Grid>

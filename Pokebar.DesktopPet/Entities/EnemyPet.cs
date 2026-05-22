@@ -1,4 +1,5 @@
 ﻿using System;
+using Pokebar.Core.Models;
 
 namespace Pokebar.DesktopPet.Entities;
 
@@ -18,7 +19,7 @@ public class EnemyPet : PokemonPet
     /// </summary>
     public const double FaintedDespawnSeconds = 15.0;
 
-    public EnemyPet(int dex, int level = 1, int? maxHp = null, int? seed = null, bool isShiny = false) : base(dex)
+    public EnemyPet(int dex, int level = 1, int? maxHp = null, int? seed = null, bool isShiny = false, RarityTier rarity = RarityTier.Common) : base(dex)
     {
         Level = Math.Max(1, level);
         MaxHp = maxHp ?? BuildStat(12, Level, dex);
@@ -27,6 +28,7 @@ public class EnemyPet : PokemonPet
         Defense = BuildStat(6, Level, dex);
         PatrolSpeed = 30.0;
         IsShiny = isShiny;
+        Rarity = rarity;
         _random = seed.HasValue ? new Random(seed.Value) : new Random();
         _nextDirectionChange = NextWalkSeconds();
     }
@@ -41,6 +43,18 @@ public class EnemyPet : PokemonPet
 
     /// <summary>Se este Pokémon é shiny (FASE 7).</summary>
     public bool IsShiny { get; }
+
+    /// <summary>Tier de raridade do Pokémon (afeta dificuldade de captura).</summary>
+    public RarityTier Rarity { get; }
+
+    /// <summary>Efeito de status ativo (persiste após combate para afetar captura).</summary>
+    public StatusEffectType ActiveStatus { get; set; }
+
+    /// <summary>Turnos restantes de sono (decrementa a cada rodada).</summary>
+    public int SleepTurnsLeft { get; set; }
+
+    /// <summary>Fração de HP restante (0.0–1.0). Usado na fórmula de captura.</summary>
+    public double HpRatio => MaxHp > 0 ? (double)CurrentHp / MaxHp : 0;
 
     public bool IsCapturable => State == EntityState.Fainted;
 
@@ -63,6 +77,27 @@ public class EnemyPet : PokemonPet
             VelocityX = 0;
             StartIdle(false);
         }
+    }
+
+    /// <summary>
+    /// Força o estado Fainted mantendo o HP atual (para derrota por comparação de HP).
+    /// </summary>
+    public void Faint()
+    {
+        if (State == EntityState.Dead || State == EntityState.Captured)
+            return;
+        State = EntityState.Fainted;
+        VelocityX = 0;
+        StartIdle(false);
+    }
+
+    /// <summary>
+    /// Aplica dano de combate interno (usado na simulação de rodadas).
+    /// Não muda estado — isso é feito por Faint() ou TakeDamage() no final.
+    /// </summary>
+    public void SetHp(int hp)
+    {
+        CurrentHp = Math.Clamp(hp, 0, MaxHp);
     }
 
     public void MarkCaptured()

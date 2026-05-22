@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Pokebar.DesktopPet.Interop;
 
@@ -13,6 +14,9 @@ public partial class PetWindow : Window
     private double _currentGroundLineY;
     private double _captureScale = 1.0;
     private double _flipScaleX = 1.0;
+    private double _hitFlashTimer;
+    private double _tintPulseTimer;
+    private string? _currentTintColor;
 
     /// <summary>Fired when the user clicks on the enemy sprite.</summary>
     public event Action? EnemyClicked;
@@ -115,6 +119,114 @@ public partial class PetWindow : Window
     {
         _captureScale = Math.Clamp(scale, 0, 1);
         ApplyScale();
+    }
+
+    // ── Status overlay ──
+
+    /// <summary>
+    /// Define o texto de overlay de status (ex: "💤", "⚡", "☠").
+    /// Passa null para esconder.
+    /// </summary>
+    public void SetStatusOverlay(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            StatusOverlay.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        StatusOverlay.Text = text;
+        StatusOverlay.Visibility = Visibility.Visible;
+
+        // Posicionar acima do sprite (centro-topo)
+        var x = (RootCanvas.Width / 2) - 10;
+        Canvas.SetLeft(StatusOverlay, x);
+        Canvas.SetTop(StatusOverlay, -4);
+    }
+
+    // ── Visual effects ──
+
+    /// <summary>
+    /// Dispara um flash branco rápido (hit effect). Duração padrão 0.15s.
+    /// </summary>
+    public void TriggerHitFlash()
+    {
+        _hitFlashTimer = 0.15;
+        HitFlashRect.Opacity = 0.6;
+        SyncOverlaySize();
+    }
+
+    /// <summary>
+    /// Define a cor de tint para status effects (ou null para remover).
+    /// Purple = poison, Yellow = paralysis, Blue = sleep.
+    /// </summary>
+    public void SetTintColor(string? hexColor)
+    {
+        _currentTintColor = hexColor;
+        if (hexColor == null)
+        {
+            TintRect.Opacity = 0;
+            _tintPulseTimer = 0;
+            return;
+        }
+
+        try
+        {
+            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hexColor);
+            TintRect.Fill = new SolidColorBrush(color);
+            _tintPulseTimer = 0;
+        }
+        catch
+        {
+            TintRect.Opacity = 0;
+        }
+    }
+
+    /// <summary>
+    /// Atualiza efeitos visuais baseados em tempo (flash decay, tint pulse).
+    /// Chamar a cada tick do game loop.
+    /// </summary>
+    public void UpdateEffects(double deltaTime)
+    {
+        // Hit flash decay
+        if (_hitFlashTimer > 0)
+        {
+            _hitFlashTimer -= deltaTime;
+            HitFlashRect.Opacity = Math.Max(0, _hitFlashTimer / 0.15 * 0.6);
+        }
+
+        // Tint pulse (suave pulsação de opacidade)
+        if (_currentTintColor != null)
+        {
+            _tintPulseTimer += deltaTime;
+            TintRect.Opacity = 0.15 + 0.1 * Math.Sin(_tintPulseTimer * 3.0);
+            SyncOverlaySize();
+        }
+    }
+
+    /// <summary>
+    /// Sincroniza tamanho dos overlays com o sprite atual.
+    /// </summary>
+    private void SyncOverlaySize()
+    {
+        var w = PokemonImage.ActualWidth;
+        var h = PokemonImage.ActualHeight;
+        if (w <= 0 || h <= 0) return;
+
+        var left = Canvas.GetLeft(PokemonImage);
+        var top = Canvas.GetTop(PokemonImage);
+        if (double.IsNaN(left)) left = 0;
+        if (double.IsNaN(top)) top = 0;
+
+        HitFlashRect.Width = w;
+        HitFlashRect.Height = h;
+        Canvas.SetLeft(HitFlashRect, left);
+        Canvas.SetTop(HitFlashRect, top);
+
+        TintRect.Width = w;
+        TintRect.Height = h;
+        Canvas.SetLeft(TintRect, left);
+        Canvas.SetTop(TintRect, top);
     }
 
     private void ApplyScale()

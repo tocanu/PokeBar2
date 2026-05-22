@@ -72,6 +72,24 @@ public record SaveData
     /// <summary>Se o jogador cancelou a evolução pendente (para não perguntar a cada level-up).</summary>
     public bool EvolutionCancelled { get; init; }
 
+    /// <summary>Pokédex: dex numbers de Pokémon vistos (apareceram no mapa).</summary>
+    public HashSet<int> PokedexSeen { get; init; } = new();
+
+    /// <summary>Pokédex: dex numbers de Pokémon capturados.</summary>
+    public HashSet<int> PokedexCaptured { get; init; } = new();
+
+    /// <summary>Streak de dias consecutivos com daily quests completadas.</summary>
+    public int DailyStreak { get; init; }
+
+    /// <summary>Data (UTC) da última daily quest completada (para calcular streak).</summary>
+    public DateTime? LastDailyDate { get; init; }
+
+    /// <summary>IDs das daily quests ativas hoje.</summary>
+    public List<string> DailyQuestIds { get; init; } = new();
+
+    /// <summary>Histórico das últimas capturas (máx 50 entradas).</summary>
+    public List<CaptureHistoryEntry> CaptureHistory { get; init; } = new();
+
     /// <summary>Data/hora do último save.</summary>
     public DateTime LastSaved { get; init; } = DateTime.UtcNow;
 }
@@ -96,6 +114,36 @@ public record PlayerStats
     /// <summary>Total de Pokéballs usadas.</summary>
     public int TotalPokeballsUsed { get; init; }
 
+    /// <summary>Total de batalhas perdidas.</summary>
+    public int TotalBattlesLost { get; init; }
+
+    /// <summary>Distância total percorrida pelo pet (em pixels).</summary>
+    public double TotalDistanceWalked { get; init; }
+
+    /// <summary>Total de Pokémon shiny capturados.</summary>
+    public int TotalShinyCaptured { get; init; }
+
+    /// <summary>Total de daily quests completadas.</summary>
+    public int TotalDailyQuestsCompleted { get; init; }
+
     /// <summary>Tempo total em jogo (segundos).</summary>
     public double TotalPlayTimeSeconds { get; init; }
+}
+
+/// <summary>
+/// Entrada no histórico de capturas recentes.
+/// </summary>
+public record CaptureHistoryEntry
+{
+    /// <summary>Dex number do Pokémon capturado.</summary>
+    public int Dex { get; init; }
+
+    /// <summary>Se era shiny.</summary>
+    public bool IsShiny { get; init; }
+
+    /// <summary>Raridade do Pokémon.</summary>
+    public string Rarity { get; init; } = "Common";
+
+    /// <summary>Data/hora da captura (UTC).</summary>
+    public DateTime CapturedAt { get; init; } = DateTime.UtcNow;
 }

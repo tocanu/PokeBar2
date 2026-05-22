@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -30,6 +31,8 @@ public partial class PcBoxWindow : Window
     private int _selectedDex = -1;
     private int _currentPage;
     private const int PAGE_SIZE = 30; // 6 columns x 5 rows
+    private bool _showingHistory;
+    private readonly IReadOnlyList<CaptureHistoryEntry> _captureHistory;
 
     /// <summary>Dex escolhido pelo jogador, ou -1 se nenhum.</summary>
     public int ChosenDex => _selectedDex;
@@ -60,7 +63,8 @@ public partial class PcBoxWindow : Window
         int pokeballCount = 0,
         bool isPaused = false,
         bool isSilenceNotifications = false,
-        bool isBlockSpawns = false)
+        bool isBlockSpawns = false,
+        IReadOnlyList<CaptureHistoryEntry>? captureHistory = null)
     {
         InitializeComponent();
         _spriteCache = spriteCache;
@@ -71,6 +75,7 @@ public partial class PcBoxWindow : Window
         _isPaused = isPaused;
         _isSilenceNotifications = isSilenceNotifications;
         _isBlockSpawns = isBlockSpawns;
+        _captureHistory = captureHistory ?? Array.Empty<CaptureHistoryEntry>();
 
         ApplyLocale();
         BuildGearMenu();
@@ -197,6 +202,100 @@ public partial class PcBoxWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void OnHistoryToggle(object sender, RoutedEventArgs e)
+    {
+        _showingHistory = !_showingHistory;
+        if (_showingHistory)
+        {
+            ShowHistory();
+            HistoryButton.Content = "📦 BOX";
+            SelectButton.IsEnabled = false;
+            PageText.Text = Localizer.Get("pcbox.history_title");
+            PrevButton.IsEnabled = false;
+            NextButton.IsEnabled = false;
+        }
+        else
+        {
+            ShowPage(_currentPage);
+            HistoryButton.Content = $"📜 {Localizer.Get("pcbox.history").ToUpperInvariant()}";
+        }
+    }
+
+    private void ShowHistory()
+    {
+        var items = new List<PcBoxItem>();
+
+        // Mostrar as capturas mais recentes primeiro
+        var entries = _captureHistory.Reverse().Take(PAGE_SIZE).ToList();
+
+        foreach (var entry in entries)
+        {
+            BitmapSource? sprite = null;
+            try
+            {
+                var anims = _spriteCache.GetAnimations(entry.Dex, "0000", _config);
+                sprite = anims.Idle?.Frames.Count > 0 ? anims.Idle.Frames[0]
+                       : anims.WalkRight?.Frames.Count > 0 ? anims.WalkRight.Frames[0]
+                       : null;
+            }
+            catch { /* sem sprite */ }
+
+            var bgColor = entry.IsShiny
+                ? System.Windows.Media.Color.FromArgb(0x60, 0xF8, 0xD0, 0x30)  // gold for shiny
+                : System.Windows.Media.Color.FromArgb(0x40, 0xF8, 0xF8, 0xF0); // normal
+
+            var borderColor = entry.IsShiny
+                ? System.Windows.Media.Color.FromRgb(0xF8, 0xD0, 0x30)
+                : entry.Rarity switch
+                {
+                    "Legendary" => System.Windows.Media.Color.FromRgb(0xE0, 0x40, 0x38),
+                    "Epic" => System.Windows.Media.Color.FromRgb(0xA0, 0x40, 0xD0),
+                    "Rare" => System.Windows.Media.Color.FromRgb(0x38, 0x90, 0xF8),
+                    "Uncommon" => System.Windows.Media.Color.FromRgb(0x40, 0xC8, 0x40),
+                    _ => System.Windows.Media.Color.FromArgb(0x60, 0x98, 0xB8, 0x88)
+                };
+
+            var timeAgo = FormatTimeAgo(entry.CapturedAt);
+            var label = entry.IsShiny ? $"★#{entry.Dex:D3}" : $"#{entry.Dex:D3}";
+
+            items.Add(new PcBoxItem
+            {
+                Dex = entry.Dex,
+                Sprite = sprite,
+                Label = label,
+                Background = new SolidColorBrush(bgColor),
+                BorderColor = new SolidColorBrush(borderColor)
+            });
+        }
+
+        // Pad remaining slots
+        while (items.Count < PAGE_SIZE)
+        {
+            items.Add(new PcBoxItem
+            {
+                Dex = -1,
+                Sprite = null,
+                Label = "",
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0x80, 0xC0, 0x60)),
+                BorderColor = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x30, 0x98, 0xB8, 0x88))
+            });
+        }
+
+        PokemonGrid.ItemsSource = items;
+        SelectedText.Text = entries.Count > 0
+            ? $"{entries.Count} {Localizer.Get("pcbox.recent_captures")}"
+            : Localizer.Get("pcbox.no_captures");
+    }
+
+    private static string FormatTimeAgo(DateTime utcTime)
+    {
+        var elapsed = DateTime.UtcNow - utcTime;
+        if (elapsed.TotalMinutes < 1) return "agora";
+        if (elapsed.TotalHours < 1) return $"{(int)elapsed.TotalMinutes}m";
+        if (elapsed.TotalDays < 1) return $"{(int)elapsed.TotalHours}h";
+        return $"{(int)elapsed.TotalDays}d";
     }
 
     private void BuildGearMenu()

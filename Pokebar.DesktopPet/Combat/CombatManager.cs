@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
+using Pokebar.Core.Models;
 using Pokebar.DesktopPet.Entities;
 using Serilog;
 
@@ -15,23 +16,27 @@ public class CombatManager
     private readonly int _rounds;
     private readonly double _retreatDistance;
     private readonly double _cooldownDuration;
+    private readonly double _damageVariance;
+    private readonly int _poisonDivisor;
+    private readonly double _paralysisSkipChance;
+    private readonly int _sleepDurationRounds;
+    private readonly MoveDefinition[] _moves;
     private CombatSession? _active;
     private double _cooldownRemaining;
 
-    public CombatManager(
-        double collisionTolerance = 20,
-        double spacing = 50,
-        double roundDuration = 3,
-        int rounds = 3,
-        double retreatDistance = 200,
-        double cooldownDuration = 1.5)
+    public CombatManager(CombatConfig config)
     {
-        _collisionTolerance = collisionTolerance;
-        _spacing = spacing;
-        _roundDuration = roundDuration;
-        _rounds = Math.Max(1, rounds);
-        _retreatDistance = retreatDistance;
-        _cooldownDuration = cooldownDuration;
+        _collisionTolerance = config.CollisionTolerance;
+        _spacing = config.FacingSpacing;
+        _roundDuration = config.RoundDurationSeconds;
+        _rounds = Math.Max(1, config.RoundsPerFight);
+        _retreatDistance = config.RetreatDistance;
+        _cooldownDuration = config.CooldownSeconds;
+        _damageVariance = config.DamageVariance;
+        _poisonDivisor = Math.Max(1, config.PoisonDivisor);
+        _paralysisSkipChance = config.ParalysisSkipChance;
+        _sleepDurationRounds = Math.Max(1, config.SleepDurationRounds);
+        _moves = config.Moves.Length > 0 ? config.Moves : MoveDefinition.DefaultMoves();
     }
 
     public bool IsActive => _active != null;
@@ -115,22 +120,20 @@ public class CombatManager
         var mid = (player.X + enemy.X) / 2;
         if (player.X <= enemy.X)
         {
-            // Player já está à esquerda — manter assim
             player.X = mid - (_spacing / 2);
             enemy.X = mid + (_spacing / 2);
         }
         else
         {
-            // Player está à direita — manter assim (não trocar)
             player.X = mid + (_spacing / 2);
             enemy.X = mid - (_spacing / 2);
         }
 
-        // Define direções para se encararem (ANTES de trocar estado/animação)
+        // Define direções para se encararem
         player.FacingRight = player.X < enemy.X;
         enemy.FacingRight = enemy.X < player.X;
 
-        // Agora inicia o combate (troca estado e animação)
+        // Agora inicia o combate
         player.StartFighting();
         enemy.StartFighting();
     }
@@ -143,30 +146,174 @@ public class CombatManager
         var player = _active.Player;
         var enemy = _active.Enemy;
 
-        var playerScore = ComputeScore(player.MaxHp, player.Attack, enemy.Defense);
-        var enemyScore = ComputeScore(enemy.MaxHp, enemy.Attack, player.Defense);
+        // Simulação de rodadas com moves, dano real e status effects
+        var result = SimulateRounds(player, enemy);
 
-        var playerWins = playerScore > enemyScore;        Log.Information("Combat resolved: {Winner} wins! Scores - Player: {PlayerScore}, Enemy: {EnemyScore}",
-            playerWins ? "Player" : "Enemy", playerScore, enemyScore);        if (!playerWins && Math.Abs(playerScore - enemyScore) < 0.01)
-        {
-            playerWins = _random.NextDouble() >= 0.5;
-        }
+        Log.Information("Combat resolved: {Winner} wins! Rounds={Rounds}, PlayerHP={PHp}/{PMax}, EnemyHP={EHp}/{EMax}",
+            result.PlayerWins ? "Player" : "Enemy", _rounds,
+            result.PlayerHpRemaining, player.MaxHp, result.EnemyHpRemaining, enemy.MaxHp);
 
-        if (playerWins)
+        if (result.PlayerWins)
         {
-            enemy.TakeDamage(enemy.MaxHp);
+            // Aplicar HP real e status no inimigo para afetar captura
+            enemy.SetHp(result.EnemyHpRemaining);
+            enemy.ActiveStatus = result.EnemyStatus;
+            enemy.SleepTurnsLeft = 0;
+
+            if (enemy.CurrentHp <= 0)
+                enemy.TakeDamage(enemy.MaxHp); // triggers Fainted via 0 HP
+            else
+                enemy.Faint(); // fainted por derrota, com HP restante
+
             RestoreAfterCombat(player, _active.PlayerPrevState, _active.PlayerPrevVelocity);
+            player.EndCombat();
         }
         else
         {
             player.X += player.FacingRight ? -_retreatDistance : _retreatDistance;
             RestoreAfterCombat(player, _active.PlayerPrevState, _active.PlayerPrevVelocity);
             RestoreAfterCombat(enemy, _active.EnemyPrevState, _active.EnemyPrevVelocity);
+            player.EndCombat();
+            enemy.ActiveStatus = StatusEffectType.None;
         }
 
         _active = null;
         _cooldownRemaining = _cooldownDuration;
-        BattleEnded?.Invoke(playerWins);
+        BattleEnded?.Invoke(result.PlayerWins);
+    }
+
+    /// <summary>
+    /// Simula N rodadas de combate com moves, dano real, crit e status effects.
+    /// </summary>
+    private CombatResult SimulateRounds(PlayerPet player, EnemyPet enemy)
+    {
+        var playerMoves = new MoveSet(_moves, _random);
+        var enemyMoves = new MoveSet(_moves, _random);
+
+        int pHp = player.MaxHp;
+        int eHp = enemy.MaxHp;
+        var pStatus = StatusEffectType.None;
+        var eStatus = StatusEffectType.None;
+        int pSleepLeft = 0;
+        int eSleepLeft = 0;
+
+        for (int round = 0; round < _rounds; round++)
+        {
+            // Aplicar veneno no início do turno
+            if (pStatus == StatusEffectType.Poison)
+                pHp -= Math.Max(1, player.MaxHp / _poisonDivisor);
+            if (eStatus == StatusEffectType.Poison)
+                eHp -= Math.Max(1, enemy.MaxHp / _poisonDivisor);
+
+            if (pHp <= 0 || eHp <= 0) break;
+
+            // Turno do jogador
+            if (!IsSkippedByStatus(pStatus, ref pSleepLeft))
+            {
+                var move = playerMoves.PickMove();
+                playerMoves.UseMove(move);
+                int dmg = CalcDamage(move, player.Attack, enemy.Defense);
+                eHp -= dmg;
+
+                if (move.StatusEffect != StatusEffectType.None && eStatus == StatusEffectType.None)
+                {
+                    if (_random.NextDouble() < move.StatusChance)
+                    {
+                        eStatus = move.StatusEffect;
+                        if (eStatus == StatusEffectType.Sleep)
+                            eSleepLeft = _sleepDurationRounds;
+                        Log.Debug("Round {R}: Player inflicted {Status} on enemy", round + 1, eStatus);
+                    }
+                }
+            }
+
+            if (eHp <= 0) break;
+
+            // Turno do inimigo
+            if (!IsSkippedByStatus(eStatus, ref eSleepLeft))
+            {
+                var move = enemyMoves.PickMove();
+                enemyMoves.UseMove(move);
+                int dmg = CalcDamage(move, enemy.Attack, player.Defense);
+                pHp -= dmg;
+
+                if (move.StatusEffect != StatusEffectType.None && pStatus == StatusEffectType.None)
+                {
+                    if (_random.NextDouble() < move.StatusChance)
+                    {
+                        pStatus = move.StatusEffect;
+                        if (pStatus == StatusEffectType.Sleep)
+                            pSleepLeft = _sleepDurationRounds;
+                        Log.Debug("Round {R}: Enemy inflicted {Status} on player", round + 1, pStatus);
+                    }
+                }
+            }
+
+            if (pHp <= 0) break;
+
+            playerMoves.TickCooldowns();
+            enemyMoves.TickCooldowns();
+        }
+
+        pHp = Math.Max(0, pHp);
+        eHp = Math.Max(0, eHp);
+
+        // Determinar vencedor: quem tem mais HP% restante
+        var pRatio = player.MaxHp > 0 ? (double)pHp / player.MaxHp : 0;
+        var eRatio = enemy.MaxHp > 0 ? (double)eHp / enemy.MaxHp : 0;
+        var playerWins = pRatio >= eRatio;
+
+        // Empate: coin flip
+        if (Math.Abs(pRatio - eRatio) < 0.01)
+            playerWins = _random.NextDouble() >= 0.5;
+
+        return new CombatResult(playerWins, pHp, eHp, pStatus, eStatus);
+    }
+
+    /// <summary>
+    /// Calcula dano de um move: BaseDamage × (atk/def) × variância × crit.
+    /// </summary>
+    private int CalcDamage(MoveDefinition move, int attack, int defense)
+    {
+        if (move.BaseDamage <= 0) return 0;
+
+        var safeDef = Math.Max(1, defense);
+        var raw = move.BaseDamage * ((double)attack / safeDef);
+
+        // Variância: ±damageVariance
+        var variance = 1.0 + ((_random.NextDouble() * 2 - 1) * _damageVariance);
+        raw *= variance;
+
+        // Crit
+        if (_random.NextDouble() < move.CritChance)
+            raw *= 2.0;
+
+        return Math.Max(1, (int)Math.Round(raw));
+    }
+
+    /// <summary>
+    /// Verifica se o turno é pulado por efeito de status.
+    /// Sleep: sempre pula, decrementa turnos restantes, limpa ao expirar.
+    /// Paralysis: chance de pular.
+    /// </summary>
+    private bool IsSkippedByStatus(StatusEffectType status, ref int sleepLeft)
+    {
+        switch (status)
+        {
+            case StatusEffectType.Sleep:
+                if (sleepLeft > 0)
+                {
+                    sleepLeft--;
+                    return true;
+                }
+                return false; // sono expirou
+
+            case StatusEffectType.Paralysis:
+                return _random.NextDouble() < _paralysisSkipChance;
+
+            default:
+                return false;
+        }
     }
 
     private static void RestoreAfterCombat(PokemonPet pet, EntityState previousState, double previousVelocity)
@@ -187,11 +334,12 @@ public class CombatManager
         }
     }
 
-    private static double ComputeScore(int hp, int attack, int defense)
-    {
-        var safeDefense = Math.Max(1, defense);
-        return (hp * attack) / (double)safeDefense;
-    }
+    private readonly record struct CombatResult(
+        bool PlayerWins,
+        int PlayerHpRemaining,
+        int EnemyHpRemaining,
+        StatusEffectType PlayerStatus,
+        StatusEffectType EnemyStatus);
 
     private sealed class CombatSession
     {

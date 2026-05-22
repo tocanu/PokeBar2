@@ -4,9 +4,15 @@
     <!-- ═══════════════════════════════════════════════════════════════
          POKEBAR FIRE RED THEME — GBA-style pixel art UI
          Based on Pokémon Fire Red / Leaf Green PC Box aesthetic
+         FASE 8: Full Gen 3 GBA visual overhaul
          ═══════════════════════════════════════════════════════════════ -->
 
-    <!-- ── COLOR PALETTE (Fire Red authentic) ── -->
+    <!-- ── PIXEL FONT (Press Start 2P — OFL licensed) ── -->
+    <!-- Pack URI for embedded resource font. Fallback to Consolas if not found. -->
+    <FontFamily x:Key="FR_PixelFont">pack://application:,,,/Fonts/#Press Start 2P</FontFamily>
+    <FontFamily x:Key="FR_MonoFont">Consolas</FontFamily>
+
+    <!-- ── COLOR PALETTE (Fire Red authentic — 12 core + accents) ── -->
     <Color x:Key="FR_BgDark">#2B3A4E</Color>
     <Color x:Key="FR_BgMedium">#3B5068</Color>
     <Color x:Key="FR_BgLight">#4A6480</Color>
@@ -32,6 +38,9 @@
     <Color x:Key="FR_BtnHover">#50A0E0</Color>
     <Color x:Key="FR_BtnPressed">#306898</Color>
     <Color x:Key="FR_Disabled">#A0A0A0</Color>
+    <!-- FASE 8: Additional GBA colors -->
+    <Color x:Key="FR_Shadow">#18283040</Color>
+    <Color x:Key="FR_CursorYellow">#F8E030</Color>
 
     <!-- ── BRUSHES ── -->
     <SolidColorBrush x:Key="FR_BgDarkBrush" Color="{StaticResource FR_BgDark}"/>
@@ -58,11 +67,15 @@
     <SolidColorBrush x:Key="FR_BtnHoverBrush" Color="{StaticResource FR_BtnHover}"/>
     <SolidColorBrush x:Key="FR_BtnPressedBrush" Color="{StaticResource FR_BtnPressed}"/>
     <SolidColorBrush x:Key="FR_DisabledBrush" Color="{StaticResource FR_Disabled}"/>
+    <SolidColorBrush x:Key="FR_ShadowBrush" Color="{StaticResource FR_Shadow}"/>
+    <SolidColorBrush x:Key="FR_CursorYellowBrush" Color="{StaticResource FR_CursorYellow}"/>
 
     <!-- ── PIXEL RENDERING ── -->
-    <!-- Apply NearestNeighbor globally for pixel-perfect sprites -->
+    <!-- NearestNeighbor globally for pixel-perfect sprites and UI -->
 
-    <!-- ── GBA-STYLE WINDOW (borderless with pixel border) ── -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         GBA-STYLE WINDOW (borderless, pixel font, integer scale)
+         ═══════════════════════════════════════════════════════════════ -->
     <Style x:Key="FR_Window" TargetType="Window">
         <Setter Property="WindowStyle" Value="None"/>
         <Setter Property="ResizeMode" Value="NoResize"/>
@@ -74,20 +87,23 @@
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="10"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="UseLayoutRounding" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="Aliased"/>
         <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor"/>
+        <Setter Property="RenderOptions.EdgeMode" Value="Aliased"/>
     </Style>
 
-    <!-- ── GBA OUTER FRAME (double-border like the game) ── -->
+    <!-- ══ GBA OUTER FRAME (double-border like the game) ══ -->
     <Style x:Key="FR_OuterFrame" TargetType="Border">
         <Setter Property="BorderBrush" Value="{StaticResource FR_BorderDarkBrush}"/>
         <Setter Property="BorderThickness" Value="3"/>
         <Setter Property="CornerRadius" Value="2"/>
         <Setter Property="Padding" Value="3"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -98,7 +114,7 @@
         </Setter>
     </Style>
 
-    <!-- ── GBA INNER PANEL (the cream/green content area) ── -->
+    <!-- ══ GBA INNER PANEL (cream/green content area) ══ -->
     <Style x:Key="FR_InnerPanel" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource FR_BorderLightBrush}"/>
@@ -108,7 +124,16 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
     </Style>
 
-    <!-- ── HEADER BAR (red/orange bar like FR menus) ── -->
+    <!-- ══ 9-SLICE PANEL (inner + outer border = pixel frame effect) ══ -->
+    <Style x:Key="FR_9SliceFrame" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderDarkBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
+        <Setter Property="Padding" Value="2"/>
+    </Style>
+
+    <!-- ══ HEADER BAR (red/orange bar like FR menus) ══ -->
     <Style x:Key="FR_HeaderBar" TargetType="Border">
         <Setter Property="Background">
             <Setter.Value>
@@ -124,13 +149,14 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
     </Style>
 
-    <!-- ── GBA BUTTON (like Fire Red menu items) ── -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         BUTTONS (GBA-style with pixel font)
+         ═══════════════════════════════════════════════════════════════ -->
     <Style x:Key="FR_Button" TargetType="Button">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="9"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextLightBrush}"/>
-        <Setter Property="Padding" Value="14,6"/>
+        <Setter Property="Padding" Value="14,8"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
@@ -167,7 +193,7 @@
         </Setter>
     </Style>
 
-    <!-- ── RED ACCENT BUTTON ── -->
+    <!-- ═══ RED ACCENT BUTTON ═══ -->
     <Style x:Key="FR_ButtonRed" TargetType="Button" BasedOn="{StaticResource FR_Button}">
         <Setter Property="Template">
             <Setter.Value>
@@ -207,11 +233,10 @@
         </Setter>
     </Style>
 
-    <!-- ── ARROW BUTTON (◀ ▶ for box pagination) ── -->
+    <!-- ═══ ARROW BUTTON (◀ ▶ for pagination) ═══ -->
     <Style x:Key="FR_ArrowButton" TargetType="Button">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="16"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="10"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
         <Setter Property="Width" Value="28"/>
         <Setter Property="Height" Value="28"/>
@@ -246,10 +271,67 @@
         </Setter>
     </Style>
 
-    <!-- ── GBA CHECKBOX ── -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         MENU-STYLE LIST (GBA ▶ cursor selector)
+         Items look like "[▶] OPTION" with highlight on selection
+         ═══════════════════════════════════════════════════════════════ -->
+    <Style x:Key="FR_MenuListItem" TargetType="ListBoxItem">
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Padding" Value="4,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="Bd"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="Cursor" Text="▶" 
+                                       Foreground="{StaticResource FR_TextDarkBrush}"
+                                       FontFamily="{StaticResource FR_PixelFont}"
+                                       FontSize="10" Margin="0,0,6,0"
+                                       VerticalAlignment="Center"
+                                       Visibility="Hidden"/>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_SelectionBgBrush}"/>
+                            <Setter TargetName="Cursor" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" 
+                                    Value="{StaticResource FR_CardBgBrush}"/>
+                            <Setter TargetName="Cursor" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="FR_MenuList" TargetType="ListBox">
+        <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderDarkBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource FR_MenuListItem}"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         CHECKBOX (GBA style)
+         ═══════════════════════════════════════════════════════════════ -->
     <Style x:Key="FR_CheckBox" TargetType="CheckBox">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="9"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -287,7 +369,9 @@
         </Setter>
     </Style>
 
-    <!-- ── GBA SLIDER ── -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         SLIDER (GBA style)
+         ═══════════════════════════════════════════════════════════════ -->
     <Style x:Key="FR_Slider" TargetType="Slider">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
@@ -319,7 +403,9 @@
         </Setter>
     </Style>
 
-    <!-- ── GBA TAB CONTROL ── -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         TAB CONTROL (GBA style)
+         ═══════════════════════════════════════════════════════════════ -->
     <Style x:Key="FR_TabControl" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -328,15 +414,14 @@
     </Style>
 
     <Style x:Key="FR_TabItem" TargetType="TabItem">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="8"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
-                    <Border x:Name="Bd" Padding="10,5" Margin="0,0,2,0"
+                    <Border x:Name="Bd" Padding="10,6" Margin="0,0,2,0"
                             Background="{StaticResource FR_PanelBgAltBrush}"
                             BorderBrush="{StaticResource FR_CardBorderBrush}"
                             BorderThickness="2,2,2,0" CornerRadius="2,2,0,0"
@@ -363,39 +448,42 @@
         </Setter>
     </Style>
 
-    <!-- ── GBA TEXT LABEL ── -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         TEXT STYLES (pixel font at GBA-appropriate sizes)
+         ═══════════════════════════════════════════════════════════════ -->
     <Style x:Key="FR_Title" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="16"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextLightBrush}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="Aliased"/>
     </Style>
 
     <Style x:Key="FR_Label" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="10"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="Aliased"/>
     </Style>
 
     <Style x:Key="FR_SmallText" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="8"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextMutedBrush}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="Aliased"/>
     </Style>
 
-    <!-- ── SCROLLBAR (thin, styled) ── -->
+    <!-- ══ SCROLLBAR (thin, styled) ══ -->
     <Style x:Key="FR_ScrollViewer" TargetType="ScrollViewer">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
     </Style>
 
-    <!-- ── POKEMON CARD (for PC Box grid) ── -->
+    <!-- ══ POKEMON CARD (for PC Box grid) ══ -->
     <Style x:Key="FR_PokemonCard" TargetType="Border">
         <Setter Property="Width" Value="64"/>
         <Setter Property="Height" Value="64"/>
@@ -410,16 +498,63 @@
         </Style.Triggers>
     </Style>
 
-    <!-- ── COMBOBOX (basic GBA styling) ── -->
+    <!-- ══ COMBOBOX (GBA styling) ══ -->
     <Style x:Key="FR_ComboBox" TargetType="ComboBox">
-        <Setter Property="FontFamily" Value="Consolas"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="9"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource FR_CardBorderBrush}"/>
         <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="Padding" Value="6,4"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         GBA DIALOG BOX (Gen 3 text box with double border)
+         Used for typewriter text, speech, and alerts
+         ═══════════════════════════════════════════════════════════════ -->
+    <Style x:Key="FR_DialogBox" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource FR_PanelBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderDarkBrush}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="CornerRadius" Value="2"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{StaticResource FR_BorderDark}" 
+                                  BlurRadius="0" ShadowDepth="2" 
+                                  Direction="315" Opacity="0.5"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══ Dialog inner highlight border (light line inside dark) ═══ -->
+    <Style x:Key="FR_DialogInnerBorder" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource FR_BorderLightBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <!-- ═══ Blinking cursor (used in typewriter text) ═══ -->
+    <Style x:Key="FR_BlinkingCursor" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="Text" Value="▼"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Style.Resources>
+            <Storyboard x:Key="BlinkStoryboard">
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity"
+                                                RepeatBehavior="Forever">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="1"/>
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.5" Value="0"/>
+                </DoubleAnimationUsingKeyFrames>
+            </Storyboard>
+        </Style.Resources>
     </Style>
 
 </ResourceDictionary>

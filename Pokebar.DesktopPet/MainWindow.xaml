@@ -13,11 +13,36 @@
                Stretch="None" 
                RenderTransformOrigin="0.5,0.5"
                Cursor="Hand"
-               MouseLeftButtonDown="OnPokemonMouseClick">
+               MouseLeftButtonDown="OnPokemonMouseDown"
+               MouseLeftButtonUp="OnPokemonMouseUp"
+               MouseMove="OnPokemonMouseMove">
             <Image.RenderTransform>
                 <ScaleTransform x:Name="FlipTransform" ScaleX="1" ScaleY="1"/>
             </Image.RenderTransform>
         </Image>
+
+        <!-- Speech bubble overlay -->
+        <Border x:Name="SpeechBubble"
+                Background="#F0F8F0F0"
+                BorderBrush="#C0283848"
+                BorderThickness="2"
+                CornerRadius="8"
+                Padding="8,4"
+                Visibility="Collapsed"
+                IsHitTestVisible="False"
+                SnapsToDevicePixels="True">
+            <TextBlock x:Name="SpeechText"
+                       Foreground="#283848"
+                       FontFamily="Segoe UI Emoji"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
+                       MaxWidth="140"/>
+        </Border>
+
+        <!-- Heart particle container (for carinho) -->
+        <Canvas x:Name="HeartCanvas" IsHitTestVisible="False"/>
+
         <Rectangle x:Name="DebugHitbox"
                    Stroke="Lime"
                    StrokeThickness="1"

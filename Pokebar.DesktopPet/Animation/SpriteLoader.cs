@@ -34,7 +34,7 @@ public class SpriteLoader
 {
     private static readonly string[] FightCandidates = SpriteFileNames.AttackAnimations;
 
-    private readonly IReadOnlyDictionary<string, OffsetAdjustment> _offsets;
+    private readonly Dictionary<string, OffsetAdjustment> _offsets;
     private readonly string _spriteBasePath;
     private readonly Dictionary<string, BitmapImage> _bitmapCache = new(StringComparer.OrdinalIgnoreCase);
     private Func<int, string?>? _modPathResolver;
@@ -43,7 +43,7 @@ public class SpriteLoader
     {
         _spriteBasePath = spriteBasePath;
         _offsets = File.Exists(offsetsJsonPath)
-            ? FinalOffsets.Load(offsetsJsonPath)
+            ? new Dictionary<string, OffsetAdjustment>(FinalOffsets.Load(offsetsJsonPath))
             : new Dictionary<string, OffsetAdjustment>();
     }
 
@@ -53,6 +53,25 @@ public class SpriteLoader
     public void SetModPathResolver(Func<int, string?> resolver)
     {
         _modPathResolver = resolver;
+    }
+
+    /// <summary>
+    /// Merges additional offsets from a mod's offsets file.
+    /// Mod offsets override base offsets for matching UniqueIds.
+    /// </summary>
+    public int MergeOffsets(string offsetsJsonPath)
+    {
+        if (!File.Exists(offsetsJsonPath))
+            return 0;
+
+        var modOffsets = FinalOffsets.Load(offsetsJsonPath);
+        var count = 0;
+        foreach (var (key, value) in modOffsets)
+        {
+            _offsets[key] = value;
+            count++;
+        }
+        return count;
     }
 
     public bool TryGetOffset(string uniqueId, [NotNullWhen(true)] out OffsetAdjustment? offset)

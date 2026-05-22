@@ -39,7 +39,7 @@ public partial class MainWindow : Window
     private const double AUTO_SAVE_INTERVAL = 60.0;
     private double _spawnTimer;
     private double _nextSpawnDelay;
-    private bool _allowEnemyMonitorTravel = true;
+
     private readonly bool _debugOverlayEnabled;
     private double _fpsSmooth;
     private readonly List<TaskbarService.TaskbarInfo> _taskbars = new();
@@ -71,20 +71,59 @@ public partial class MainWindow : Window
     private ModLoader? _modLoader;
     private LevelService? _levelService;
     private EvolutionService? _evolutionService;
+    private PokedexService? _pokedexService;
     private EnemySpawnWeight[]? _dynamicSpawnPool;
     private bool _forceRareSpawn;
+
+    // FASE 8: Visual GBA services
+    private UiSfxService? _sfxService;
+    private TypewriterService? _typewriterService;
+
+    // P1: Desktop icon interaction
+    private DesktopIconService? _desktopIconService;
+    private IconOverlayWindow? _iconOverlay;
 
     // Chase-target: when the player clicks an enemy, the pet walks toward it
     private EnemyPet? _chaseTarget;
     private const double CHASE_ARRIVE_DISTANCE = 40.0;  // px — close enough to trigger combat
     private const double CHASE_SPEED_MULTIPLIER = 1.35;  // run slightly faster when chasing
 
+    // P2: Drag-to-reposition state
+    private bool _isDragging;
+    private System.Windows.Point _dragStartScreen;
+    private double _dragStartPokemonX;
+    private double _dragStartPokemonY;
+    private const double DRAG_THRESHOLD = 5.0; // pixels before drag starts
+    private bool _dragThresholdMet;
+
+    // P2: Gravity — fall to ground after drag
+    private bool _gravityActive;
+    private double _gravityVelocityY;   // px/s downward
+    private double _gravityTargetY;     // where to land (Y = ground)
+    private const double GRAVITY_ACCEL = 2800.0;  // px/s² — snappy fall
+    private const double GRAVITY_BOUNCE_FACTOR = 0.3; // energy kept on bounce
+    private const double GRAVITY_SETTLE_THRESHOLD = 2.0; // px — close enough to stop
+
+    // P2: Speech bubble top margin (extra canvas space above sprite)
+    private const double SPEECH_BUBBLE_MARGIN = 40.0;
+
+    // P2: Carinho combo system
+    private int _carinhoCombo;
+    private double _carinhoComboTimer;
+    private const double CARINHO_COMBO_WINDOW = 2.0; // seconds to chain clicks
+    private const int CARINHO_MAX_COMBO = 5;
+
+    // P2: Speech bubble system
+    private double _speechBubbleTimer;
+    private double _speechIdleTimer;
+    private double _nextIdleSpeechDelay = 45; // initial delay before first idle thought
+    private readonly Random _speechRandom = new();
+
     // Click-to-stop: idle timer after clicking the pet
     private double _clickIdleTimer;
     private const double CLICK_IDLE_DURATION = 3.0;  // seconds the pet stays put after click
 
     private const double TASKBAR_MARGIN = 0;
-    private readonly bool _allowMonitorTravel;
 
     public MainWindow()
     {
@@ -107,11 +146,9 @@ public partial class MainWindow : Window
         _spriteLoader = new SpriteLoader(offsetsPath, spritesPath);
         _spriteCache = new SpriteCache(_spriteLoader, _config.Performance.SpriteCacheMaxEntries);
 
-        _allowMonitorTravel = _config.Player.AllowMonitorTravel;
-        _allowEnemyMonitorTravel = _config.Enemy.AllowMonitorTravel;
         _debugOverlayEnabled = _config.Performance.DebugOverlay;
 
-        // Carregar save ou criar com defaults
+        // Carregar save primeiro para saber quais mods estão habilitados
         var loaded = SaveManager.Load();
         if (loaded != null)
         {
@@ -131,6 +168,20 @@ public partial class MainWindow : Window
                 _saveData.ActiveDex, _saveData.Pokeballs);
         }
 
+        // Integrar mods ANTES de carregar sprites (player ou enemy)
+        _modLoader = new ModLoader(_config.Mods);
+        _modLoader.EnsureModsFolder();
+        _modLoader.LoadMods(_saveData.EnabledMods);
+        _spriteLoader.SetModPathResolver(_modLoader.GetModSpritePath);
+        foreach (var mod in _modLoader.LoadedMods)
+        {
+            if (mod.OffsetsPath != null)
+            {
+                var merged = _spriteLoader.MergeOffsets(mod.OffsetsPath);
+                Log.Information("Mod {ModId}: merged {Count} offset overrides from {Path}", mod.Manifest.Id, merged, mod.OffsetsPath);
+            }
+        }
+
         _pokemon = new PlayerPet(_saveData.ActiveDex, _saveData.Pokeballs);
         _pokemon.RestoreFromSave(_saveData);
         _pokemon.AnimationPlayer.FrameChanged += OnFrameChanged;
@@ -141,13 +192,7 @@ public partial class MainWindow : Window
             _pokemon.Dex, _pokemon.Pokeballs, _pokemon.Party.Count);
         _entityManager = new EntityManager();
         _entityManager.Add(_pokemon);
-        _combatManager = new CombatManager(
-            collisionTolerance: _config.Combat.CollisionTolerance,
-            spacing: _config.Combat.FacingSpacing,
-            roundDuration: _config.Combat.RoundDurationSeconds,
-            rounds: _config.Combat.RoundsPerFight,
-            retreatDistance: _config.Combat.RetreatDistance,
-            cooldownDuration: _config.Combat.CooldownSeconds);
+        _combatManager = new CombatManager(_config.Combat);
         _captureManager = new CaptureManager(_config);
         _captureManager.CaptureCompleted += OnCaptureCompleted;
         _captureManager.CaptureFailed += OnCaptureFailed;
@@ -314,6 +359,18 @@ public partial class MainWindow : Window
                 if (claimed != null)
                 {
                     ApplyQuestReward(claimed);
+
+                    // P2: Incrementar stat de daily quests completadas
+                    if (claimed.IsDaily)
+                    {
+                        _saveData = _saveData with
+                        {
+                            Stats = _saveData.Stats with
+                            {
+                                TotalDailyQuestsCompleted = _saveData.Stats.TotalDailyQuestsCompleted + 1
+                            }
+                        };
+                    }
                 }
 
                 // XP por quest completada
@@ -321,10 +378,9 @@ public partial class MainWindow : Window
             });
         };
 
-        _modLoader = new ModLoader(_config.Mods);
-        _modLoader.EnsureModsFolder();
-        _modLoader.LoadMods(_saveData.EnabledMods);
-        _spriteLoader.SetModPathResolver(_modLoader.GetModSpritePath);
+        // Sistema de Pokédex
+        _pokedexService = new PokedexService();
+        _pokedexService.RestoreFromSave(_saveData);
 
         // Sistema de evolução
         _evolutionService = new EvolutionService();
@@ -351,6 +407,24 @@ public partial class MainWindow : Window
         UpdateTrayTooltip();
         UpdateStonesMenu();
 
+        // FASE 8: UI SFX + Typewriter services
+        _sfxService = new UiSfxService
+        {
+            Enabled = _config.Sfx.Enabled,
+            Volume = _config.Sfx.Volume
+        };
+        _typewriterService = new TypewriterService
+        {
+            CharsPerSecond = _config.Sfx.TypewriterCharsPerSecond
+        };
+        _typewriterService.CharRevealed += () => _sfxService?.PlayTypeChar();
+
+        // P1: Desktop icon interaction
+        _desktopIconService = new DesktopIconService(_config.DesktopIcons);
+        _desktopIconService.SetSfxService(_sfxService);
+        WireDesktopIconEvents(_desktopIconService);
+        _desktopIconService.Initialize();
+
         // FASE 7: AnimationFinished handler — retornar ao idle/walking após animações one-shot
         _pokemon.AnimationPlayer.AnimationFinished += () =>
         {
@@ -366,6 +440,42 @@ public partial class MainWindow : Window
 
         Log.Information("Windows integration initialized. Tray={Tray}, Toast={Toast}, Hotkeys=yes, SysPrefs=yes, Silence={Silence}, BlockSpawns={Block}",
             winConfig.TrayIconEnabled, winConfig.ToastNotificationsEnabled, _silenceNotifications, _blockSpawns);
+    }
+
+    private void WireDesktopIconEvents(DesktopIconService service)
+    {
+        service.PlayStarted += iconName =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var phrases = new[] { "Ooh!", "What's this?", "Mine!", "Hehe~", "♪", "!!!" };
+                var phrase = phrases[new Random().Next(phrases.Length)];
+                ShowSpeechBubble(phrase, 1.5);
+                _sfxService?.PlaySelect();
+
+                // Show overlay above pet's head (not at icon's desktop position)
+                if (_desktopIconService?.TargetIcon != null)
+                {
+                    _iconOverlay ??= new IconOverlayWindow();
+                    _iconOverlay.ShowAt((int)_pokemon.X, (int)(_pokemon.Y - 50), _desktopIconService.TargetIcon.Name);
+                }
+            });
+        };
+        service.PlayEnded += () =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _iconOverlay?.HideOverlay();
+            });
+        };
+        service.AutoArrangeFallback += () =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _notificationService?.Notify("Desktop Icons",
+                    "Auto-arrange detected! Using visual-only mode.");
+            });
+        };
     }
 
     private void TogglePause()
@@ -433,7 +543,8 @@ public partial class MainWindow : Window
             _pokemon.Pokeballs,
             _isPaused,
             _silenceNotifications,
-            _blockSpawns);
+            _blockSpawns,
+            _saveData.CaptureHistory);
         pcBox.Owner = null; // Transparent window can't be owner
         pcBox.PetRequested += OnPetClicked;
         pcBox.PauseResumeRequested += TogglePause;
@@ -460,23 +571,61 @@ public partial class MainWindow : Window
     private void OnSettingsRequested()
     {
         var allAchievements = _achievementService?.AllAchievements.ToList() ?? new List<Achievement>();
-        var settings = new SettingsWindow(_config, _appSettings, _saveData, _spriteCache, _pokemon.Dex, allAchievements);
+        var settings = new SettingsWindow(
+            _config, _appSettings, _saveData, _spriteCache, _pokemon.Dex, allAchievements,
+            _pokedexService?.Seen, _pokedexService?.Captured);
+
+        // P1: Desktop icon interaction state
+        if (_desktopIconService != null)
+        {
+            settings.SetIconInteractionState(
+                _desktopIconService.AutoArrangeDetected,
+                _desktopIconService.HasSavedLayout);
+            settings.RestoreLayoutRequested += () =>
+            {
+                var count = _desktopIconService.RestoreLayout();
+                _notificationService?.Notify("Desktop Icons",
+                    $"Restored {count} icon positions.");
+            };
+        }
+
         if (settings.ShowDialog() == true)
         {
+            var newProfileId = settings.EditedSettings?.ActiveProfileId ?? _appSettings.ActiveProfileId;
+            var oldProfileId = _appSettings.ActiveProfileId;
+            var profileChanged = newProfileId != oldProfileId;
+
             if (settings.EditedConfig != null)
             {
-                var targetProfileId = settings.EditedSettings?.ActiveProfileId ?? _appSettings.ActiveProfileId;
-                ProfileManager.SaveProfile(targetProfileId, settings.EditedConfig);
-                _config = settings.EditedConfig;
+                if (profileChanged)
+                {
+                    // Perfil mudou: salvar alterações de config no perfil ANTIGO (atual),
+                    // depois carregar o config do perfil NOVO intacto.
+                    ProfileManager.SaveProfile(oldProfileId, settings.EditedConfig);
+                    Log.Information("Settings: config changes saved to current profile '{Profile}'", oldProfileId);
+
+                    _config = ProfileManager.LoadProfile(newProfileId);
+                    Log.Information("Settings: loaded config from new profile '{Profile}'", newProfileId);
+                }
+                else
+                {
+                    // Mesmo perfil: salvar config editado normalmente
+                    ProfileManager.SaveProfile(oldProfileId, settings.EditedConfig);
+                    _config = settings.EditedConfig;
+                    Log.Information("Settings: config saved to profile '{Profile}'", oldProfileId);
+                }
                 ApplyConfigChanges();
-                Log.Information("Settings: config saved and applied in-memory");
             }
+
             if (settings.EditedSettings != null)
             {
                 ProfileManager.SaveSettings(settings.EditedSettings);
                 _appSettings = settings.EditedSettings;
-                Log.Information("Settings: app settings saved");
+                Log.Information("Settings: app settings saved (activeProfile='{Profile}')", _appSettings.ActiveProfileId);
             }
+
+            // Persistir save imediatamente para refletir novo ActiveProfileId
+            PerformSave("settings");
 
             _notificationService?.Notify("Pokebar", Localizer.Get("settings.saved"));
 
@@ -510,6 +659,17 @@ public partial class MainWindow : Window
 
         Log.Debug("Config changes applied in-memory: Silence={Silence}, BlockSpawns={Block}, Toast={Toast}, Speed={Speed}",
             _silenceNotifications, _blockSpawns, _config.Windows.ToastNotificationsEnabled, _config.Player.WalkSpeed);
+
+        // Reinitialize desktop icon service if mode changed
+        if (_desktopIconService != null)
+        {
+            _desktopIconService.CancelPlay();
+            _iconOverlay?.HideOverlay();
+            _desktopIconService = new DesktopIconService(_config.DesktopIcons);
+            _desktopIconService.SetSfxService(_sfxService);
+            WireDesktopIconEvents(_desktopIconService);
+            _desktopIconService.Initialize();
+        }
     }
 
     private void OnScreenshotRequested()
@@ -579,6 +739,10 @@ public partial class MainWindow : Window
         _enemyTaskbars.Clear();
 
         _captureManager.Shutdown();
+
+        // P1: Cancel icon play and restore layout on close
+        _desktopIconService?.CancelPlay();
+        _iconOverlay?.Close();
 
         // FASE 5: Limpar serviços de integração Windows
         _hotkeyService?.Dispose();
@@ -653,6 +817,19 @@ public partial class MainWindow : Window
 
         _entityManager.Update(deltaTime);
 
+        // P2: Rastrear distância percorrida pelo pet
+        var distanceMoved = Math.Abs(_pokemon.VelocityX * deltaTime);
+        if (distanceMoved > 0.01)
+        {
+            _saveData = _saveData with
+            {
+                Stats = _saveData.Stats with
+                {
+                    TotalDistanceWalked = _saveData.Stats.TotalDistanceWalked + distanceMoved
+                }
+            };
+        }
+
         UpdateFullscreenMonitors();
         UpdateTaskbarTravel();
         UpdateEnemyMovement();
@@ -671,6 +848,15 @@ public partial class MainWindow : Window
         // FASE 7: Atualizar humor, comportamento idle e movimento inteligente
         UpdateMoodAndBehavior(deltaTime);
         _questService?.Update(deltaTime);
+
+        // P2: Atualizar balão de fala, combo de carícia e partículas
+        UpdateSpeechAndCarinho(deltaTime);
+
+        // P2: Gravity after drag release
+        UpdateDragGravity(deltaTime);
+
+        // P1: Atualizar overlays de status e efeitos visuais
+        UpdateStatusOverlays(deltaTime);
 
         if (_debugOverlayEnabled && deltaTime > 0)
         {
@@ -719,11 +905,15 @@ public partial class MainWindow : Window
         var scaleX = _pokemon.ShouldFlip ? (_pokemon.FacingRight ? 1 : -1) : 1;
         FlipTransform.ScaleX = scaleX;
 
-        if (RootCanvas.Width != frame.PixelWidth || RootCanvas.Height != frame.PixelHeight)
+        var newW = (double)frame.PixelWidth;
+        var newH = (double)frame.PixelHeight + SPEECH_BUBBLE_MARGIN;
+        if (RootCanvas.Width != newW || RootCanvas.Height != newH)
         {
-            RootCanvas.Width = frame.PixelWidth;
-            RootCanvas.Height = frame.PixelHeight;
+            RootCanvas.Width = newW;
+            RootCanvas.Height = newH;
         }
+        // Offset the sprite image down to make room for the speech bubble above
+        Canvas.SetTop(PokemonImage, SPEECH_BUBBLE_MARGIN);
 
         if (_debugOverlayEnabled)
         {
@@ -779,7 +969,7 @@ public partial class MainWindow : Window
         var movingRight = _pokemon.VelocityX >= 0;
         var target = FindTaskbarForX(_pokemon.X);
 
-        if (!_allowMonitorTravel)
+        if (!_config.Player.AllowMonitorTravel)
         {
             ClampToTaskbar(_pokemon, _currentTaskbar, halfWidth, true);
             return;
@@ -998,8 +1188,8 @@ public partial class MainWindow : Window
 
         var scale = _currentTaskbar.DpiScale > 0 ? _currentTaskbar.DpiScale : 1.0;
         var windowX = (_pokemon.X / scale) - (RootCanvas.Width / 2);
-        var groundLine = _currentGroundLineY > 0 ? _currentGroundLineY : RootCanvas.Height;
-        var windowY = (_pokemon.Y / scale) - groundLine;
+        var groundLine = _currentGroundLineY > 0 ? _currentGroundLineY : (RootCanvas.Height - SPEECH_BUBBLE_MARGIN);
+        var windowY = (_pokemon.Y / scale) - groundLine - SPEECH_BUBBLE_MARGIN;
 
         Left = windowX;
         Top = windowY;
@@ -1025,7 +1215,7 @@ public partial class MainWindow : Window
             var movingRight = enemy.VelocityX >= 0;
             var target = FindTaskbarForX(enemy.X);
 
-            if (!_allowEnemyMonitorTravel)
+            if (!_config.Enemy.AllowMonitorTravel)
             {
                 if (ShouldAllowOutside(enemy, minX, maxX))
                     continue;
@@ -1101,6 +1291,42 @@ public partial class MainWindow : Window
             var taskbar = GetEnemyTaskbar(enemy);
             var scale = taskbar?.DpiScale ?? _currentTaskbar?.DpiScale ?? 1.0;
             window.UpdatePosition(enemy.X, enemy.Y, scale);
+        }
+    }
+
+    /// <summary>
+    /// P1: Atualiza overlays de status (Zzz/⚡/☠) e efeitos visuais (tint, flash)
+    /// em todas as janelas de inimigos com base no ActiveStatus de cada entity.
+    /// </summary>
+    private void UpdateStatusOverlays(double deltaTime)
+    {
+        foreach (var pair in _enemyWindows)
+        {
+            var enemy = pair.Key;
+            var window = pair.Value;
+
+            // Overlay textual de status
+            var statusText = enemy.ActiveStatus switch
+            {
+                StatusEffectType.Sleep => "💤",
+                StatusEffectType.Poison => "☠",
+                StatusEffectType.Paralysis => "⚡",
+                _ => null
+            };
+            window.SetStatusOverlay(statusText);
+
+            // Tint de cor por status
+            var tintColor = enemy.ActiveStatus switch
+            {
+                StatusEffectType.Sleep => "#6666BBFF",    // azul
+                StatusEffectType.Poison => "#669933CC",   // roxo
+                StatusEffectType.Paralysis => "#66FFD700", // amarelo
+                _ => (string?)null
+            };
+            window.SetTintColor(tintColor);
+
+            // Atualizar efeitos visuais baseados em tempo
+            window.UpdateEffects(deltaTime);
         }
     }
 
@@ -1213,9 +1439,13 @@ public partial class MainWindow : Window
 
         // FASE 7: Rolar shiny
         var isShiny = RollShiny();
-        var enemy = new EnemyPet(dex, isShiny: isShiny);
+        var rarity = GetRarityForDex(dex);
+        var enemy = new EnemyPet(dex, isShiny: isShiny, rarity: rarity);
         enemy.PatrolSpeed = _config.Enemy.WalkSpeed;
         RegisterEnemy(enemy, taskbar);
+
+        // Pokédex: registrar como visto
+        _pokedexService?.OnSeen(dex);
 
         var spawnLeft = _random.Next(0, 2) == 0;
         var startX = spawnLeft
@@ -1232,11 +1462,15 @@ public partial class MainWindow : Window
                 Localizer.Get("toast.shiny.title"),
                 Localizer.Get("toast.shiny.spawned", dex.ToString()));
             Log.Information("SHINY Enemy spawned: Dex {Dex} at X: {X:F0}", dex, startX);
+            ShowSpeechBubble("✨⚔✨", 3.0);
         }
         else
         {
             Log.Debug("Enemy spawned: Dex {Dex} at X: {X:F0}, Y: {Y:F0}, Monitor: {MonitorIndex}", 
                 dex, startX, taskbar.GroundYPx, taskbar.MonitorIndex);
+            // Occasional alert for normal enemies
+            if (_speechRandom.Next(3) == 0)
+                ShowSpeechBubble("⚔", 2.0);
         }
     }
 
@@ -1358,6 +1592,10 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Don't move the pet while being dragged or falling with gravity
+        if (_isDragging || _gravityActive)
+            return;
+
         // Atualizar humor/amizade
         _moodService?.Update(_pokemon, deltaTime);
 
@@ -1430,8 +1668,56 @@ public partial class MainWindow : Window
             }
         }
 
+        // ── Desktop icon play: pet interacts with desktop icons ──
+        if (_desktopIconService != null && _desktopIconService.IsEnabled)
+        {
+            bool isFullscreen = _currentTaskbar != null && _fullscreenMonitors.Contains(_currentTaskbar.MonitorHandle);
+            bool isPausedOrBlocked = _isPaused || (_config.DesktopIcons.RespectBlockSpawns && _blockSpawns);
+            if (_config.DesktopIcons.RespectFullscreen && isFullscreen)
+                isPausedOrBlocked = true;
+
+            var iconControlling = _desktopIconService.Update(deltaTime, _pokemon.X, _pokemon.Y,
+                isFullscreen, isPausedOrBlocked);
+
+            if (iconControlling)
+            {
+                if (_desktopIconService.State == DesktopIconService.IconPlayState.Carrying)
+                {
+                    // Walk in carry direction
+                    var dir = _desktopIconService.CarryDirection;
+                    _pokemon.VelocityX = _config.DesktopIcons.CarryWalkSpeed * dir;
+                    if (_pokemon.State != EntityState.Walking)
+                        _pokemon.StartWalking();
+
+                    // Update overlay position near the pet (above pet's head)
+                    if (_iconOverlay != null)
+                    {
+                        _iconOverlay.MoveTo((int)_pokemon.X, (int)(_pokemon.Y - 50));
+                    }
+                }
+                else
+                {
+                    // PickingUp / Dropping — stay idle
+                    _pokemon.VelocityX = 0;
+                    if (_pokemon.State == EntityState.Walking)
+                        _pokemon.StartIdle();
+                }
+                return;
+            }
+            else if (_desktopIconService.State == DesktopIconService.IconPlayState.Idle
+                     && _pokemon.State == EntityState.Idle
+                     && !(_idleBehaviorService?.IsInBehavior ?? false)
+                     && _chaseTarget == null)
+            {
+                // Try to start a new icon play when pet is idle
+                _desktopIconService.TryStartPlay(_pokemon.X, _pokemon.Y);
+            }
+        }
+
         // Atualizar comportamentos idle (yawn, sit, lay, sleep)
-        _idleBehaviorService?.Update(_pokemon, deltaTime, mood);
+        // MinimalMode desativa behaviors extras para reduzir distrações visuais
+        if (!_config.Windows.MinimalMode)
+            _idleBehaviorService?.Update(_pokemon, deltaTime, mood);
 
         // Atualizar movimento inteligente (pausas, edge slowdown, mood speed)
         if (_smartMovement != null && _currentTaskbar != null)
@@ -1468,14 +1754,82 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>FASE 7: Handler de clique direto no sprite do pet.</summary>
-    private void OnPokemonMouseClick(object sender, MouseButtonEventArgs e)
+    // ── P2: Drag-to-reposition & Carinho handlers ───────────────────────
+
+    private void OnPokemonMouseDown(object sender, MouseButtonEventArgs e)
     {
-        OnPetClicked();
+        if (e.ChangedButton != MouseButton.Left) return;
+
+        // Cancel gravity if picking up mid-fall
+        _gravityActive = false;
+        _gravityVelocityY = 0;
+
+        _isDragging = true;
+        _dragThresholdMet = false;
+        _dragStartScreen = PointToScreen(e.GetPosition(this));
+        _dragStartPokemonX = _pokemon.X;
+        _dragStartPokemonY = _pokemon.Y;
+        ((System.Windows.UIElement)sender).CaptureMouse();
         e.Handled = true;
     }
 
-    /// <summary>FASE 7: Handler de clique no pet (carícia).</summary>
+    private void OnPokemonMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (!_isDragging) return;
+
+        var current = PointToScreen(e.GetPosition(this));
+        var dx = current.X - _dragStartScreen.X;
+        var dy = current.Y - _dragStartScreen.Y;
+
+        if (!_dragThresholdMet)
+        {
+            if (Math.Abs(dx) < DRAG_THRESHOLD && Math.Abs(dy) < DRAG_THRESHOLD)
+                return;
+            _dragThresholdMet = true;
+
+            // Cancel any active behavior when drag starts
+            _chaseTarget = null;
+            _idleBehaviorService?.Cancel(_pokemon);
+            _smartMovement?.CancelPause();
+            _pokemon.VelocityX = 0;
+            _pokemon.StartIdle();
+        }
+
+        var scale = (_currentTaskbar?.DpiScale > 0 ? _currentTaskbar!.DpiScale : 1.0);
+        _pokemon.X = _dragStartPokemonX + dx * scale;
+        _pokemon.Y = _dragStartPokemonY + dy * scale;
+        UpdateWindowPosition();
+    }
+
+    private void OnPokemonMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left) return;
+        if (!_isDragging) return;
+
+        ((System.Windows.UIElement)sender).ReleaseMouseCapture();
+        var wasDrag = _dragThresholdMet;
+        _isDragging = false;
+        _dragThresholdMet = false;
+
+        if (wasDrag)
+        {
+            // Start gravity: pet falls to ground at current X position
+            _gravityTargetY = _dragStartPokemonY; // ground Y
+            _gravityVelocityY = 0;
+            _gravityActive = true;
+            _clickIdleTimer = CLICK_IDLE_DURATION;
+            ShowSpeechBubble("😊", 1.5);
+        }
+        else
+        {
+            // It was a click, not a drag
+            OnPetClicked();
+        }
+
+        e.Handled = true;
+    }
+
+    /// <summary>P2: Handler de clique no pet (carícia com combo system).</summary>
     private void OnPetClicked()
     {
         // Não aceitar durante combate/captura
@@ -1498,17 +1852,276 @@ public partial class MainWindow : Window
         _smartMovement?.CancelPause();
         _clickIdleTimer = CLICK_IDLE_DURATION;
 
+        // ── Carinho combo ──
+        if (_carinhoComboTimer > 0)
+            _carinhoCombo = Math.Min(_carinhoCombo + 1, CARINHO_MAX_COMBO);
+        else
+            _carinhoCombo = 1;
+        _carinhoComboTimer = CARINHO_COMBO_WINDOW;
+
         // Registrar carícia no mood service
         var accepted = _moodService?.OnPet(_pokemon) ?? false;
         if (accepted)
         {
+            // Bonus friendship based on combo
+            if (_carinhoCombo > 1)
+                _pokemon.AddFriendship(_carinhoCombo - 1); // extra on top of MoodService's base
+
             // Tentar tocar animação de reação
             _pokemon.StartRandomReaction(_random);
             _questService?.OnPet();
             _levelService?.OnPet();
             _saveData = _saveData with { TotalPets = _saveData.TotalPets + 1 };
-            Log.Debug("Pet clicked! Friendship={Friendship}, Mood={Mood}, TotalPets={TotalPets}", _pokemon.Friendship, _pokemon.Mood, _saveData.TotalPets);
+
+            // Spawn heart particles based on combo
+            SpawnHeartParticles(_carinhoCombo);
+            _sfxService?.PlayConfirm();
+
+            // Speech bubble with combo feedback
+            var bubbleText = _carinhoCombo switch
+            {
+                1 => GetMoodReactionText(),
+                2 => "❤",
+                3 => "❤❤",
+                4 => "❤❤❤",
+                _ => "💖 MAX! 💖"
+            };
+            ShowSpeechBubble(bubbleText, 1.5);
+
+            Log.Debug("Pet clicked! Combo={Combo}, Friendship={Friendship}, Mood={Mood}, TotalPets={TotalPets}",
+                _carinhoCombo, _pokemon.Friendship, _pokemon.Mood, _saveData.TotalPets);
+
+            // Persistir TotalPets imediatamente
+            PerformSave("pet");
         }
+        else
+        {
+            // Cooldown active — small feedback
+            ShowSpeechBubble("...", 1.0);
+        }
+    }
+
+    /// <summary>Returns a mood-appropriate reaction text for the speech bubble.</summary>
+    private string GetMoodReactionText()
+    {
+        return _pokemon.Mood switch
+        {
+            MoodType.Happy => _speechRandom.Next(3) switch { 0 => "😊", 1 => "♪", _ => "!" },
+            MoodType.Sad => _speechRandom.Next(3) switch { 0 => "...", 1 => "😢", _ => "?" },
+            MoodType.Sleepy => _speechRandom.Next(2) switch { 0 => "💤", _ => "😴" },
+            _ => _speechRandom.Next(3) switch { 0 => "!", 1 => "❤", _ => "~" }
+        };
+    }
+
+    // ── P2: Heart particle system ───────────────────────────────────────
+
+    /// <summary>Spawn floating heart particles above the pet sprite.</summary>
+    private void SpawnHeartParticles(int count)
+    {
+        if (HeartCanvas == null) return;
+
+        var spriteW = PokemonImage.ActualWidth > 0 ? PokemonImage.ActualWidth : 64;
+        var spriteH = PokemonImage.ActualHeight > 0 ? PokemonImage.ActualHeight : 64;
+        var baseX = Canvas.GetLeft(PokemonImage) + spriteW / 2;
+        var baseY = Canvas.GetTop(PokemonImage);
+        if (double.IsNaN(baseX)) baseX = RootCanvas.Width / 2;
+        if (double.IsNaN(baseY)) baseY = RootCanvas.Height / 2;
+
+        for (int i = 0; i < count; i++)
+        {
+            var heart = new System.Windows.Controls.TextBlock
+            {
+                Text = count >= CARINHO_MAX_COMBO ? "💖" : "❤",
+                FontSize = 14 + _speechRandom.Next(6),
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji"),
+                Foreground = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromArgb(255, 255, 80, 100)),
+                IsHitTestVisible = false,
+                Opacity = 1.0
+            };
+
+            var offsetX = baseX + (_speechRandom.NextDouble() * 40 - 20);
+            Canvas.SetLeft(heart, offsetX);
+            Canvas.SetTop(heart, baseY);
+            HeartCanvas.Children.Add(heart);
+
+            // Animate: float up + fade out
+            var floatY = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = baseY,
+                To = baseY - 40 - _speechRandom.NextDouble() * 30,
+                Duration = TimeSpan.FromMilliseconds(800 + _speechRandom.Next(400)),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase
+                    { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+
+            var fadeOut = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 1.0,
+                To = 0.0,
+                Duration = floatY.Duration,
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase
+                    { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn }
+            };
+
+            // Remove from canvas when done
+            fadeOut.Completed += (_, _) =>
+            {
+                HeartCanvas.Children.Remove(heart);
+            };
+
+            // Stagger start slightly
+            var delay = TimeSpan.FromMilliseconds(i * 80);
+            floatY.BeginTime = delay;
+            fadeOut.BeginTime = delay;
+
+            heart.BeginAnimation(Canvas.TopProperty, floatY);
+            heart.BeginAnimation(System.Windows.UIElement.OpacityProperty, fadeOut);
+        }
+    }
+
+    // ── P2: Speech bubble system ────────────────────────────────────────
+
+    /// <summary>Show a speech bubble above the pet with the given text.</summary>
+    private void ShowSpeechBubble(string text, double durationSeconds = 2.0)
+    {
+        if (SpeechBubble == null || SpeechText == null) return;
+        if (!_config.Mood.SpeechBubblesEnabled) return;
+
+        SpeechBubble.Visibility = Visibility.Visible;
+        _speechBubbleTimer = durationSeconds;
+
+        // FASE 8: Typewriter effect — reveal text character by character
+        if (_config.Sfx.TypewriterEnabled && _typewriterService != null)
+        {
+            _typewriterService.Start(SpeechText, text);
+        }
+        else
+        {
+            SpeechText.Text = text;
+        }
+
+        // Position the bubble above the sprite
+        PositionSpeechBubble();
+    }
+
+    /// <summary>Hide the speech bubble immediately.</summary>
+    private void HideSpeechBubble()
+    {
+        if (SpeechBubble == null) return;
+        SpeechBubble.Visibility = Visibility.Collapsed;
+        _speechBubbleTimer = 0;
+        _typewriterService?.Stop();
+    }
+
+    /// <summary>Position the speech bubble above the pet sprite, centered.</summary>
+    private void PositionSpeechBubble()
+    {
+        if (SpeechBubble == null || PokemonImage == null) return;
+
+        // Force measure so we get actual width
+        SpeechBubble.Measure(new System.Windows.Size(200, 200));
+        var bubbleW = SpeechBubble.DesiredSize.Width;
+        var bubbleH = SpeechBubble.DesiredSize.Height;
+
+        var spriteW = PokemonImage.ActualWidth > 0 ? PokemonImage.ActualWidth : 64;
+        var imgLeft = Canvas.GetLeft(PokemonImage);
+        var imgTop = Canvas.GetTop(PokemonImage);
+        if (double.IsNaN(imgLeft)) imgLeft = 0;
+        if (double.IsNaN(imgTop)) imgTop = SPEECH_BUBBLE_MARGIN;
+
+        var cx = imgLeft + spriteW / 2 - bubbleW / 2;
+        var cy = imgTop - bubbleH - 4; // just above the sprite (within the margin area)
+        if (cy < 0) cy = 0;
+
+        Canvas.SetLeft(SpeechBubble, Math.Max(0, cx));
+        Canvas.SetTop(SpeechBubble, cy);
+    }
+
+    /// <summary>Update speech bubble and carinho combo timers.</summary>
+    private void UpdateSpeechAndCarinho(double deltaTime)
+    {
+        // ── Speech bubble countdown ──
+        if (_speechBubbleTimer > 0)
+        {
+            _speechBubbleTimer -= deltaTime;
+            if (_speechBubbleTimer <= 0)
+                HideSpeechBubble();
+            else
+                PositionSpeechBubble(); // follow the pet
+        }
+
+        // ── Carinho combo decay ──
+        if (_carinhoComboTimer > 0)
+        {
+            _carinhoComboTimer -= deltaTime;
+            if (_carinhoComboTimer <= 0)
+                _carinhoCombo = 0;
+        }
+
+        // ── Idle speech: random thoughts when idle ──
+        if (_speechBubbleTimer <= 0 && !_combatManager.IsActive && !_captureManager.IsActive)
+        {
+            _speechIdleTimer += deltaTime;
+            if (_speechIdleTimer >= _nextIdleSpeechDelay)
+            {
+                _speechIdleTimer = 0;
+                _nextIdleSpeechDelay = 30 + _speechRandom.NextDouble() * 60; // 30-90 seconds
+
+                var idleText = _pokemon.Mood switch
+                {
+                    MoodType.Happy => _speechRandom.Next(5) switch
+                        { 0 => "♪♪", 1 => "😊", 2 => "~", 3 => "!", _ => "✨" },
+                    MoodType.Sad => _speechRandom.Next(4) switch
+                        { 0 => "...", 1 => "😢", 2 => "💧", _ => "?" },
+                    MoodType.Sleepy => _speechRandom.Next(3) switch
+                        { 0 => "💤", 1 => "😴", _ => "zzz" },
+                    _ => _speechRandom.Next(4) switch
+                        { 0 => "?", 1 => "~", 2 => "♪", _ => "..." }
+                };
+                ShowSpeechBubble(idleText, 3.0);
+            }
+        }
+        else
+        {
+            _speechIdleTimer = 0;
+        }
+    }
+
+    // ── P2: Drag gravity — pet falls back to original position ──────────
+
+    /// <summary>Simulate gravity pulling the pet down to ground after drag.</summary>
+    private void UpdateDragGravity(double deltaTime)
+    {
+        if (!_gravityActive || _isDragging) return;
+
+        var groundY = _gravityTargetY;
+
+        // Apply gravity acceleration (downward = increasing Y in screen coords)
+        _gravityVelocityY += GRAVITY_ACCEL * deltaTime;
+
+        // Update Y position only — X stays where the user dropped it
+        _pokemon.Y += _gravityVelocityY * deltaTime;
+
+        // Hit the ground?
+        if (_pokemon.Y >= groundY)
+        {
+            _pokemon.Y = groundY;
+
+            if (Math.Abs(_gravityVelocityY) < GRAVITY_SETTLE_THRESHOLD * 30)
+            {
+                // Settled on the ground
+                _gravityActive = false;
+                _gravityVelocityY = 0;
+            }
+            else
+            {
+                // Bounce!
+                _gravityVelocityY = -Math.Abs(_gravityVelocityY) * GRAVITY_BOUNCE_FACTOR;
+            }
+        }
+
+        UpdateWindowPosition();
     }
 
     /// <summary>FASE 7: Determina se o spawn deve ser shiny.</summary>
@@ -1627,6 +2240,24 @@ public partial class MainWindow : Window
         return rareWeights[_random.Next(rareWeights.Length)].Dex;
     }
 
+    /// <summary>Mapeia dex para RarityTier a partir do spawn pool.</summary>
+    private RarityTier GetRarityForDex(int dex)
+    {
+        var weights = GetSpawnPool();
+        var entry = weights.FirstOrDefault(w => w.Dex == dex);
+        if (entry == null) return RarityTier.Common;
+
+        return entry.Comment switch
+        {
+            "Common" => RarityTier.Common,
+            "Uncommon" or "Mid Evolution" => RarityTier.Uncommon,
+            "Final Evolution" or "Starter" => RarityTier.Rare,
+            "Pseudo-Legendary" => RarityTier.Epic,
+            "Legendary/Mythical" => RarityTier.Legendary,
+            _ => RarityTier.Common
+        };
+    }
+
     private TaskbarService.TaskbarInfo? GetRandomTaskbar()
     {
         if (_taskbars.Count == 0)
@@ -1687,9 +2318,29 @@ public partial class MainWindow : Window
             Stats = _saveData.Stats with
             {
                 TotalCaptured = _saveData.Stats.TotalCaptured + 1,
-                TotalPokeballsUsed = _saveData.Stats.TotalPokeballsUsed + 1
+                TotalPokeballsUsed = _saveData.Stats.TotalPokeballsUsed + 1,
+                TotalShinyCaptured = _saveData.Stats.TotalShinyCaptured + (enemy.IsShiny ? 1 : 0)
             }
         };
+
+        // Pokédex: registrar como capturado
+        _pokedexService?.OnCaptured(enemy.Dex);
+
+        // Histórico de capturas (máx 50 entradas)
+        var history = new List<CaptureHistoryEntry>(_saveData.CaptureHistory)
+        {
+            new CaptureHistoryEntry
+            {
+                Dex = enemy.Dex,
+                IsShiny = enemy.IsShiny,
+                Rarity = enemy.Rarity.ToString(),
+                CapturedAt = DateTime.UtcNow
+            }
+        };
+        if (history.Count > 50)
+            history.RemoveRange(0, history.Count - 50);
+        _saveData = _saveData with { CaptureHistory = history };
+
         PerformSave("capture");
 
         // FASE 5: Notificação toast e atualizar tray
@@ -1711,6 +2362,13 @@ public partial class MainWindow : Window
             var shinies = new List<int>(_saveData.ShinyCaptured) { enemy.Dex };
             _saveData = _saveData with { ShinyCaptured = shinies };
             Log.Information("SHINY captured! Dex={Dex}, Total shinies={Total}", enemy.Dex, shinies.Count);
+            ShowSpeechBubble("✨ SHINY! ✨", 3.0);
+            _sfxService?.PlayCapture();
+        }
+        else
+        {
+            ShowSpeechBubble("😊👍", 2.0);
+            _sfxService?.PlayCapture();
         }
     }
 
@@ -1734,6 +2392,9 @@ public partial class MainWindow : Window
 
         // FASE 7: Quest progress
         _questService?.OnPokeballUsed();
+
+        ShowSpeechBubble("😤", 2.0);
+        _sfxService?.PlayError();
     }
 
     private void OnBattleEnded(bool playerWon)
@@ -1743,7 +2404,8 @@ public partial class MainWindow : Window
             Stats = _saveData.Stats with
             {
                 TotalBattles = _saveData.Stats.TotalBattles + 1,
-                TotalBattlesWon = _saveData.Stats.TotalBattlesWon + (playerWon ? 1 : 0)
+                TotalBattlesWon = _saveData.Stats.TotalBattlesWon + (playerWon ? 1 : 0),
+                TotalBattlesLost = _saveData.Stats.TotalBattlesLost + (playerWon ? 0 : 1)
             }
         };
 
@@ -1761,6 +2423,10 @@ public partial class MainWindow : Window
 
         // FASE 5: Notificação toast
         _notificationService?.NotifyBattleResult(playerWon);
+
+        // P2: Speech bubble feedback
+        ShowSpeechBubble(playerWon ? "💪" : "😢", 2.0);
+        _sfxService?.Play(playerWon ? UiSfxService.SfxType.Confirm : UiSfxService.SfxType.Cancel);
 
         // FASE 6: Verificar conquistas
         CheckAchievements();
@@ -1791,6 +2457,17 @@ public partial class MainWindow : Window
         // FASE 7: Interromper qualquer comportamento idle pendente
         _idleBehaviorService?.Cancel(_pokemon);
         _smartMovement?.CancelPause();
+
+        // P1: Hit flash no perdedor da batalha
+        if (playerWon)
+        {
+            // Flash no inimigo que acabou de ser derrotado
+            foreach (var pair in _enemyWindows)
+            {
+                if (pair.Key.State == EntityState.Fainted)
+                    pair.Value.TriggerHitFlash();
+            }
+        }
     }
 
     private void UpdateAutoSave(double deltaTime)
@@ -1830,8 +2507,16 @@ public partial class MainWindow : Window
             SilenceNotifications = _silenceNotifications,
             BlockSpawns = _blockSpawns,
             Stones = _saveData.Stones,
-            EvolutionCancelled = _saveData.EvolutionCancelled
+            EvolutionCancelled = _saveData.EvolutionCancelled,
+            // P2: Pokédex, daily quests, capture history
+            CaptureHistory = _saveData.CaptureHistory,
+            DailyQuestIds = _questService?.DailyQuestIds ?? _saveData.DailyQuestIds,
+            DailyStreak = _questService?.DailyStreak ?? _saveData.DailyStreak,
+            LastDailyDate = _questService?.LastDailyDate ?? _saveData.LastDailyDate
         };
+        // Persistir Pokédex
+        if (_pokedexService != null)
+            _saveData = _pokedexService.ApplyToSave(_saveData);
         // Persistir XP e nível
         if (_levelService != null)
             _saveData = _levelService.ApplyToSave(_saveData);

@@ -20,7 +20,7 @@
             <Border Grid.Row="0" Style="{StaticResource FR_HeaderBar}">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="POKEBAR DESKTOP PET"
-                               Style="{StaticResource FR_Title}" FontSize="18"
+                               Style="{StaticResource FR_Title}" FontSize="11"
                                HorizontalAlignment="Center"/>
                     <TextBlock x:Name="SubtitleText" Text="Your desktop Pokémon pet!"
                                Style="{StaticResource FR_SmallText}"
@@ -46,7 +46,7 @@
                         </Border>
                         <TextBlock x:Name="WelcomeText"
                                    Text="A Pikachu will walk across your taskbar, battle wild Pokémon and capture new friends!"
-                                   Style="{StaticResource FR_Label}" FontSize="12"
+                                   Style="{StaticResource FR_Label}" FontSize="9"
                                    TextWrapping="Wrap" TextAlignment="Center"
                                    MaxWidth="340" Margin="0,12,0,0"/>
                     </StackPanel>
@@ -54,8 +54,8 @@
                     <!-- Page 1: Controls -->
                     <StackPanel x:Name="Page1" Visibility="Collapsed" VerticalAlignment="Center">
                         <TextBlock x:Name="ControlsTitle" Text="Controls"
-                                   Style="{StaticResource FR_Label}" FontSize="14"
-                                   FontWeight="Bold" HorizontalAlignment="Center"
+                                   Style="{StaticResource FR_Label}" FontSize="10"
+                                   HorizontalAlignment="Center"
                                    Margin="0,0,0,10"/>
                         <StackPanel Margin="24,0">
                             <TextBlock x:Name="CtrlPause" Style="{StaticResource FR_SmallText}"
@@ -79,10 +79,10 @@
                     <!-- Page 2: Ready -->
                     <StackPanel x:Name="Page2" Visibility="Collapsed" VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
-                        <TextBlock Text="✅" FontSize="48" HorizontalAlignment="Center"/>
+                        <TextBlock Text="✅" FontSize="32" HorizontalAlignment="Center"/>
                         <TextBlock x:Name="ReadyText"
                                    Text="All set! Your Pokémon is waiting on the taskbar."
-                                   Style="{StaticResource FR_Label}" FontSize="13"
+                                   Style="{StaticResource FR_Label}" FontSize="9"
                                    TextWrapping="Wrap" TextAlignment="Center"
                                    MaxWidth="300" Margin="0,12,0,0"/>
                     </StackPanel>

@@ -19,6 +19,8 @@ public record GameplayConfig
     public QuestConfig Quests { get; init; } = new();
     public ModConfig Mods { get; init; } = new();
     public LevelConfig Level { get; init; } = new();
+    public SfxConfig Sfx { get; init; } = new();
+    public DesktopIconConfig DesktopIcons { get; init; } = new();
 }
 
 public record PlayerConfig
@@ -57,6 +59,21 @@ public record CombatConfig
     public int RoundsPerFight { get; init; } = 3;
     public double RetreatDistance { get; init; } = 200.0;
     public double CooldownSeconds { get; init; } = 1.5;
+
+    /// <summary>Variância de dano por ataque (±%). Default 0.2 = ±20%.</summary>
+    public double DamageVariance { get; init; } = 0.2;
+
+    /// <summary>Fração de HP máximo perdida por turno com veneno (1/N). Default 8 = 12.5%.</summary>
+    public int PoisonDivisor { get; init; } = 8;
+
+    /// <summary>Chance de perder turno por paralisia (0.0–1.0). Default 0.25.</summary>
+    public double ParalysisSkipChance { get; init; } = 0.25;
+
+    /// <summary>Duração de sono em turnos. Default 2.</summary>
+    public int SleepDurationRounds { get; init; } = 2;
+
+    /// <summary>Moves disponíveis em combate. Se vazio, usa defaults.</summary>
+    public MoveDefinition[] Moves { get; init; } = Array.Empty<MoveDefinition>();
 }
 
 public record CaptureConfig
@@ -69,6 +86,15 @@ public record CaptureConfig
     public double ShrinkDuration { get; init; } = 0.8;
     public double BaseSuccessRate { get; init; } = 0.5;
     public int StarterPokeballs { get; init; } = 10;
+
+    /// <summary>Multiplicador de captura para efeito Sleep. Default 2.5x.</summary>
+    public double SleepCaptureBonus { get; init; } = 2.5;
+
+    /// <summary>Multiplicador de captura para efeito Poison/Paralysis. Default 1.5x.</summary>
+    public double StatusCaptureBonus { get; init; } = 1.5;
+
+    /// <summary>Dificuldade de captura por tier de raridade: Common, Uncommon, Rare, Epic, Legendary.</summary>
+    public double[] RarityDifficulty { get; init; } = new[] { 1.0, 1.3, 2.0, 3.0, 4.5 };
 }
 
 public record AnimationConfig
@@ -185,6 +211,27 @@ public record MoodConfig
 
     /// <summary>Cooldown entre carícias (s) para evitar spam.</summary>
     public double PetCooldownSeconds { get; init; } = 3.0;
+
+    /// <summary>Habilitar balões de fala com emojis/texto.</summary>
+    public bool SpeechBubblesEnabled { get; init; } = true;
+}
+
+/// <summary>
+/// Configurações de efeitos sonoros da UI (FASE 8).
+/// </summary>
+public record SfxConfig
+{
+    /// <summary>Habilitar efeitos sonoros GBA-style na interface.</summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>Volume de 0.0 a 1.0.</summary>
+    public double Volume { get; init; } = 0.25;
+
+    /// <summary>Habilitar efeito typewriter nos balões de fala.</summary>
+    public bool TypewriterEnabled { get; init; } = true;
+
+    /// <summary>Velocidade do typewriter em caracteres por segundo.</summary>
+    public double TypewriterCharsPerSecond { get; init; } = 24.0;
 }
 
 /// <summary>
@@ -212,6 +259,18 @@ public record QuestConfig
 
     /// <summary>Intervalo em minutos para gerar nova missão.</summary>
     public double NewQuestIntervalMinutes { get; init; } = 30.0;
+
+    /// <summary>Se daily quests estão habilitadas.</summary>
+    public bool DailyQuestsEnabled { get; init; } = true;
+
+    /// <summary>Quantidade de daily quests geradas por dia.</summary>
+    public int DailyQuestCount { get; init; } = 2;
+
+    /// <summary>Bônus de recompensa por streak (multiplicador por dia consecutivo, máx 5).</summary>
+    public double StreakBonusPerDay { get; init; } = 0.1;
+
+    /// <summary>Streak máximo para bônus.</summary>
+    public int MaxStreakBonus { get; init; } = 5;
 }
 
 /// <summary>
@@ -263,4 +322,59 @@ public record LevelConfig
 
     /// <summary>Multiplicador de XP para capturas shiny.</summary>
     public double ShinyXpMultiplier { get; init; } = 3.0;
+}
+
+/// <summary>
+/// Configurações de interação com ícones do Desktop (estilo Desktop Goose).
+/// </summary>
+public record DesktopIconConfig
+{
+    /// <summary>
+    /// Modo de interação com ícones:
+    /// "off" (0) — desligado, sem interação.
+    /// "fake" (A) — arrasto visual (overlay), não move ícone real. (padrão recomendado)
+    /// "real" (B) — move posição real do ícone no desktop.
+    /// </summary>
+    public string Mode { get; init; } = "off";
+
+    /// <summary>
+    /// Frequência de brincadeira com ícones:
+    /// "never" — nunca (equivale a off).
+    /// "rarely" — ~5% chance em cada ciclo de idle.
+    /// "sometimes" — ~15% chance.
+    /// "always" — ~40% chance.
+    /// </summary>
+    public string Frequency { get; init; } = "rarely";
+
+    /// <summary>Duração mínima da brincadeira em segundos.</summary>
+    public double PlayDurationMin { get; init; } = 2.0;
+
+    /// <summary>Duração máxima da brincadeira em segundos.</summary>
+    public double PlayDurationMax { get; init; } = 5.0;
+
+    /// <summary>
+    /// Lista de nomes de ícones protegidos que nunca serão movidos.
+    /// Comparação case-insensitive, substring match.
+    /// </summary>
+    public string[] Blocklist { get; init; } = new[]
+    {
+        "Recycle Bin", "Lixeira",
+        "This PC", "Este Computador",
+        "Control Panel", "Painel de Controle"
+    };
+
+    /// <summary>Distância máxima (px) que o pet carrega o ícone antes de soltar.</summary>
+    public double MaxCarryDistance { get; init; } = 200.0;
+
+    /// <summary>Velocidade de caminhada durante brincadeira (px/s).</summary>
+    public double CarryWalkSpeed { get; init; } = 35.0;
+
+    /// <summary>Se true, respeita o modo BlockSpawns e não inicia brincadeira.</summary>
+    public bool RespectBlockSpawns { get; init; } = true;
+
+    /// <summary>Se true, não inicia brincadeira quando há app fullscreen ativo.</summary>
+    public bool RespectFullscreen { get; init; } = true;
+
+    /// <summary>Se true (real mode), salva layout dos ícones antes da primeira interação.</summary>
+    public bool SaveLayoutBeforeRealMode { get; init; } = true;
 }

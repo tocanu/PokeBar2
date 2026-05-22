@@ -8,57 +8,107 @@ Lista unificada de coisas a fazer, juntando:
 - bugs/lacunas tecnicas atuais (P0/P1)
 - backlog de produto enviado em 2026-02-19
 
+## PLANO DE REFATORACAO (Q1 2026)
+
+Objetivo: manter o que ja funciona, corrigir riscos de regressao e reduzir latencia percebida na UI (principalmente PC Box).
+
+### Sprint 1 - Corretude e regressao (P0)
+
+- [ ] Separar daily em dois marcos: `LastDailyGeneratedDate` e `LastDailyCompletedDate`.
+- [ ] Corrigir expiracao de `Sleep` para limpar status ao fim do efeito.
+- [ ] Corrigir `UiSfxService` para aplicar `Volume` dinamicamente e evitar truncamento de playback.
+- [ ] Completar chaves de localizacao faltantes (`en-US` e `pt-BR`).
+- [ ] Rodar reset diario durante runtime (app atravessando meia-noite).
+
+### Sprint 2 - Performance perceptivel (PC Box primeiro)
+
+- [ ] Instrumentar metrica de abertura da PC Box (tempo ate primeira pintura e tempo total de sprites).
+- [ ] Abrir PC Box com placeholder imediato e carregar sprites de forma assincrona (`GetAnimationsAsync`).
+- [ ] Preload da primeira pagina da party em background (apos boot, captura e troca de pokemon).
+- [ ] Evitar rebuild completo da grade ao selecionar card (atualizar apenas item alterado).
+- [ ] Meta de UX: PC Box < 120ms warm e < 300ms cold para primeira tela interativa.
+
+### Sprint 3 - Arquitetura e manutencao
+
+- [ ] Extrair responsabilidades de `MainWindow` para orchestrators dedicados (`SaveCoordinator`, `QuestRuntime`, `WindowServices`).
+- [ ] Debounce/coalescing de `PerformSave()` para reduzir I/O sincronizado sem perder consistencia.
+- [ ] Centralizar side-effects de estado para reduzir espalhamento de `_saveData = _saveData with`.
+- [ ] Remover codigo morto e alinhar config/documentacao (frequencias, flags, defaults).
+
+### Sprint 4 - UX/Config e operacao
+
+- [ ] Controle de som completo em Settings (mute + volume), com padrao inicial desligado.
+- [ ] Aplicar mudancas de tray/notificacao sem exigir restart quando tecnicamente possivel.
+- [ ] Revisar textos hardcoded e padronizar localizacao (inclusive labels de tempo e historico).
+- [ ] Fechar lacunas de testes para combate/captura/quests/PC Box.
+
 ### P0 - CORRIGIR AGORA (qualidade e confiabilidade)
 
-- [ ] Corrigir progresso de quest `WalkTime`: hoje usa cast para `int` em segundos fracionarios e quase sempre soma 0 (`QuestService.OnWalkTime`).
-- [ ] Fazer `DoNotDisturb` bloquear spawn e combate, nao apenas notificacoes.
-- [ ] Corrigir troca de perfil nas Settings para salvar no perfil selecionado (evitar gravar no perfil antigo).
-- [ ] Integrar `ModLoader` ao runtime de sprites (hoje carrega mods, mas `SpriteLoader` nao usa caminho/mod override).
-- [ ] Aplicar `Enemy.AllowMonitorTravel` do config (hoje o controle esta hardcoded na window).
-- [ ] Resetar/regerar spawn pool dinamico quando o player trocar de Pokemon no PC Box.
-- [ ] Persistir `ActiveProfileId` e `TotalPets` corretamente no save.
-- [ ] Fechar lacunas de configuracao sem efeito real (`MinimalMode`, `RespectHighContrast`, `VsyncEnabled`, parte dos parametros de captura).
+- [x] Corrigir progresso de quest `WalkTime`: hoje usa cast para `int` em segundos fracionarios e quase sempre soma 0 (`QuestService.OnWalkTime`).
+- [x] Corrigir troca de perfil nas Settings para salvar no perfil selecionado (evitar gravar no perfil antigo).
+- [x] Integrar `ModLoader` ao runtime de sprites (hoje carrega mods, mas `SpriteLoader` nao usa caminho/mod override).
+- [x] Aplicar `Enemy.AllowMonitorTravel` do config (hoje o controle esta hardcoded na window).
+- [x] Resetar/regerar spawn pool dinamico quando o player trocar de Pokemon no PC Box.
+- [x] Persistir `ActiveProfileId` e `TotalPets` corretamente no save.
+- [x] Fechar lacunas de configuracao sem efeito real (`MinimalMode`, `RespectHighContrast`, `VsyncEnabled`, parte dos parametros de captura).
+- [ ] [Alta] Separar controle de daily por `LastDailyGeneratedDate` e `LastDailyCompletedDate` para evitar reset/regeracao no mesmo dia sem conclusao (`QuestService`).
+- [ ] [Alta] Limpar status `Sleep` ao expirar no combate para nao manter bonus indevido de captura (`CombatManager`/`CaptureManager`).
+- [ ] [Media] Corrigir aplicacao de volume de SFX: alterar `Volume` deve regerar/atualizar cache de audio (`UiSfxService`).
+- [ ] [Media] Corrigir risco de som truncado por descarte imediato de `MemoryStream`/`SoundPlayer` no `Play()` (`UiSfxService`).
+- [ ] [Media] Adicionar chaves de localizacao faltantes em `locale/en-US.json` e `locale/pt-BR.json` (Pokedex, stats novas, history).
+- [ ] [Media] Rodar `CheckDailyReset()` continuamente durante runtime (virada de dia com app aberto), nao so na inicializacao.
+- [ ] [Baixa] Corrigir caractere invalido no icone de estatistica de derrotas em `SettingsWindow`.
 
 ### P1 - PROGRESSAO QUE DA VONTADE DE DEIXAR ABERTO
 
-- [ ] XP + nivel por andar, lutar, capturar e quests.
+- [x] XP + nivel por lutar, capturar.
 - [x] Evolucao (troca de especie por nivel/amizade/condicao).
-- [ ] "Shiny procedural" sem novo asset (tint/hue shift raro no sprite).
-- [ ] Perfis de gameplay (`Trabalho`, `Jogo`, `Relax`) alterando somente configs.
+- [x] Perfis de gameplay (`Trabalho`, `Jogo`, `Relax`) alterando somente configs.
 
 ### P1 - COMBATE E CAPTURA COM MAIS VARIEDADE (SEM NOVAS ANIMACOES)
 
-- [ ] Moves com cooldown usando a mesma animacao, mudando regra de dano/crit/efeito.
-- [ ] Status effects: sono, veneno, paralisia.
-- [ ] Overlay textual de status (`Zzz`, `⚡`, `☠`).
-- [ ] Efeitos visuais simples: hit flash, tremida, slow, tint de cor.
-- [ ] Captura mais justa: chance por HP, status, raridade e tipo de bola (visual igual, logica melhor).
+- [x] Moves com cooldown usando a mesma animacao, mudando regra de dano/crit/efeito.
+- [x] Status effects: sono, veneno, paralisia.
+- [x] Overlay textual de status (`Zzz`, `⚡`, `☠`).
+- [x] Efeitos visuais simples: hit flash, tremida, slow, tint de cor.
+- [x] Captura mais justa: chance por HP, status, raridade e tipo de bola (visual igual, logica melhor).
 
 ### P2 - QUESTS / ACHIEVEMENTS / POKEDEX (METAGAME)
 
-- [ ] Daily quests com streak de dias.
-- [ ] Pokedex de `visto/capturado`.
-- [ ] Stats expandidas: lutas vencidas, capturas, distancia percorrida.
-- [ ] Historico/album das ultimas capturas com cards simples no PC Box.
+- [x] Daily quests com streak de dias.
+- [x] Pokedex de `visto/capturado`.
+- [x] Stats expandidas: lutas vencidas, capturas, distancia percorrida.
+- [x] Historico/album das ultimas capturas com cards simples no PC Box.
 
 ### P2 - INTERACAO COM O USUARIO (SEM NOVOS ASSETS)
 
-- [ ] Click/drag do pet para reposicionar.
-- [ ] Carinho/treino (cliques aumentando amizade e alterando comportamento).
-- [ ] Balao de fala com texto/emoji (alerta de inimigo, humor, etc).
+- [x] Click/drag do pet para reposicionar.
+- [x] Carinho/treino (cliques aumentando amizade e alterando comportamento).
+- [x] Balao de fala com texto/emoji (alerta de inimigo, humor, etc).
+- [ ] Controle de som (mute/volume de SFX) nas Settings, com som desligado por padrao na primeira execucao.
+
+### P1 - MELHORIAS DE CODIGO (REVIEW 2026-02-20)
+
+- [ ] Reduzir delay de abertura da PC Box: abrir com placeholder + lazy/async load de sprites da pagina (`PcBoxWindow.ShowPage`/`ShowHistory`) e pre-warm da party.
+- [ ] Respeitar `DesktopIconConfig.SaveLayoutBeforeRealMode` no `DesktopIconService` (hoje a flag existe mas nao e usada).
+- [ ] Alinhar documentacao e implementacao da chance de interacao com icones (`DesktopIconConfig.Frequency` vs `DesktopIconService.RollFrequencyCheck`).
+- [ ] Localizar strings hardcoded de UI/UX (ex.: frases de icones e `FormatTimeAgo`) para evitar mistura PT/EN fora do `Localizer`.
+- [ ] Remover codigo morto/nao usado (`PlayerPet.BeginCombat`, `CombatHp`, `QuestService.DailyStreakUpdated`, `GetStreakBonus`, `timeAgo` em `PcBoxWindow`).
+- [ ] Atualizar `Assets/gameplay_default.json` com secoes novas (`sfx`, `desktopIcons`, `quests.daily*`) para facilitar discoverability de config.
+- [ ] Limpar configuracao stale de projeto (`Sounds/*.wav` no `.csproj` sem pasta/arquivos reais).
 
 ### P1 - INTERACAO COM ICONES DO DESKTOP (ESTILO DESKTOP GOOSE)
 
-- [ ] Adicionar config com 3 modos.
-- [ ] Modo `0` desligado: comportamento normal, sem interacao com icones.
-- [ ] Modo `A` arrasto fake (padrao recomendado): pet "pega" copia visual do icone em overlay e solta sem mover posicao real.
-- [ ] Modo `B` arrasto real: pet move posicao real do icone no desktop.
-- [ ] Seguranca para modo real: salvar layout anterior e botao `Restaurar layout`.
-- [ ] Seguranca para modo real: respeitar Focus/DND (nao mexer em reuniao/jogo).
-- [ ] Seguranca para modo real: detectar "Auto-organizar icones" e avisar/cair para fake.
-- [ ] Extras de UX: chance configuravel (`raramente`, `as vezes`, `sempre`).
-- [ ] Extras de UX: brincadeira curta (2-5s).
-- [ ] Extras de UX: blocklist de icones protegidos (ex.: Lixeira e atalhos criticos).
+- [x] Adicionar config com 3 modos.
+- [x] Modo `0` desligado: comportamento normal, sem interacao com icones.
+- [x] Modo `A` arrasto fake (padrao recomendado): pet "pega" copia visual do icone em overlay e solta sem mover posicao real.
+- [x] Modo `B` arrasto real: pet move posicao real do icone no desktop.
+- [x] Seguranca para modo real: salvar layout anterior e botao `Restaurar layout`.
+- [x] Seguranca para modo real: respeitar Focus/DND (nao mexer em reuniao/jogo).
+- [x] Seguranca para modo real: detectar "Auto-organizar icones" e avisar/cair para fake.
+- [x] Extras de UX: chance configuravel (`raramente`, `as vezes`, `sempre`).
+- [x] Extras de UX: brincadeira curta (2-5s).
+- [x] Extras de UX: blocklist de icones protegidos (ex.: Lixeira e atalhos criticos).
 
 ---
 ## âœ… Resolvidos
@@ -324,16 +374,16 @@ Melhorias reorganizadas em **fases sequenciais**, do alicerce atÃ© o lanÃ§am
 ## **FASE 8: Visual "Gen 3 GBA"** ðŸŽ®
 *Tema PokÃ©mon autÃªntico.*
 
-- [ ] **Fonte pixel (original/open) e texto aliased** â€” Import da fonte + `TextOptions.TextFormattingMode="Display"`.
-- [ ] **Pixel perfect (Nearest neighbor + snap)** â€” `RenderOptions.BitmapScalingMode="NearestNeighbor"` + `SnapsToDevicePixels`.
-- [ ] **Tema com paleta limitada (tokens)** â€” Define 8-12 cores fixas em ResourceDictionary.
-- [ ] **UI em resoluÃ§Ã£o base + escala inteira** â€” Desenha 160x144 (ou similar) e escala 2x/3x/4x.
-- [ ] **Caixas de diÃ¡logo estilo Gen 3** â€” Custom Control com moldura pixelada.
-- [ ] **9-slice nas molduras** â€” `BorderThickness` + `Image.Stretch="Fill"` com nine-patch.
-- [ ] **BotÃµes viram "itens de menu"** â€” ListBox custom com highlight e cursor.
-- [ ] **Cursor piscando + typewriter text** â€” AnimaÃ§Ã£o de texto por char + cursor blinking.
-- [ ] **Janelas sem chrome do Windows** â€” `WindowStyle="None"` + custom titlebar.
-- [ ] **SFX de UI (select/cancel) prÃ³prios** â€” Sons curtos (.wav) com `MediaPlayer`.
+- [x] **Fonte pixel (original/open) e texto aliased** — Import da fonte + `TextOptions.TextFormattingMode="Display"`.
+- [x] **Pixel perfect (Nearest neighbor + snap)** — `RenderOptions.BitmapScalingMode="NearestNeighbor"` + `SnapsToDevicePixels`.
+- [x] **Tema com paleta limitada (tokens)** — Define 8-12 cores fixas em ResourceDictionary.
+- [x] **UI em resolução base + escala inteira** — Desenha 160x144 (ou similar) e escala 2x/3x/4x.
+- [x] **Caixas de diálogo estilo Gen 3** — Custom Control com moldura pixelada.
+- [x] **9-slice nas molduras** — `BorderThickness` + `Image.Stretch="Fill"` com nine-patch.
+- [x] **Botões viram "itens de menu"** — ListBox custom com highlight e cursor.
+- [x] **Cursor piscando + typewriter text** — Animação de texto por char + cursor blinking.
+- [x] **Janelas sem chrome do Windows** — `WindowStyle="None"` + custom titlebar.
+- [x] **SFX de UI (select/cancel) próprios** — Sons curtos (.wav) com `MediaPlayer`.
 
 ---
 
@@ -414,5 +464,3 @@ Melhorias reorganizadas em **fases sequenciais**, do alicerce atÃ© o lanÃ§am
 - Ground offset = menor linha Y com pixel opaco (ou mÃ©dia dos Ãºltimos N) por animaÃ§Ã£o; fallback manual continua valendo se existir.
 - Salvar no JSON final/runtime por `UniqueId` + animaÃ§Ã£o; Editor mostra preview e permite override/lock.
 - Tratar pastas aninhadas (ex.: Pikachu fÃªmea) e ignorar frames vazios para nÃ£o gerar NaN.
-
-

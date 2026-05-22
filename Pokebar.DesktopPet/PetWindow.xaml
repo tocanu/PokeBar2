@@ -18,6 +18,31 @@
                 <ScaleTransform x:Name="FlipTransform" ScaleX="1" ScaleY="1"/>
             </Image.RenderTransform>
         </Image>
+
+        <!-- Hit flash overlay (branco semi-transparente sobre o sprite) -->
+        <Rectangle x:Name="HitFlashRect"
+                   Fill="White"
+                   Opacity="0"
+                   IsHitTestVisible="False"/>
+
+        <!-- Tint overlay para status effects (cor semi-transparente) -->
+        <Rectangle x:Name="TintRect"
+                   Opacity="0"
+                   IsHitTestVisible="False"/>
+
+        <!-- Overlay textual de status (Zzz, ⚡, ☠) -->
+        <TextBlock x:Name="StatusOverlay"
+                   Foreground="White"
+                   FontFamily="Segoe UI Emoji"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Visibility="Collapsed"
+                   IsHitTestVisible="False">
+            <TextBlock.Effect>
+                <DropShadowEffect ShadowDepth="1" BlurRadius="2" Color="Black" Opacity="0.8"/>
+            </TextBlock.Effect>
+        </TextBlock>
+
         <Rectangle x:Name="DebugHitbox"
                    Stroke="Lime"
                    StrokeThickness="1"

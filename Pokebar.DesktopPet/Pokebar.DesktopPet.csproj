@@ -27,4 +27,14 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Fonts\PressStart2P-Regular.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Sounds\*.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

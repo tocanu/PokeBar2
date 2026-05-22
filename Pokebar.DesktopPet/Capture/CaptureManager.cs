@@ -18,20 +18,14 @@ public class CaptureManager
     private CaptureSequence? _active;
     private bool _hidden;
 
-    public CaptureManager(
-        GameplayConfig config,
-        double travelDuration = 0.6,
-        double absorbDuration = 0.5,
-        double shakeDuration = 0.25,
-        int shakeCount = 3,
-        double shakeAmplitude = 6)
+    public CaptureManager(GameplayConfig config)
     {
         _config = config;
-        _travelDuration = travelDuration;
-        _absorbDuration = absorbDuration;
-        _shakeDuration = shakeDuration;
-        _shakeCount = Math.Max(1, shakeCount);
-        _shakeAmplitude = shakeAmplitude;
+        _travelDuration = config.Capture.ShrinkDuration > 0 ? config.Capture.ShrinkDuration : 0.6;
+        _absorbDuration = 0.5;
+        _shakeDuration = 0.25;
+        _shakeCount = 3;
+        _shakeAmplitude = 6;
         _baseSuccessRate = Math.Clamp(config.Capture.BaseSuccessRate, 0.0, 1.0);
     }
 
@@ -143,7 +137,8 @@ public class CaptureManager
         var y = Lerp(_active.StartY, _active.TargetY, progress);
 
         // Arco parabólico: bola sobe e desce durante Travel (altura máx no meio)
-        var arcHeight = 60.0; // DIPs de altura do arco
+        // Gravity do config escala a altura do arco (default 500 → ~60px)
+        var arcHeight = _config.Capture.Gravity / 8.0;
         var arc = -4.0 * arcHeight * progress * (progress - 1.0); // parábola: 0 → arcHeight → 0
         y -= arc;
 
@@ -206,24 +201,46 @@ public class CaptureManager
         if (_active == null)
             return;
 
-        // Verificar taxa de sucesso
-        var success = _random.NextDouble() < _baseSuccessRate;
+        var enemy = _active.Enemy;
+
+        // Fórmula justa de captura: baseRate × hpFactor × statusBonus / rarityDifficulty
+        var hpFactor = enemy.MaxHp > 0
+            ? (3.0 * enemy.MaxHp - 2.0 * enemy.CurrentHp) / (3.0 * enemy.MaxHp)
+            : 1.0;
+
+        var statusBonus = enemy.ActiveStatus switch
+        {
+            Core.Models.StatusEffectType.Sleep => _config.Capture.SleepCaptureBonus,
+            Core.Models.StatusEffectType.Poison or Core.Models.StatusEffectType.Paralysis => _config.Capture.StatusCaptureBonus,
+            _ => 1.0
+        };
+
+        var rarityIndex = (int)enemy.Rarity;
+        var rarityDifficulty = rarityIndex >= 0 && rarityIndex < _config.Capture.RarityDifficulty.Length
+            ? _config.Capture.RarityDifficulty[rarityIndex]
+            : 1.0;
+
+        var captureChance = Math.Clamp(_baseSuccessRate * hpFactor * statusBonus / Math.Max(0.1, rarityDifficulty), 0.05, 0.95);
+        var roll = _random.NextDouble();
+        var success = roll < captureChance;
+
+        Log.Information("Capture roll: {Roll:F3} vs {Chance:F3} (base={Base:F2}, hp={HpF:F2}, status={Status}×{SBonus:F1}, rarity={Rarity}÷{RDiff:F1}) → {Result}",
+            roll, captureChance, _baseSuccessRate, hpFactor, enemy.ActiveStatus, statusBonus, enemy.Rarity, rarityDifficulty,
+            success ? "SUCCESS" : "FAILED");
 
         if (success)
         {
-            Log.Information("Capture successful! Enemy Dex {Dex} captured (rate: {Rate:P0})", _active.Enemy.Dex, _baseSuccessRate);
-            _active.Enemy.MarkCaptured();
+            enemy.MarkCaptured();
             _active.BallWindow.Close();
-            CaptureCompleted?.Invoke(_active.Enemy);
+            CaptureCompleted?.Invoke(enemy);
         }
         else
         {
-            Log.Information("Capture failed! Enemy Dex {Dex} broke free (rate: {Rate:P0})", _active.Enemy.Dex, _baseSuccessRate);
-            _active.Enemy.IsCaptureInProgress = false;
+            enemy.IsCaptureInProgress = false;
             _active.EnemyWindow.SetCaptureScale(1);
             _active.EnemyWindow.SetHidden(false);
             _active.BallWindow.Close();
-            CaptureFailed?.Invoke(_active.Enemy);
+            CaptureFailed?.Invoke(enemy);
         }
 
         _active = null;
