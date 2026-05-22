@@ -13,6 +13,7 @@ public class IdleBehaviorService
 {
     private readonly Random _random = new();
     private double _idleTimer;
+    private double _idleThreshold;          // BUG FIX: cached once, not re-rolled every frame
     private double _behaviorTimer;
     private double _behaviorDuration;
     private bool _inBehavior;
@@ -35,6 +36,7 @@ public class IdleBehaviorService
         _minIdleBeforeBehavior = MIN_IDLE_TIME;
         _maxIdleBeforeBehavior = MAX_IDLE_TIME;
         ResetIdleTimer();
+        _idleThreshold = SampleIdleThreshold(MoodType.Neutral); // safe initial value
     }
 
     /// <summary>Se está atualmente executando um comportamento idle especial.</summary>
@@ -68,10 +70,14 @@ public class IdleBehaviorService
             return;
         }
 
-        // Se está andando, resetar timer
+        // Se está andando, resetar timer e rolar novo threshold
         if (player.State == EntityState.Walking)
         {
-            _idleTimer = 0;
+            if (_idleTimer > 0)
+            {
+                _idleTimer = 0;
+                _idleThreshold = SampleIdleThreshold(mood);
+            }
             return;
         }
 
@@ -80,9 +86,9 @@ public class IdleBehaviorService
         {
             _idleTimer += deltaTime;
 
-            // Ajustar threshold baseado no humor
-            var threshold = GetIdleThreshold(mood);
-            if (_idleTimer >= threshold)
+            // BUG FIX: usa threshold fixo (calculado uma vez ao resetar),
+            // não re-rolar a cada frame — isso impedia o comportamento de triggar.
+            if (_idleTimer >= _idleThreshold)
             {
                 TryStartBehavior(player, mood);
             }
@@ -102,6 +108,7 @@ public class IdleBehaviorService
             }
         }
         _idleTimer = 0;
+        _idleThreshold = SampleIdleThreshold(MoodType.Neutral);
     }
 
     /// <summary>Interrompe o comportamento atual e faz o pet voltar a andar.</summary>
@@ -156,12 +163,14 @@ public class IdleBehaviorService
                 ? MIN_SLEEP_DURATION + (_random.NextDouble() * (MAX_SLEEP_DURATION - MIN_SLEEP_DURATION))
                 : MIN_BEHAVIOR_DURATION + (_random.NextDouble() * (MAX_BEHAVIOR_DURATION - MIN_BEHAVIOR_DURATION));
             _idleTimer = 0;
+            _idleThreshold = SampleIdleThreshold(mood); // rolar próximo threshold já
             Log.Debug("IdleBehavior: Started {State} for {Duration:F1}s (mood: {Mood})",
                 player.State, _behaviorDuration, mood);
         }
         else
         {
-            _idleTimer = 0; // Tentar novamente depois
+            _idleTimer = 0;
+            _idleThreshold = SampleIdleThreshold(mood); // Tentar novamente depois com novo threshold
         }
     }
 
@@ -170,6 +179,7 @@ public class IdleBehaviorService
         _inBehavior = false;
         _behaviorTimer = 0;
         _idleTimer = 0;
+        _idleThreshold = SampleIdleThreshold(MoodType.Neutral); // mood unknown here; will be updated next walk reset
 
         // Voltar ao idle
         if (player.State == EntityState.Sleeping || player.State == EntityState.SpecialIdle)
@@ -180,17 +190,21 @@ public class IdleBehaviorService
         Log.Debug("IdleBehavior: Ended, returning to Idle");
     }
 
-    private double GetIdleThreshold(MoodType mood)
+    /// <summary>
+    /// Sorteia um threshold de idle UMA VEZ e armazena em _idleThreshold.
+    /// Não chamar a cada frame — usar apenas ao resetar o timer.
+    /// </summary>
+    private double SampleIdleThreshold(MoodType mood)
     {
-        var baseThreshold = _minIdleBeforeBehavior + 
+        var baseThreshold = _minIdleBeforeBehavior +
             (_random.NextDouble() * (_maxIdleBeforeBehavior - _minIdleBeforeBehavior));
 
         return mood switch
         {
             MoodType.Sleepy => baseThreshold * 0.5,  // Fica sonolento mais rápido
-            MoodType.Sad => baseThreshold * 0.7,      // Senta/deita mais cedo
-            MoodType.Happy => baseThreshold * 1.3,    // Mais ativo, demora mais
-            _ => baseThreshold
+            MoodType.Sad    => baseThreshold * 0.7,  // Senta/deita mais cedo
+            MoodType.Happy  => baseThreshold * 1.3,  // Mais ativo, demora mais
+            _               => baseThreshold
         };
     }
 

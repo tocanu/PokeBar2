@@ -147,7 +147,8 @@ public class CaptureManager
 
         if (progress >= 1)
         {
-            _active.Elapsed = 0;
+            // Carry forward overrun so next phase starts with correct timing
+            _active.Elapsed = Math.Max(0, _active.Elapsed - _travelDuration);
             _active.Phase = CapturePhase.Absorb;
         }
     }
@@ -166,7 +167,7 @@ public class CaptureManager
         if (progress >= 1)
         {
             _active.EnemyWindow.SetHidden(true);
-            _active.Elapsed = 0;
+            _active.Elapsed = Math.Max(0, _active.Elapsed - _absorbDuration);
             _active.Phase = CapturePhase.Shake;
         }
     }

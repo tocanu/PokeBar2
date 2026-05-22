@@ -1859,9 +1859,11 @@ public partial class MainWindow : Window
             _pokemon.StartIdle();
         }
 
-        var scale = (_currentTaskbar?.DpiScale > 0 ? _currentTaskbar!.DpiScale : 1.0);
-        _pokemon.X = _dragStartPokemonX + dx * scale;
-        _pokemon.Y = _dragStartPokemonY + dy * scale;
+        // BUG FIX: PointToScreen already returns physical pixel coordinates.
+        // _pokemon.X/Y are also in physical pixels. No scale multiplication needed —
+        // multiplying by DpiScale would overshoot by 1.5× on a 150% DPI monitor.
+        _pokemon.X = _dragStartPokemonX + dx;
+        _pokemon.Y = _dragStartPokemonY + dy;
         UpdateWindowPosition();
     }
 

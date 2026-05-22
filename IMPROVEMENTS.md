@@ -168,6 +168,112 @@ Objetivo: manter o que ja funciona, corrigir riscos de regressao e reduzir laten
 - [x] Extras de UX: blocklist de icones protegidos (ex.: Lixeira e atalhos criticos).
 
 ---
+
+## VARREDURA COMPLETA DE BUGS — 2026-05-22
+
+> Revisao de cada arquivo do projeto. Bugs com [x] ja foram corrigidos nesta sessao.
+
+### CRITICO — P0
+
+- [x] **`IdleBehaviorService.GetIdleThreshold` re-rola random a cada frame**
+  - Arquivo: `Services/IdleBehaviorService.cs`
+  - Problema: `GetIdleThreshold` era chamado a cada tick do Update, gerando um novo threshold aleatorio a cada frame. O pet nunca conseguia satisfazer `_idleTimer >= threshold` de forma confiavel — o threshold mudava antes de ser atingido, causando idle behaviors nunca dispararem.
+  - Fix: Renomeado para `SampleIdleThreshold`, chamado uma vez ao resetar o timer e armazenado em campo `_idleThreshold`. O Update compara contra o campo fixo.
+
+### ALTO — P1
+
+- [x] **Drag-to-reposition aplica DPI scale duas vezes**
+  - Arquivo: `MainWindow.xaml.cs` (OnPokemonMouseMove)
+  - Problema: `dx = PointToScreen(...) delta` ja esta em pixels fisicos. Multiplicar por `DpiScale` novamente faz o pet se mover 1.5x mais rapido que o mouse em monitores 150% DPI.
+  - Fix: Removida multiplicacao por `scale`; `_pokemon.X = _dragStartPokemonX + dx` (sem scale).
+
+- [x] **`AnimationPlayer.Update` loop infinito se `FrameTime <= 0`**
+  - Arquivo: `Animation/AnimationPlayer.cs`
+  - Problema: `while (_elapsedTime >= _currentClip.FrameTime)` nunca termina se `FrameTime` for 0 ou negativo (config malformada ou sprite com 0 frames). Trava o app silenciosamente.
+  - Fix: Guard adicionado antes do loop: `if (_currentClip.FrameTime <= 0) return;`
+
+### MEDIO — P2
+
+- [x] **`CaptureManager` descarta tempo de overrun na transicao de fase**
+  - Arquivo: `Capture/CaptureManager.cs`
+  - Problema: Ao transitar Travel→Absorb e Absorb→Shake, o codigo fazia `_active.Elapsed = 0`. Se a fase terminou com `Elapsed = faseDuration + 0.05s`, os 0.05s extras eram descartados. Para fases curtas (shake = 0.25s), isso gerava ~20% de erro no timing.
+  - Fix: Carry forward: `_active.Elapsed = Math.Max(0, _active.Elapsed - faseDuration)`.
+
+- [ ] **`MoodService._petCooldownTimer` nao persistido no save**
+  - Arquivo: `Services/MoodService.cs`
+  - Problema: Timer de cooldown de carinho reseta para 0 em cada restart. Permite dar carinho infinito apos reiniciar o app sem esperar o cooldown.
+  - Fix sugerido: Adicionar `PetCooldownRemaining` ao `SaveData` e restaurar em `MoodService`.
+
+- [ ] **`ProfileManager.CreateProfile` salva arquivo antes de adicionar entry na lista**
+  - Arquivo: `Services/ProfileManager.cs`
+  - Problema: Se o processo travar entre `SaveProfile(id, config)` e `settings.Profiles.Add(id)`, fica arquivo de config orfao sem entrada no manifesto.
+  - Fix sugerido: Construir a lista atualizada em memoria antes de salvar; so persistir apos ambos estarem prontos.
+
+- [ ] **`SpawnPoolBuilder` tem Pokemons listados em dois tiers simultaneamente**
+  - Arquivo: `Services/SpawnPoolBuilder.cs`
+  - Problema: #3, #6, #9, #12, #15 aparecem em `IsMiddleStage` E `IsFinalStage`. Funciona (IsFinalStage checado primeiro), mas os dados sao inconsistentes.
+  - Fix sugerido: Remover entradas duplicadas de `IsMiddleStage` que sao final-evolutions.
+
+### BAIXO — P3
+
+- [ ] **`PlayerPet.BuildStat` usa apenas 5 buckets de stat para 1025 Pokemon**
+  - Arquivo: `Entities/PlayerPet.cs`
+  - Problema: `baseValue + level + (dex % 5)` — apenas 5 variacoes de stat para todo o roster. Pikachu #25 e Mewtwo #150 tem stats identicas no mesmo nivel.
+  - Fix sugerido: Lookup em base_stats.json por dex, ou hash mais distribuido.
+
+- [ ] **`CombatManager.ResolveCombat`: `TakeDamage(MaxHp)` e redundante**
+  - Arquivo: `Combat/CombatManager.cs`
+  - Problema: Apos `SetHp(0)`, chamar `TakeDamage(MaxHp)` e semanticamente confuso (parece dano, e na verdade force-faint).
+  - Fix sugerido: Substituir por `enemy.SetHp(0); enemy.Faint();`.
+
+- [ ] **Zero testes para logica de gameplay**
+  - O projeto tem apenas 2 arquivos de teste reais. Nao ha nenhum teste para:
+    - `CombatManager.SimulateRounds` (status, crit, empate)
+    - `CaptureManager` (fases, chance de captura)
+    - `QuestService` (reset diario, streak, claim)
+    - `LevelService` (multiplos level-ups, XP overflow)
+    - `AchievementService` (desbloqueio por threshold)
+    - `SaveManager` (save/load/backup/corrupto)
+
+---
+
+## SUGESTOES DE FEATURES E MELHORIAS
+
+### Gameplay de alto impacto
+
+- [ ] **Sistema de tipos Pokemon** — Adicionar `Type` em `MoveDefinition` e tabela de efetividade simplificada (weak/neutral/resist/immune). Impacto enorme na profundidade do combate sem mudar arquitetura.
+
+- [ ] **Base stats reais por Pokemon** — Substituir `BuildStat(..., dex % 5)` por lookup num JSON de base stats (HP/ATK/DEF por dex). Diferencia muito o combate entre Pokemon fracos e fortes.
+
+- [ ] **Animacao de evolucao com flash** — Hoje a evolucao e troca de sprite silenciosa. Adicionar: piscar branco (HitFlash existente), SFX de evolucao, balao "EVOLUIU!".
+
+- [ ] **Ciclo dia/noite afetando spawns** — Usar `DateTime.Now.Hour` para modificar spawn pool: Ghost/Dark types a noite (22h-6h), Fire/Normal de dia. Simples com o SpawnPoolBuilder existente.
+
+- [ ] **Clima aleatorio** — A cada hora sortear um clima (Sol, Chuva, Neve) que aparece no balao e afeta mood/velocidade. Ex: Chuva = mood Sad +20%.
+
+### UX e Janelas
+
+- [ ] **Barra de HP durante combate** — `ProgressBar` acima do sprite do inimigo que decrementa a cada `RoundMessage`. O evento ja existe, so falta a UI.
+
+- [ ] **Janela de Quests** — Nao ha forma de ver quests ativas na UI. Adicionar painel de quests (aba em Settings ou item de tray) com progresso e recompensa.
+
+- [ ] **XP bar no tooltip do tray** — `LevelService` ja tem `CurrentXp` e `NextLevelXp`. Adicionar linha `XP: 48/100 ████░░` no tooltip existente.
+
+- [ ] **Filtros da Pokedex por geracao** — Adicionar chips de geracao (Gen 1-9) mapeados por ranges de dex. Simples sem dados extras.
+
+- [ ] **Historico de combates** — `List<CombatRecord>` no SaveData (dex vencido, resultado, timestamp). Mostrar como aba no PC Box similar ao historico de capturas.
+
+### Performance e Arquitetura
+
+- [ ] **Extirpar `MainWindow` como God Object** — Com ~2800 linhas, MainWindow faz spawn, combate, captura, UI, saves e movimento. Extrair orchestrators: `CombatCoordinator`, `SpawnCoordinator`, `SaveCoordinator`, `WindowManager`. Sprint 3 ja lista isso.
+
+- [ ] **Versionamento de SaveData** — Adicionar `int SchemaVersion = 1` e migrations. Hoje campos novos usam defaults JSON silenciosamente, o que pode corruper estado ao atualizar o app.
+
+- [ ] **Debounce do `PerformSave`** — Varios eventos chamam `PerformSave` individualmente (pet click, achievement, battle end). Debounce de 2s coalesceria em um unico I/O por rajada de eventos.
+
+- [ ] **Metrica de hit rate do SpriteCache** — Adicionar contador de hits/misses logado periodicamente. Util para tunar `maxEntries` sem regredir performance.
+
+---
 ## âœ… Resolvidos
 
 ### **Conflito de indexaÃ§Ã£o: Pipeline suporta variantes, Editor/Runtime indexam sÃ³ por Dex**

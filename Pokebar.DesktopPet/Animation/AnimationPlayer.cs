@@ -57,6 +57,10 @@ public class AnimationPlayer
         if (!_isPlaying || _currentClip == null)
             return;
 
+        // Guard: FrameTime <= 0 would cause an infinite loop below
+        if (_currentClip.FrameTime <= 0)
+            return;
+
         _elapsedTime += deltaTime;
 
         while (_elapsedTime >= _currentClip.FrameTime)
