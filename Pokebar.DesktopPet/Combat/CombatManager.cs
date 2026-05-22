@@ -44,6 +44,9 @@ public class CombatManager
     /// <summary>Dispara quando uma batalha termina. bool = playerWon.</summary>
     public event Action<bool>? BattleEnded;
 
+    /// <summary>Dispara a cada round com a mensagem do que aconteceu (ex: "Tackle!", "Poison Sting! ☠").</summary>
+    public event Action<string>? RoundMessage;
+
     public void Update(double deltaTime, PlayerPet player, IEnumerable<EnemyPet> enemies)
     {
         if (_cooldownRemaining > 0)
@@ -65,9 +68,33 @@ public class CombatManager
         }
 
         _active.Elapsed += deltaTime;
+
+        // Disparar mensagens de round enquanto o timer avança
+        FirePendingRoundMessages();
+
         if (_active.Elapsed >= _active.TotalDuration)
         {
             ResolveCombat();
+        }
+    }
+
+    /// <summary>
+    /// Dispara as mensagens de round que ainda não foram emitidas,
+    /// sincronizando com o tempo decorrido da batalha.
+    /// </summary>
+    private void FirePendingRoundMessages()
+    {
+        if (_active == null || _active.RoundMessages.Count == 0) return;
+
+        // Qual round o tempo atual representa (0-based)
+        var currentRound = (int)(_active.Elapsed / _roundDuration);
+        currentRound = Math.Clamp(currentRound, 0, _active.RoundMessages.Count - 1);
+
+        while (_active.LastFiredMessageIndex < currentRound)
+        {
+            _active.LastFiredMessageIndex++;
+            if (_active.LastFiredMessageIndex < _active.RoundMessages.Count)
+                RoundMessage?.Invoke(_active.RoundMessages[_active.LastFiredMessageIndex]);
         }
     }
 
@@ -133,6 +160,10 @@ public class CombatManager
         player.FacingRight = player.X < enemy.X;
         enemy.FacingRight = enemy.X < player.X;
 
+        // Pré-simular rounds para gerar mensagens e resultado
+        var result = SimulateRounds(player, enemy, _active.RoundMessages);
+        _active.PrecomputedResult = result;
+
         // Agora inicia o combate
         player.StartFighting();
         enemy.StartFighting();
@@ -147,7 +178,7 @@ public class CombatManager
         var enemy = _active.Enemy;
 
         // Simulação de rodadas com moves, dano real e status effects
-        var result = SimulateRounds(player, enemy);
+        var result = _active.PrecomputedResult;
 
         Log.Information("Combat resolved: {Winner} wins! Rounds={Rounds}, PlayerHP={PHp}/{PMax}, EnemyHP={EHp}/{EMax}",
             result.PlayerWins ? "Player" : "Enemy", _rounds,
@@ -184,8 +215,9 @@ public class CombatManager
 
     /// <summary>
     /// Simula N rodadas de combate com moves, dano real, crit e status effects.
+    /// Preenche <paramref name="messages"/> com uma string legível por round (para o typewriter).
     /// </summary>
-    private CombatResult SimulateRounds(PlayerPet player, EnemyPet enemy)
+    private CombatResult SimulateRounds(PlayerPet player, EnemyPet enemy, List<string> messages)
     {
         var playerMoves = new MoveSet(_moves, _random);
         var enemyMoves = new MoveSet(_moves, _random);
@@ -208,18 +240,22 @@ public class CombatManager
             if (pHp <= 0 || eHp <= 0) break;
 
             // Turno do jogador
-            if (!IsSkippedByStatus(pStatus, ref pSleepLeft))
-            {
-                var move = playerMoves.PickMove();
-                playerMoves.UseMove(move);
-                int dmg = CalcDamage(move, player.Attack, enemy.Defense);
-                eHp -= dmg;
+            MoveDefinition? playerMove = null;
+            int playerDmg = 0;
+            bool playerSkipped = IsSkippedByStatus(pStatus, ref pSleepLeft);
 
-                if (move.StatusEffect != StatusEffectType.None && eStatus == StatusEffectType.None)
+            if (!playerSkipped)
+            {
+                playerMove = playerMoves.PickMove();
+                playerMoves.UseMove(playerMove);
+                playerDmg = CalcDamage(playerMove, player.Attack, enemy.Defense);
+                eHp -= playerDmg;
+
+                if (playerMove.StatusEffect != StatusEffectType.None && eStatus == StatusEffectType.None)
                 {
-                    if (_random.NextDouble() < move.StatusChance)
+                    if (_random.NextDouble() < playerMove.StatusChance)
                     {
-                        eStatus = move.StatusEffect;
+                        eStatus = playerMove.StatusEffect;
                         if (eStatus == StatusEffectType.Sleep)
                             eSleepLeft = _sleepDurationRounds;
                         Log.Debug("Round {R}: Player inflicted {Status} on enemy", round + 1, eStatus);
@@ -227,21 +263,30 @@ public class CombatManager
                 }
             }
 
-            if (eHp <= 0) break;
+            if (eHp <= 0)
+            {
+                messages.Add(BuildRoundText(playerSkipped, playerMove, playerDmg, pStatus,
+                                            true, null, 0, eStatus));
+                break;
+            }
 
             // Turno do inimigo
-            if (!IsSkippedByStatus(eStatus, ref eSleepLeft))
-            {
-                var move = enemyMoves.PickMove();
-                enemyMoves.UseMove(move);
-                int dmg = CalcDamage(move, enemy.Attack, player.Defense);
-                pHp -= dmg;
+            MoveDefinition? enemyMove = null;
+            int enemyDmg = 0;
+            bool enemySkipped = IsSkippedByStatus(eStatus, ref eSleepLeft);
 
-                if (move.StatusEffect != StatusEffectType.None && pStatus == StatusEffectType.None)
+            if (!enemySkipped)
+            {
+                enemyMove = enemyMoves.PickMove();
+                enemyMoves.UseMove(enemyMove);
+                enemyDmg = CalcDamage(enemyMove, enemy.Attack, player.Defense);
+                pHp -= enemyDmg;
+
+                if (enemyMove.StatusEffect != StatusEffectType.None && pStatus == StatusEffectType.None)
                 {
-                    if (_random.NextDouble() < move.StatusChance)
+                    if (_random.NextDouble() < enemyMove.StatusChance)
                     {
-                        pStatus = move.StatusEffect;
+                        pStatus = enemyMove.StatusEffect;
                         if (pStatus == StatusEffectType.Sleep)
                             pSleepLeft = _sleepDurationRounds;
                         Log.Debug("Round {R}: Enemy inflicted {Status} on player", round + 1, pStatus);
@@ -249,10 +294,14 @@ public class CombatManager
                 }
             }
 
-            if (pHp <= 0) break;
-
             playerMoves.TickCooldowns();
             enemyMoves.TickCooldowns();
+
+            // Gerar texto do round para o typewriter
+            messages.Add(BuildRoundText(playerSkipped, playerMove, playerDmg, pStatus,
+                                        enemySkipped, enemyMove, enemyDmg, eStatus));
+
+            if (pHp <= 0) break;
         }
 
         pHp = Math.Max(0, pHp);
@@ -316,6 +365,49 @@ public class CombatManager
         }
     }
 
+    /// <summary>
+    /// Monta a string de texto de um round para exibição via typewriter.
+    /// Formato compacto estilo GBA: "Tackle! / Growl~ ☠"
+    /// </summary>
+    private static string BuildRoundText(
+        bool playerSkipped, MoveDefinition? playerMove, int playerDmg, StatusEffectType newEnemyStatus,
+        bool enemySkipped, MoveDefinition? enemyMove, int enemyDmg, StatusEffectType newPlayerStatus)
+    {
+        var parts = new System.Text.StringBuilder();
+
+        // Ação do player
+        if (playerSkipped)
+            parts.Append("...");
+        else if (playerMove != null)
+        {
+            parts.Append(playerMove.Name);
+            if (playerDmg > 0) parts.Append('!');
+            if (newEnemyStatus == StatusEffectType.Poison) parts.Append(" ☠");
+            else if (newEnemyStatus == StatusEffectType.Sleep) parts.Append(" 💤");
+            else if (newEnemyStatus == StatusEffectType.Paralysis) parts.Append(" ⚡");
+        }
+
+        parts.Append(" / ");
+
+        // Ação do inimigo
+        if (enemySkipped)
+            parts.Append("...");
+        else if (enemyMove != null)
+        {
+            parts.Append(enemyMove.Name);
+            if (enemyDmg > 0) parts.Append('!');
+            if (newPlayerStatus == StatusEffectType.Poison) parts.Append(" ☠");
+            else if (newPlayerStatus == StatusEffectType.Sleep) parts.Append(" 💤");
+            else if (newPlayerStatus == StatusEffectType.Paralysis) parts.Append(" ⚡");
+        }
+        else
+        {
+            parts.Append("---");
+        }
+
+        return parts.ToString();
+    }
+
     private static void RestoreAfterCombat(PokemonPet pet, EntityState previousState, double previousVelocity)
     {
         pet.VelocityX = previousVelocity;
@@ -361,5 +453,14 @@ public class CombatManager
         public double EnemyPrevVelocity { get; set; }
         public EntityState PlayerPrevState { get; set; }
         public EntityState EnemyPrevState { get; set; }
+
+        /// <summary>Mensagens geradas por round para o typewriter.</summary>
+        public List<string> RoundMessages { get; } = new();
+
+        /// <summary>Índice da última mensagem já disparada via RoundMessage event.</summary>
+        public int LastFiredMessageIndex { get; set; } = -1;
+
+        /// <summary>Resultado pré-calculado pela simulação (evita re-simular no Resolve).</summary>
+        public CombatResult PrecomputedResult { get; set; }
     }
 }

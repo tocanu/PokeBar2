@@ -197,6 +197,7 @@ public partial class MainWindow : Window
         _captureManager.CaptureCompleted += OnCaptureCompleted;
         _captureManager.CaptureFailed += OnCaptureFailed;
         _combatManager.BattleEnded += OnBattleEnded;
+        _combatManager.RoundMessage += msg => Dispatcher.Invoke(() => ShowSpeechBubble(msg, _config.Combat.RoundDurationSeconds * 0.9));
         _nextSpawnDelay = NextSpawnDelay();
 
         _lastTimestamp = _stopwatch.ElapsedTicks;
@@ -303,6 +304,9 @@ public partial class MainWindow : Window
             
             // FASE 7: Acariciar via tray
             _trayIcon.PetRequested += () => Dispatcher.Invoke(OnPetClicked);
+
+            // Pokédex
+            _trayIcon.PokedexRequested += () => Dispatcher.Invoke(OnPokedexRequested);
         }
 
         // Notification service
@@ -517,6 +521,28 @@ public partial class MainWindow : Window
     }
 
     // ── FASE 6: Handlers de UX ──────────────────────────────────────────
+
+    private void OnPokedexRequested()
+    {
+        var existing = System.Windows.Application.Current.Windows
+            .OfType<PokedexWindow>()
+            .FirstOrDefault(w => w.IsVisible);
+
+        if (existing != null)
+        {
+            existing.Activate();
+            return;
+        }
+
+        if (_pokedexService == null) return;
+
+        var dex = new PokedexWindow(_pokedexService, _spriteCache, _config);
+        dex.Owner = null;
+        dex.Show();
+        _sfxService?.PlayConfirm();
+        Log.Debug("PokedexWindow opened (seen={Seen}, captured={Captured})",
+            _pokedexService.Seen.Count, _pokedexService.Captured.Count);
+    }
 
     private void OnPcBoxRequested()
     {

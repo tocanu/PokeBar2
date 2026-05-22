@@ -39,6 +39,9 @@ public sealed class TrayIconService : IDisposable
     /// <summary>Disparado quando o usuário clica em PC Box.</summary>
     public event Action? PcBoxRequested;
 
+    /// <summary>Disparado quando o usuário clica em Pokédex.</summary>
+    public event Action? PokedexRequested;
+
     /// <summary>Disparado quando o usuário clica em Configurações.</summary>
     public event Action? SettingsRequested;
 
@@ -131,6 +134,11 @@ public sealed class TrayIconService : IDisposable
         var pcBoxItem = new WinForms.ToolStripMenuItem(Localizer.Get("tray.pcbox"));
         pcBoxItem.Click += (_, _) => PcBoxRequested?.Invoke();
         menu.Items.Add(pcBoxItem);
+
+        // Pokédex
+        var pokedexItem = new WinForms.ToolStripMenuItem("📖 Pokédex");
+        pokedexItem.Click += (_, _) => PokedexRequested?.Invoke();
+        menu.Items.Add(pokedexItem);
 
         // Configurações
         var settingsItem = new WinForms.ToolStripMenuItem(Localizer.Get("tray.settings"));

@@ -271,6 +271,47 @@
         </Setter>
     </Style>
 
+    <!-- ═══ RADIO BUTTON (GBA-style selector) ═══ -->
+    <Style x:Key="FR_RadioButton" TargetType="RadioButton">
+        <Setter Property="FontFamily" Value="{StaticResource FR_PixelFont}"/>
+        <Setter Property="FontSize" Value="7"/>
+        <Setter Property="Foreground" Value="{StaticResource FR_TextDarkBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <StackPanel Orientation="Horizontal">
+                        <Border x:Name="Bd" Width="12" Height="12"
+                                CornerRadius="6"
+                                BorderBrush="{StaticResource FR_BorderDarkBrush}"
+                                BorderThickness="2"
+                                Background="{StaticResource FR_PanelBgBrush}"
+                                Margin="0,0,4,0" VerticalAlignment="Center">
+                            <Ellipse x:Name="Dot" Width="6" Height="6"
+                                     Fill="{StaticResource FR_AccentBlueBrush}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Visibility="Collapsed"/>
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Dot" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Bd" Property="BorderBrush"
+                                    Value="{StaticResource FR_AccentBlueBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{StaticResource FR_SelectionBgBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ═══════════════════════════════════════════════════════════════
          MENU-STYLE LIST (GBA ▶ cursor selector)
          Items look like "[▶] OPTION" with highlight on selection
