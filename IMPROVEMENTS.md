@@ -42,6 +42,63 @@ Objetivo: manter o que ja funciona, corrigir riscos de regressao e reduzir laten
 - [ ] Revisar textos hardcoded e padronizar localizacao (inclusive labels de tempo e historico).
 - [ ] Fechar lacunas de testes para combate/captura/quests/PC Box.
 
+---
+
+## MULTI-MONITOR — BUGS & STATUS (atualizado 2026-05-22)
+
+### Corrigidos nesta sessao
+
+- [x] **[CRITICO] DPI errado em monitores secundarios** — `UpdateWindowPosition` e `PetWindow.UpdatePosition` usavam `physicalPx / monitorDpiScale` para calcular `Window.Left/Top`, o que e incorreto para PerMonitorV2. Fix: usa `PresentationSource.CompositionTarget.TransformFromDevice` que converte fisico → logico corretamente para o contexto DPI da propria janela.
+- [x] **[ALTO] Monitores nao re-escaneados apos mudanca** — `InitializeTaskbars()` so era chamado em `OnLoaded`. Conectar/desconectar monitor ou mudar DPI deixava `_taskbars` obsoleto. Fix: hook `WM_DISPLAYCHANGE` (0x007E) no `HitTestHook` dispara `InitializeTaskbars()` + reposicionamento do pet via `Dispatcher.InvokeAsync`.
+- [x] **[ALTO] `Process.GetProcessById` em cada janela por varredura de fullscreen** — abria handle de processo para cada janela visivel a cada `FullscreenCheckMs` ms. Fix: cache `pid → processName` com TTL de 10 s e limpeza periodica de 60 s em `FullscreenService`.
+
+### Pendentes (backlog)
+
+- [ ] **[MEDIO] Auto-hide global, nao por taskbar** — `IsAutoHideEnabled()` usa `ABM_GETSTATE` sem `hWnd`, retornando estado do taskbar primario. Taskbars secundarios podem ter auto-hide independente. Solucao: checar o estado via `hWnd` especifico de cada `Shell_SecondaryTrayWnd`. Arquivo: `TaskbarService.cs`.
+- [ ] **[MEDIO] `GetNeighbor` assume layout horizontal** — taskbars sao ordenados por `BoundsPx.Left`; monitores empilhados verticalmente (mesmo `Left`) ficam em ordem nao deterministica e `toRight` nao tem sentido. Solucao: determinar eixo de travessia pelo vetor de velocidade + diferenca de bounds. Arquivo: `MainWindow.cs`.
+- [ ] **[MEDIO] 1 frame de glitch visual ao trocar monitor** — `SetCurrentTaskbar()` atualiza `_pokemon.Y` mas nao chama `UpdateWindowPosition()` imediatamente, gerando 1 frame com DPI errado. Solucao: chamar `UpdateWindowPosition()` ao final de `SetCurrentTaskbar()`. Arquivo: `MainWindow.cs`.
+- [ ] **[BAIXO] `TaskbarInfo.Bounds` e `GroundY` sao codigo morto** — `Bounds` (em DIPs) e computado em `TryBuildPrimaryTaskbar/TryBuildSecondaryTaskbar` mas nunca acessado no MainWindow. So `BoundsPx` e `GroundYPx` sao usados. Remover ou documentar intencao futura. Arquivo: `TaskbarService.cs`.
+- [ ] **[BAIXO] Inimigo pode ficar fora de todos os bounds apos desconexao de monitor** — se o monitor do inimigo sumir, `GetEnemyTaskbar` cai no fallback para `_currentTaskbar` e `ShouldAllowOutside` pode devolver `false` com comportamento inesperado. Adicionar deteccao de "orfao" em `UpdateEnemyMovement` e teleportar para o taskbar do player. Arquivo: `MainWindow.cs`.
+
+---
+
+## VARREDURA DE BUGS — CHECKLIST CONTINUO
+
+> Rodar esta lista apos cada sprint antes do commit. Adicionar novos itens conforme bugs sao encontrados.
+
+### Corretude de estado
+- [ ] Verificar se todos os `_saveData = _saveData with { ... }` sao seguidos de `PerformSave()` ou se ha janelas onde estado muda sem persistir.
+- [ ] Auditar `RestoreFromSave()` de todos os servicos: garantir que campos novos adicionados ao `SaveData` tem valor default sano quando save e antigo (sem o campo).
+- [ ] Checar que `CleanupDeadEnemies()` remove inimigos de `_enemyTaskbars` alem de `_enemyWindows` (ja faz — confirmar permanece correto em refatoracoes).
+
+### Servicos e inicializacao
+- [ ] Verificar que `_questService`, `_pokedexService`, `_levelService` e `_evolutionService` nunca sao acessados antes de `InitializeWindowsIntegration()` completar (race condition em `OnLoaded`).
+- [ ] Confirmar que `UiSfxService.Dispose()` e chamado no `OnClosed` (hoje `_sfxService` nao esta no bloco de dispose de `OnClosed`).
+- [ ] Auditar todos os eventos assinados com `+=` para verificar se tem `−=` correspondente no shutdown (memory leak em handlers de servicos).
+
+### Multi-monitor (continuo)
+- [ ] Testar `WM_DISPLAYCHANGE` com: (a) adicionar monitor, (b) remover monitor enquanto inimigo esta nele, (c) mudar DPI em runtime, (d) mudar resolucao.
+- [ ] Validar `TransformFromDevice` quando o app e iniciado em monitor secundario (nao no primario).
+- [ ] Checar comportamento quando `PresentationSource.FromVisual` retorna null (janela minimizada ou fora de arvore visual).
+
+### Combate e captura
+- [ ] Verificar que `Sleep` expira corretamente: `sleepLeft` chega a 0, `IsSkippedByStatus` retorna `false`, mas `enemy.ActiveStatus` ainda pode estar em `Sleep` apos o combate (nunca e limpo no `ResolveCombat` se o inimigo perdeu dormindo).
+- [ ] Confirmar que `CombatResult.EnemyStatus` e aplicado corretamente a `enemy.ActiveStatus` para bonus de captura — e que status `Sleep` pos-combate aumenta chance mas nao bloqueia a animacao de capture ball.
+- [ ] Auditar `CaptureManager.TryStartCapture`: `scale` passado vem de `taskbar?.DpiScale ?? 1.0` — mesma raiz do Bug 1; verificar se posicionamento da capture ball esta correto em DPI misto.
+
+### Performance
+- [ ] Medir tempo de `GetAllTaskbars()` no `WM_DISPLAYCHANGE` handler — se `EnumWindows` for lento em sistemas com muitas janelas, considerar debounce de 500 ms.
+- [ ] Verificar que o `_pidCache` em `FullscreenService` nao cresce indefinidamente se processos de curta duracao criarem muitas entradas antes da limpeza.
+
+### Testes automatizados faltando (prioridade alta)
+- [ ] `CombatManager`: testar `SimulateRounds` com player muito mais forte (deve sempre vencer), empate (coin flip), e status Sleep expirando no turno certo.
+- [ ] `QuestService`: testar `OnWalkTime` acumulando fracionario, `CheckDailyReset` na virada de dia, e `ClaimReward` em quest nao concluida (deve retornar null).
+- [ ] `PokedexService`: testar `RestoreFromSave` com party implicando capturados, e `OnSeen`/`OnCaptured` com dex invalido (<= 0).
+- [ ] `SaveManager`: testar fallback para backup quando save corrompido, e atomicidade (arquivo .tmp nao deve permanecer apos save bem-sucedido).
+- [ ] `TaskbarService`: mockar as chamadas Win32 e testar `InferPosition` para taskbar em cada borda, e `GetAllTaskbars` com zero monitores.
+
+---
+
 ### P0 - CORRIGIR AGORA (qualidade e confiabilidade)
 
 - [x] Corrigir progresso de quest `WalkTime`: hoje usa cast para `int` em segundos fracionarios e quase sempre soma 0 (`QuestService.OnWalkTime`).

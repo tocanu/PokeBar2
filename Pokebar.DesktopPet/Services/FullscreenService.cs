@@ -8,6 +8,11 @@ namespace Pokebar.DesktopPet.Services;
 
 public static class FullscreenService
 {
+    // BUG FIX #3: Cache pid → nome do processo para evitar Process.GetProcessById()
+    // em cada janela a cada varredura de fullscreen (era O(n) handle opens por frame).
+    private static readonly Dictionary<uint, (string Name, long ExpiryTick)> _pidCache = new();
+    private static readonly long CACHE_TTL_TICKS = TimeSpan.FromSeconds(10).Ticks;
+    private static long _lastCacheCleanup;
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT
     {
@@ -139,6 +144,7 @@ public static class FullscreenService
 
     /// <summary>
     /// Obtém o nome do processo (sem extensão, lowercase) de uma janela.
+    /// Resultado cacheado por 10 s para evitar abrir handle de processo a cada frame.
     /// </summary>
     private static string GetProcessNameForWindow(IntPtr hWnd)
     {
@@ -146,8 +152,26 @@ public static class FullscreenService
         {
             GetWindowThreadProcessId(hWnd, out var pid);
             if (pid == 0) return string.Empty;
-            var process = Process.GetProcessById((int)pid);
-            return process.ProcessName.ToLowerInvariant();
+
+            var now = DateTime.UtcNow.Ticks;
+
+            if (_pidCache.TryGetValue(pid, out var cached) && cached.ExpiryTick > now)
+                return cached.Name;
+
+            var name = Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant();
+            _pidCache[pid] = (name, now + CACHE_TTL_TICKS);
+
+            // Limpeza periódica para evitar crescimento ilimitado (a cada ~60 s)
+            if (now - _lastCacheCleanup > TimeSpan.FromSeconds(60).Ticks)
+            {
+                _lastCacheCleanup = now;
+                var expired = _pidCache.Where(kv => kv.Value.ExpiryTick <= now)
+                                       .Select(kv => kv.Key).ToList();
+                foreach (var key in expired)
+                    _pidCache.Remove(key);
+            }
+
+            return name;
         }
         catch
         {

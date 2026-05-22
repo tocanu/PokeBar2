@@ -84,10 +84,25 @@ public partial class PetWindow : Window
 
     public void UpdatePosition(double xPx, double yPx, double dpiScale)
     {
-        var scale = dpiScale > 0 ? dpiScale : 1.0;
-        var windowX = (xPx / scale) - (RootCanvas.Width / 2);
+        // BUG FIX #1: usar TransformFromDevice para converter pixels físicos → lógicos WPF
+        // corretamente em setups com DPI diferente por monitor (PerMonitorV2).
+        var source = PresentationSource.FromVisual(this);
         var groundLine = _currentGroundLineY > 0 ? _currentGroundLineY : RootCanvas.Height;
-        var windowY = (yPx / scale) - groundLine;
+
+        double windowX, windowY;
+        if (source?.CompositionTarget != null)
+        {
+            var logical = source.CompositionTarget.TransformFromDevice
+                .Transform(new System.Windows.Point(xPx, yPx));
+            windowX = logical.X - (RootCanvas.Width / 2);
+            windowY = logical.Y - groundLine;
+        }
+        else
+        {
+            var scale = dpiScale > 0 ? dpiScale : 1.0;
+            windowX = (xPx / scale) - (RootCanvas.Width / 2);
+            windowY = (yPx / scale) - groundLine;
+        }
 
         Left = windowX;
         Top = windowY;

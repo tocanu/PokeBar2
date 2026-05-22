@@ -224,9 +224,28 @@ public partial class MainWindow : Window
     /// </summary>
     private IntPtr HitTestHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        const int WM_NCHITTEST = 0x0084;
-        const int HTTRANSPARENT = -1;
-        const int HTCLIENT = 1;
+        const int WM_NCHITTEST      = 0x0084;
+        const int WM_DISPLAYCHANGE  = 0x007E;
+        const int HTTRANSPARENT     = -1;
+        const int HTCLIENT          = 1;
+
+        // BUG FIX #2: Re-escanear taskbars quando monitores mudam (connect/disconnect/DPI change)
+        if (msg == WM_DISPLAYCHANGE)
+        {
+            Log.Information("WM_DISPLAYCHANGE received — re-scanning monitors");
+            Dispatcher.InvokeAsync(() =>
+            {
+                InitializeTaskbars();
+                // Reposicionar o pet no centro do monitor atual após mudança
+                if (_currentTaskbar != null)
+                {
+                    _pokemon.X = _currentTaskbar.BoundsPx.Left + (_currentTaskbar.BoundsPx.Width / 2);
+                    _pokemon.Y = _currentTaskbar.GroundYPx - TASKBAR_MARGIN;
+                }
+            });
+            // Não marcar handled — outros hooks também podem precisar do evento
+            return IntPtr.Zero;
+        }
 
         if (msg == WM_NCHITTEST)
         {
@@ -1212,10 +1231,29 @@ public partial class MainWindow : Window
         if (_currentTaskbar == null)
             return;
 
-        var scale = _currentTaskbar.DpiScale > 0 ? _currentTaskbar.DpiScale : 1.0;
-        var windowX = (_pokemon.X / scale) - (RootCanvas.Width / 2);
-        var groundLine = _currentGroundLineY > 0 ? _currentGroundLineY : (RootCanvas.Height - SPEECH_BUBBLE_MARGIN);
-        var windowY = (_pokemon.Y / scale) - groundLine - SPEECH_BUBBLE_MARGIN;
+        // BUG FIX #1: usar TransformFromDevice em vez de dividir pela DPI do monitor atual.
+        // Window.Left/Top são coordenadas WPF lógicas, cujo mapeamento para pixels físicos
+        // depende do contexto DPI da JANELA (não do monitor de destino).
+        // CompositionTarget.TransformFromDevice faz a conversão correta para PerMonitorV2.
+        var source = PresentationSource.FromVisual(this);
+        double windowX, windowY;
+
+        if (source?.CompositionTarget != null)
+        {
+            var logical = source.CompositionTarget.TransformFromDevice
+                .Transform(new System.Windows.Point(_pokemon.X, _pokemon.Y));
+            var groundLine = _currentGroundLineY > 0 ? _currentGroundLineY : (RootCanvas.Height - SPEECH_BUBBLE_MARGIN);
+            windowX = logical.X - (RootCanvas.Width / 2);
+            windowY = logical.Y - groundLine - SPEECH_BUBBLE_MARGIN;
+        }
+        else
+        {
+            // Fallback enquanto a janela ainda não tem PresentationSource
+            var scale = _currentTaskbar.DpiScale > 0 ? _currentTaskbar.DpiScale : 1.0;
+            var groundLine = _currentGroundLineY > 0 ? _currentGroundLineY : (RootCanvas.Height - SPEECH_BUBBLE_MARGIN);
+            windowX = (_pokemon.X / scale) - (RootCanvas.Width / 2);
+            windowY = (_pokemon.Y / scale) - groundLine - SPEECH_BUBBLE_MARGIN;
+        }
 
         Left = windowX;
         Top = windowY;
