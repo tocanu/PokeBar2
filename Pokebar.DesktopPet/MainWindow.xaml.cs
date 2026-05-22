@@ -363,6 +363,7 @@ public partial class MainWindow : Window
 
         // FASE 7: Inicializar serviços de conteúdo & gameplay
         _moodService = new MoodService(_config.Mood);
+        _moodService.RestoreCooldown(_saveData.PetCooldownRemaining); // BUG FIX: persistir cooldown entre sessões
         _idleBehaviorService = new IdleBehaviorService();
         _smartMovement = new SmartMovementService();
         _questService = new QuestService(_config.Quests);
@@ -2578,7 +2579,8 @@ public partial class MainWindow : Window
             CaptureHistory = _saveData.CaptureHistory,
             DailyQuestIds = _questService?.DailyQuestIds ?? _saveData.DailyQuestIds,
             DailyStreak = _questService?.DailyStreak ?? _saveData.DailyStreak,
-            LastDailyDate = _questService?.LastDailyDate ?? _saveData.LastDailyDate
+            LastDailyDate = _questService?.LastDailyDate ?? _saveData.LastDailyDate,
+            PetCooldownRemaining = _moodService?.CooldownRemaining ?? 0   // BUG FIX: cooldown persiste entre sessões
         };
         // Persistir Pokédex
         if (_pokedexService != null)

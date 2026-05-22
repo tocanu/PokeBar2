@@ -90,6 +90,12 @@ public record SaveData
     /// <summary>Histórico das últimas capturas (máx 50 entradas).</summary>
     public List<CaptureHistoryEntry> CaptureHistory { get; init; } = new();
 
+    /// <summary>
+    /// Cooldown restante de carícia (segundos).
+    /// Persistido para evitar que o jogador dê carinho infinito ao reiniciar o app.
+    /// </summary>
+    public double PetCooldownRemaining { get; init; }
+
     /// <summary>Data/hora do último save.</summary>
     public DateTime LastSaved { get; init; } = DateTime.UtcNow;
 }

@@ -20,6 +20,20 @@ public class MoodService
     }
 
     /// <summary>
+    /// Cooldown restante de carícia em segundos.
+    /// Exposto para persistência no SaveData.
+    /// </summary>
+    public double CooldownRemaining => Math.Max(0, _petCooldownTimer);
+
+    /// <summary>
+    /// Restaura o cooldown de carícia a partir do SaveData (evita carinho infinito ao reiniciar).
+    /// </summary>
+    public void RestoreCooldown(double secondsRemaining)
+    {
+        _petCooldownTimer = Math.Max(0, secondsRemaining);
+    }
+
+    /// <summary>
     /// Atualiza o humor baseado no friendship e tempo idle.
     /// Chamado a cada frame do game loop.
     /// </summary>

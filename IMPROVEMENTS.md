@@ -199,10 +199,10 @@ Objetivo: manter o que ja funciona, corrigir riscos de regressao e reduzir laten
   - Problema: Ao transitar Travel→Absorb e Absorb→Shake, o codigo fazia `_active.Elapsed = 0`. Se a fase terminou com `Elapsed = faseDuration + 0.05s`, os 0.05s extras eram descartados. Para fases curtas (shake = 0.25s), isso gerava ~20% de erro no timing.
   - Fix: Carry forward: `_active.Elapsed = Math.Max(0, _active.Elapsed - faseDuration)`.
 
-- [ ] **`MoodService._petCooldownTimer` nao persistido no save**
-  - Arquivo: `Services/MoodService.cs`
-  - Problema: Timer de cooldown de carinho reseta para 0 em cada restart. Permite dar carinho infinito apos reiniciar o app sem esperar o cooldown.
-  - Fix sugerido: Adicionar `PetCooldownRemaining` ao `SaveData` e restaurar em `MoodService`.
+- [x] **`MoodService._petCooldownTimer` nao persistido no save**
+  - Arquivo: `Services/MoodService.cs` + `SaveData.cs` + `MainWindow.xaml.cs`
+  - Problema: Timer de cooldown de carinho resetava para 0 em cada restart. Permitia dar carinho infinito apos reiniciar o app sem esperar o cooldown.
+  - Fix: Adicionado `PetCooldownRemaining` (double) ao `SaveData`. `MoodService` expoe `CooldownRemaining` property e `RestoreCooldown(double)`. `MainWindow` restaura em `InitializeWindowsIntegration` e persiste em `PerformSave`.
 
 - [ ] **`ProfileManager.CreateProfile` salva arquivo antes de adicionar entry na lista**
   - Arquivo: `Services/ProfileManager.cs`
@@ -237,13 +237,40 @@ Objetivo: manter o que ja funciona, corrigir riscos de regressao e reduzir laten
 
 ---
 
+## IMPLEMENTAR — PROXIMAS FEATURES PRIORITARIAS
+
+### [P1] Sistema de tipos Pokemon
+
+- [ ] Adicionar campo `PokemonType Type` (enum: Normal, Fire, Water, Grass, Electric, Psychic, Ghost, Dragon, Dark, ...) em `MoveDefinition`.
+- [ ] Criar tabela de efetividade simplificada: `TypeChart.GetMultiplier(attackType, defenderType)` → 0.0 / 0.5 / 1.0 / 2.0.
+- [ ] Adicionar `PokemonType PrimaryType` em `EnemyPet` e `PlayerPet` (carregado de `base_stats.json` pelo dex).
+- [ ] Modificar `CombatManager.CalcDamage` para multiplicar por `TypeChart.GetMultiplier(move.Type, defender.PrimaryType)`.
+- [ ] Mostrar tipo no balao de fala no inicio do combate: "Vs GHOST!" com cor da UI correspondente.
+- [ ] Arquivo: `Combat/TypeChart.cs` (novo) + `MoveDefinition.cs` + `CombatManager.cs` + `EnemyPet.cs`.
+
+### [P1] Base stats reais por Pokemon
+
+- [ ] Criar `Assets/base_stats.json` com dex → `{ hp, attack, defense }` para todos os 1025 Pokemon (dados publicos PokéAPI/Bulbapedia).
+- [ ] Criar `BaseStatsLoader.cs` em `Pokebar.Core` que carrega e indexa o JSON por dex.
+- [ ] Substituir `BuildStat(baseValue, level, dex % 5)` em `PlayerPet` e `EnemyPet` por:
+  ```csharp
+  MaxHp = (int)(baseStats.Hp * (level / 5.0 + 0.5)) + level;
+  Attack = (int)(baseStats.Attack * (level / 5.0 + 0.5));
+  Defense = (int)(baseStats.Defense * (level / 5.0 + 0.5));
+  ```
+- [ ] Garantir minimum de 1 em cada stat apos calculo.
+- [ ] Atualizar `InitializeStats()` em `PlayerPet` e construtor de `EnemyPet` para usar loader.
+- [ ] Arquivo: `Core/BaseStatsLoader.cs` (novo) + `Assets/base_stats.json` (novo) + `PlayerPet.cs` + `EnemyPet.cs`.
+
+---
+
 ## SUGESTOES DE FEATURES E MELHORIAS
 
 ### Gameplay de alto impacto
 
-- [ ] **Sistema de tipos Pokemon** — Adicionar `Type` em `MoveDefinition` e tabela de efetividade simplificada (weak/neutral/resist/immune). Impacto enorme na profundidade do combate sem mudar arquitetura.
+- [→] **Sistema de tipos Pokemon** — ver secao IMPLEMENTAR acima.
 
-- [ ] **Base stats reais por Pokemon** — Substituir `BuildStat(..., dex % 5)` por lookup num JSON de base stats (HP/ATK/DEF por dex). Diferencia muito o combate entre Pokemon fracos e fortes.
+- [→] **Base stats reais por Pokemon** — ver secao IMPLEMENTAR acima.
 
 - [ ] **Animacao de evolucao com flash** — Hoje a evolucao e troca de sprite silenciosa. Adicionar: piscar branco (HitFlash existente), SFX de evolucao, balao "EVOLUIU!".
 
