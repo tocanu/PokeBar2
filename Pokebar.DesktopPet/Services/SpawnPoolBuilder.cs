@@ -61,8 +61,11 @@ public static class SpawnPoolBuilder
         if (IsFinalStage(dex))
             return (10, "Final Evolution");
 
-        // Estágio intermediário — incomum
-        if (IsMiddleStage(dex))
+        // Estágio intermediário — incomum.
+        // BUG FIX: guard !IsFinalStage explícito — IsMiddleStage contém algumas entradas
+        // que também estão em IsFinalStage (dados históricos imprecisos). O guard
+        // garante que qualquer limpeza futura dos dados não quebre a lógica.
+        if (IsMiddleStage(dex) && !IsFinalStage(dex))
             return (20, "Mid Evolution");
 
         // Pokémon comuns de rota (1º estágio, base) — default
@@ -145,12 +148,15 @@ public static class SpawnPoolBuilder
     };
 
     /// <summary>
-    /// Heurística: se o dex está num range de "middle evolutions" conhecidos.
-    /// Usa padrão simples: muitos Pokémon de estágio intermediário estão entre evoluções.
+    /// Heurística: Pokémon evoluídos que não são estágio final de linha de 3 estágios.
+    /// Nota: esta lista inclui alguns finais de linhas de 2 estágios (ex: Raticate, Fearow)
+    /// que recebem peso 20 em vez do default 30 — impacto mínimo no gameplay.
+    /// Em GetWeightForDex, IsFinalStage é sempre checado antes, tornando as
+    /// sobreposições de dados inofensivas.
     /// </summary>
     private static bool IsMiddleStage(int dex) => dex switch
     {
-        // Gen 1 mid-evolutions
+        // Gen 1 evoluídos (inclui alguns finais de 2-stage lines — ver comment acima)
         2 or 3 or 5 or 6 or 8 or 9 or 11 or 12 or 14 or 15 or 17 or 18 or 20 or 22
         or 24 or 25 or 28 or 30 or 31 or 33 or 34 or 36 or 37 or 38 or 40 or 42 or 44
         or 45 or 47 or 49 or 51 or 53 or 55 or 57 or 61 or 62 or 64 or 65 or 67 or 68

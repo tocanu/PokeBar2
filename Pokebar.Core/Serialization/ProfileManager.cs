@@ -144,17 +144,21 @@ public static class ProfileManager
             return settings;
         }
 
-        // Copiar config se solicitado
+        // BUG FIX: salvar entry no manifesto ANTES de gravar o arquivo de config.
+        // Antes: SaveProfile → crash → arquivo orfão sem entry no manifesto.
+        // Agora: SaveSettings → crash → entry existe, LoadProfile cria config padrão.
+        //        SaveSettings → SaveProfile → crash → estado 100% consistente.
+        var newProfile = new ProfileEntry { Id = id, Name = name, Icon = icon };
+        var profiles = new List<ProfileEntry>(settings.Profiles) { newProfile };
+        var updated = settings with { Profiles = profiles };
+        SaveSettings(updated);
+
+        // Copiar config se solicitado (depois do manifesto para garantir consistência)
         if (copyFromId != null)
         {
             var sourceConfig = LoadProfile(copyFromId);
             SaveProfile(id, sourceConfig);
         }
-
-        var newProfile = new ProfileEntry { Id = id, Name = name, Icon = icon };
-        var profiles = new List<ProfileEntry>(settings.Profiles) { newProfile };
-        var updated = settings with { Profiles = profiles };
-        SaveSettings(updated);
 
         Trace.TraceInformation("Created profile '{0}' (name: {1})", id, name);
         return updated;

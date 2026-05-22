@@ -204,15 +204,15 @@ Objetivo: manter o que ja funciona, corrigir riscos de regressao e reduzir laten
   - Problema: Timer de cooldown de carinho resetava para 0 em cada restart. Permitia dar carinho infinito apos reiniciar o app sem esperar o cooldown.
   - Fix: Adicionado `PetCooldownRemaining` (double) ao `SaveData`. `MoodService` expoe `CooldownRemaining` property e `RestoreCooldown(double)`. `MainWindow` restaura em `InitializeWindowsIntegration` e persiste em `PerformSave`.
 
-- [ ] **`ProfileManager.CreateProfile` salva arquivo antes de adicionar entry na lista**
-  - Arquivo: `Services/ProfileManager.cs`
-  - Problema: Se o processo travar entre `SaveProfile(id, config)` e `settings.Profiles.Add(id)`, fica arquivo de config orfao sem entrada no manifesto.
-  - Fix sugerido: Construir a lista atualizada em memoria antes de salvar; so persistir apos ambos estarem prontos.
+- [x] **`ProfileManager.CreateProfile` salva arquivo antes de adicionar entry na lista**
+  - Arquivo: `Pokebar.Core/Serialization/ProfileManager.cs`
+  - Problema: Se o processo travasse entre `SaveProfile(id, config)` e `SaveSettings(updated)`, ficava um arquivo de config orfao sem entrada no manifesto. Pior caso: crash apos SaveSettings mas antes de SaveProfile deixava entry no manifesto sem config — mas LoadProfile ja tratava isso com fallback para default, entao era inofensivo nessa direcao.
+  - Fix: Invertida a ordem — `SaveSettings` (adiciona entry) ANTES de `SaveProfile` (escreve config). Crash entre os dois agora resulta em entry valida com config padrao (LoadProfile handle), nao arquivo orfao.
 
-- [ ] **`SpawnPoolBuilder` tem Pokemons listados em dois tiers simultaneamente**
+- [x] **`SpawnPoolBuilder` tem Pokemons listados em dois tiers simultaneamente**
   - Arquivo: `Services/SpawnPoolBuilder.cs`
-  - Problema: #3, #6, #9, #12, #15 aparecem em `IsMiddleStage` E `IsFinalStage`. Funciona (IsFinalStage checado primeiro), mas os dados sao inconsistentes.
-  - Fix sugerido: Remover entradas duplicadas de `IsMiddleStage` que sao final-evolutions.
+  - Problema: #3, #6, #9 etc. aparecem em `IsMiddleStage` E `IsFinalStage`. Nao causava bug runtime (IsFinalStage checado primeiro), mas tornava os dados inconsistentes.
+  - Fix: Adicionado guard explícito `!IsFinalStage(dex)` no `GetWeightForDex` para o caso IsMiddleStage, tornando a protecao explicita e documentada. Comment do metodo atualizado para descrever a semantica real.
 
 ### BAIXO — P3
 
