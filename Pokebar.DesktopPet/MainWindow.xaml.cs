@@ -104,6 +104,9 @@ public partial class MainWindow : Window
     private UpdateService.UpdateAvailableInfo? _pendingUpdate;
     private System.Threading.CancellationTokenSource? _updateDownloadCts;
 
+    // Setup: indica que os sprites não foram encontrados (instalação limpa sem SpriteCollab)
+    private bool _spritesMissing;
+
     // Chase-target: when the player clicks an enemy, the pet walks toward it
     private EnemyPet? _chaseTarget;
     private const double CHASE_ARRIVE_DISTANCE = 40.0;  // px — close enough to trigger combat
@@ -163,7 +166,11 @@ public partial class MainWindow : Window
 
         var offsetsPath = ResolveOffsetsPath();
         var spritesPath = ResolveSpritesPath();
-        Log.Debug("Sprite paths - Offsets: {OffsetsPath}, Sprites: {SpritesPath}", offsetsPath, spritesPath);
+        _spritesMissing = string.IsNullOrEmpty(spritesPath);
+        if (_spritesMissing)
+            spritesPath = Path.Combine(AppContext.BaseDirectory, "SpriteCollab", "sprite"); // placeholder
+        Log.Debug("Sprite paths - Offsets: {OffsetsPath}, Sprites: {SpritesPath}, Missing: {Missing}",
+            offsetsPath, spritesPath, _spritesMissing);
         _spriteLoader = new SpriteLoader(offsetsPath, spritesPath);
         _spriteCache = new SpriteCache(_spriteLoader, _config.Performance.SpriteCacheMaxEntries);
 
@@ -988,6 +995,30 @@ public partial class MainWindow : Window
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         Log.Debug("MainWindow loaded event");
+
+        // ── Verificação de primeira instalação: sprites ausentes ─────────────────
+        if (_spritesMissing)
+        {
+            var installDir = AppContext.BaseDirectory;
+            var spriteDest = Path.Combine(installDir, "SpriteCollab", "sprite");
+
+            Log.Error("SpriteCollab not found — showing setup dialog");
+            System.Windows.MessageBox.Show(
+                "Os sprites do PokeBar não foram encontrados.\n\n" +
+                "Para usar o PokeBar, você precisa baixar os sprites do PMD Sprite Collab:\n\n" +
+                "  1. Acesse: https://github.com/PMDCollab/SpriteCollab\n" +
+                "  2. Baixe o repositório (botão ▶ Code → Download ZIP)\n" +
+                "  3. Extraia e copie a pasta  SpriteCollab\\sprite\\  para:\n\n" +
+                $"     {spriteDest}\n\n" +
+                "Após colocar os sprites no lugar correto, reinicie o PokeBar.",
+                "PokeBar — Configuração necessária",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            System.Windows.Application.Current.Shutdown();
+            return;
+        }
+
         InitializeTaskbars();
 
         if (_currentTaskbar != null)
@@ -3126,6 +3157,9 @@ public partial class MainWindow : Window
         var baseDir = AppContext.BaseDirectory;
         var candidates = new[]
         {
+            // ── Caminho de instalação (instalador copia para {app}\Assets\Final\) ──
+            Path.GetFullPath(Path.Combine(baseDir, "Assets", "Final", "pokemon_offsets_runtime.json")),
+            // ── Desenvolvimento: navegar de bin\Debug\net8.0-windows\ até a raiz ──
             Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "Assets", "Final", "pokemon_offsets_runtime.json")),
             Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "Assets", "Final", "pokemon_offsets_runtime.json")),
             Path.GetFullPath(Path.Combine("Assets", "Final", "pokemon_offsets_runtime.json"))
@@ -3137,7 +3171,8 @@ public partial class MainWindow : Window
                 return path;
         }
 
-        throw new FileNotFoundException("pokemon_offsets_runtime.json not found");
+        Log.Warning("pokemon_offsets_runtime.json not found — sprite offsets will be unavailable");
+        return string.Empty;
     }
 
     private static string ResolveSpritesPath()
@@ -3145,6 +3180,9 @@ public partial class MainWindow : Window
         var baseDir = AppContext.BaseDirectory;
         var candidates = new[]
         {
+            // ── Caminho de instalação (usuário coloca SpriteCollab\ ao lado do EXE) ──
+            Path.GetFullPath(Path.Combine(baseDir, "SpriteCollab", "sprite")),
+            // ── Desenvolvimento: navegar de bin\Debug\net8.0-windows\ até a raiz ──
             Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "SpriteCollab", "sprite")),
             Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "SpriteCollab", "sprite")),
             Path.GetFullPath(Path.Combine("SpriteCollab", "sprite"))
@@ -3156,6 +3194,7 @@ public partial class MainWindow : Window
                 return path;
         }
 
-        throw new DirectoryNotFoundException("SpriteCollab/sprite directory not found");
+        Log.Warning("SpriteCollab/sprite not found. Tried: {Paths}", string.Join("; ", candidates));
+        return string.Empty; // tratado em OnLoaded
     }
 }

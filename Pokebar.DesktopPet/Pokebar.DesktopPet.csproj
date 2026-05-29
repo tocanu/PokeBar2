@@ -11,9 +11,9 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
 
     <!-- Versão do app — atualize antes de cada release -->
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
     <Product>PokeBar</Product>
     <Company>PokeBar</Company>
     <Description>Desktop Pet Pokémon para Windows</Description>
@@ -34,6 +34,14 @@
   <ItemGroup>
     <None Update="locale\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Arquivo de offsets dos sprites — necessário em runtime (PC sem dev tools) -->
+  <ItemGroup>
+    <None Include="..\Assets\Final\pokemon_offsets_runtime.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\Final\pokemon_offsets_runtime.json</Link>
     </None>
   </ItemGroup>
 
