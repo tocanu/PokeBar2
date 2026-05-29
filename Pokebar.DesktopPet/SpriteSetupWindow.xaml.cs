@@ -60,44 +60,49 @@ public partial class SpriteSetupWindow : Window
             response.EnsureSuccessStatusCode();
 
             // GitHub pode não enviar Content-Length para archives grandes
-            var total   = response.Content.Headers.ContentLength; // null se desconhecido
+            var total      = response.Content.Headers.ContentLength; // null se desconhecido
             long downloaded = 0;
 
-            await using var src = await response.Content.ReadAsStreamAsync(ct);
-            await using var dst = new FileStream(
-                zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 81_920, useAsync: true);
-
-            var buffer = new byte[81_920];
-            int  read;
-            var  sw = Stopwatch.StartNew();
-
-            while ((read = await src.ReadAsync(buffer, ct)) > 0)
+            // ── Bloco aninhado: garante que dst é fechado ANTES da extração ──
+            // FileShare.None impede que ZipFile.OpenRead abra o mesmo arquivo.
             {
-                await dst.WriteAsync(buffer.AsMemory(0, read), ct);
-                downloaded += read;
+                await using var src = await response.Content.ReadAsStreamAsync(ct);
+                await using var dst = new FileStream(
+                    zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 81_920, useAsync: true);
 
-                if (sw.ElapsedMilliseconds >= 300)
+                var buffer = new byte[81_920];
+                int  read;
+                var  sw = Stopwatch.StartNew();
+
+                while ((read = await src.ReadAsync(buffer, ct)) > 0)
                 {
-                    sw.Restart();
-                    var dlMb = downloaded / 1_048_576.0;
+                    await dst.WriteAsync(buffer.AsMemory(0, read), ct);
+                    downloaded += read;
 
-                    if (total.HasValue && total.Value > 0)
+                    if (sw.ElapsedMilliseconds >= 300)
                     {
-                        var pct   = downloaded * 100.0 / total.Value;
-                        var totMb = total.Value / 1_048_576.0;
-                        SetStatus($"Baixando sprites... {dlMb:F0} / {totMb:F0} MB", indeterminate: false, pct);
-                    }
-                    else
-                    {
-                        // Tamanho desconhecido — mostra só o que baixou
-                        SetStatus($"Baixando sprites... {dlMb:F0} MB baixados", indeterminate: true);
+                        sw.Restart();
+                        var dlMb = downloaded / 1_048_576.0;
+
+                        if (total.HasValue && total.Value > 0)
+                        {
+                            var pct   = downloaded * 100.0 / total.Value;
+                            var totMb = total.Value / 1_048_576.0;
+                            SetStatus($"Baixando sprites... {dlMb:F0} / {totMb:F0} MB", indeterminate: false, pct);
+                        }
+                        else
+                        {
+                            SetStatus($"Baixando sprites... {dlMb:F0} MB baixados", indeterminate: true);
+                        }
                     }
                 }
-            }
+            } // ← dst.DisposeAsync() é chamado aqui — arquivo fechado e liberado
 
             Log.Information("SpriteCollab ZIP downloaded ({MB:F1} MB)", downloaded / 1_048_576.0);
 
             // ── Fase 2: Extração ──────────────────────────────────────────────
+            // Pequena pausa para o Windows Defender / AV terminar de escanear o arquivo
+            await Task.Delay(500, ct);
             SetStatus("Extraindo sprites (isso pode demorar alguns minutos)...", indeterminate: true);
 
             await Task.Run(() => ExtractSprites(zipPath, spriteDest, ct), ct);
