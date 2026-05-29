@@ -1,0 +1,49 @@
+<Window x:Class="Pokebar.DesktopPet.SpriteSetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PokeBar — Configuração de Sprites"
+        Width="500" Height="230"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
+        ShowInTaskbar="True">
+
+    <Grid Margin="24 20 24 16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="6"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Título -->
+        <TextBlock Grid.Row="0" x:Name="TitleText"
+                   Text="Baixando sprites do Pokémon..."
+                   FontSize="14" FontWeight="SemiBold"/>
+
+        <!-- Barra de progresso -->
+        <ProgressBar Grid.Row="2" x:Name="ProgressBar"
+                     Height="22" Minimum="0" Maximum="100" Value="0"
+                     IsIndeterminate="True"/>
+
+        <!-- Status detalhado -->
+        <TextBlock Grid.Row="4" x:Name="StatusText"
+                   Text="Conectando ao GitHub..."
+                   FontSize="12" Foreground="Gray"/>
+
+        <!-- Nota inferior -->
+        <TextBlock Grid.Row="5"
+                   Text="Isso só acontece uma vez. Os sprites ficam em %LocalAppData%\PokeBar."
+                   FontSize="11" Foreground="#888" VerticalAlignment="Bottom"
+                   TextWrapping="Wrap"/>
+
+        <!-- Botão cancelar -->
+        <Button Grid.Row="6" x:Name="CancelButton"
+                Content="Cancelar" Width="90" HorizontalAlignment="Right"
+                Margin="0 10 0 0"
+                Click="CancelButton_Click"/>
+    </Grid>
+</Window>

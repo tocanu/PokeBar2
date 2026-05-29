@@ -999,24 +999,11 @@ public partial class MainWindow : Window
         // ── Verificação de primeira instalação: sprites ausentes ─────────────────
         if (_spritesMissing)
         {
-            var installDir = AppContext.BaseDirectory;
-            var spriteDest = Path.Combine(installDir, "SpriteCollab", "sprite");
-
-            Log.Error("SpriteCollab not found — showing setup dialog");
-            System.Windows.MessageBox.Show(
-                "Os sprites do PokeBar não foram encontrados.\n\n" +
-                "Para usar o PokeBar, você precisa baixar os sprites do PMD Sprite Collab:\n\n" +
-                "  1. Acesse: https://github.com/PMDCollab/SpriteCollab\n" +
-                "  2. Baixe o repositório (botão ▶ Code → Download ZIP)\n" +
-                "  3. Extraia e copie a pasta  SpriteCollab\\sprite\\  para:\n\n" +
-                $"     {spriteDest}\n\n" +
-                "Após colocar os sprites no lugar correto, reinicie o PokeBar.",
-                "PokeBar — Configuração necessária",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            System.Windows.Application.Current.Shutdown();
-            return;
+            Log.Warning("SpriteCollab not found — opening SpriteSetupWindow for automatic download");
+            // A janela baixa os sprites e reinicia o app ao terminar.
+            // Se o usuário cancelar ou der erro, ela chama Application.Shutdown() diretamente.
+            new SpriteSetupWindow().ShowDialog();
+            return; // shutdown ou restart já foram disparados pela janela
         }
 
         InitializeTaskbars();
