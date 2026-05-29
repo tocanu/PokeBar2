@@ -19,21 +19,31 @@ public static class SpawnPoolBuilder
         var weights = new List<EnemySpawnWeight>();
 
         // Iterar de 1 a 1025 (todas as gerações conhecidas)
+        int skippedNoSprite = 0;
         for (int dex = 1; dex <= 1025; dex++)
         {
             if (dex == playerDex)
                 continue;
 
+            // Verificar offset — garante que o Pokémon tem dados de posicionamento
             var uniqueId = dex.ToString("D4");
             if (!loader.TryGetOffset(uniqueId, out _))
                 continue;
+
+            // Verificar sprite no disco — evita spawnar Pokémon invisíveis
+            if (!loader.HasWalkSprite(dex))
+            {
+                skippedNoSprite++;
+                continue;
+            }
 
             var (weight, tier) = GetWeightForDex(dex);
             weights.Add(new EnemySpawnWeight(dex, weight, tier));
         }
 
-        Log.Information("SpawnPoolBuilder: {Count} Pokémon no spawn pool (excluindo player #{Player})",
-            weights.Count, playerDex);
+        Log.Information(
+            "SpawnPoolBuilder: {Count} Pokémon no spawn pool (excluindo player #{Player}, {Skipped} sem sprite)",
+            weights.Count, playerDex, skippedNoSprite);
 
         return weights.ToArray();
     }

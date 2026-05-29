@@ -195,6 +195,48 @@ public class SpriteLoader
         return new AnimationClip(clipName, frames, groundLines, frameTime);
     }
 
+    /// <summary>
+    /// <summary>
+    /// Verifica se existe o sprite de Walk para o dex informado.
+    /// Usado pelo SpawnPoolBuilder para excluir Pokémon sem sprite do pool de spawn.
+    /// </summary>
+    public bool HasWalkSprite(int dex)
+    {
+        var dexPath = dex.ToString("D4");
+        var modBase = _modPathResolver?.Invoke(dex);
+        var dir     = Path.Combine(modBase ?? _spriteBasePath, dexPath);
+
+        // Verificar se Walk-Anim.png existe (arquivo mais básico e sempre presente)
+        if (File.Exists(Path.Combine(dir, "Walk-Anim.png"))) return true;
+
+        // Fallback: verificar na pasta default quando mod override não tem
+        if (modBase != null)
+        {
+            var defaultDir = Path.Combine(_spriteBasePath, dexPath);
+            if (File.Exists(Path.Combine(defaultDir, "Walk-Anim.png"))) return true;
+        }
+
+        return false;
+    }
+
+    /// Verifica se existe uma pasta de sprite shiny para o dex informado.
+    /// O sprite shiny deve estar em &lt;spriteBase&gt;/XXXX/shiny/.
+    /// </summary>
+    public bool HasShinySprite(int dex)
+    {
+        var dexPath = dex.ToString("D4");
+        var modBase = _modPathResolver?.Invoke(dex);
+        var baseDir = Path.Combine(modBase ?? _spriteBasePath, dexPath);
+        if (Directory.Exists(Path.Combine(baseDir, "shiny"))) return true;
+        // Fallback to default sprites dir when mod doesn't override
+        if (modBase != null)
+        {
+            var defaultDir = Path.Combine(_spriteBasePath, dexPath);
+            if (Directory.Exists(Path.Combine(defaultDir, "shiny"))) return true;
+        }
+        return false;
+    }
+
     private string? ResolveSpritePath(int dex, string formId, OffsetAdjustment? offset, AnimationType type)
     {
         var dexPath = dex.ToString("D4");
