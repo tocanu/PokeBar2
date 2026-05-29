@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -9,34 +8,29 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-
-    <!-- Versao do app — atualize antes de cada release -->
-    <Version>1.0.3</Version>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
+    <!-- Versao do app â€” atualize antes de cada release -->
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <Product>PokeBar</Product>
     <Company>PokeBar</Company>
     <Description>Desktop Pet Pokemon para Windows</Description>
     <Copyright>Copyright 2025 PokeBar</Copyright>
     <ApplicationIcon>pokeball.ico</ApplicationIcon>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Pokebar.Core\Pokebar.Core.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="locale\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <!-- Arquivo de offsets dos sprites necessario em runtime -->
   <ItemGroup>
     <None Include="..\Assets\Final\pokemon_offsets_runtime.json">
@@ -44,9 +38,7 @@
       <Link>Assets\Final\pokemon_offsets_runtime.json</Link>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <Resource Include="Fonts\PressStart2P-Regular.ttf" />
   </ItemGroup>
-
 </Project>

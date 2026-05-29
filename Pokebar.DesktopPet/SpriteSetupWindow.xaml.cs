@@ -7,25 +7,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Serilog;
-using WpfApp = System.Windows.Application;
+using WpfApp    = System.Windows.Application;
 using WpfMsgBox = System.Windows.MessageBox;
 
 namespace Pokebar.DesktopPet;
 
 /// <summary>
-/// Janela de configuração de primeira execução: baixa e extrai os sprites Gen 1
-/// do GitHub automaticamente. Exibida quando SpriteCollab\sprite\ não é encontrado.
-///
-/// URL dos sprites: GitHub release "sprites-v1" do repositório PokeBar2.
-/// Após extração bem-sucedida, reinicia o app para carregar os sprites normalmente.
+/// Janela de configuração de primeira execução.
+/// Baixa o repositório completo do PMD SpriteCollab do GitHub (~800 MB ZIP)
+/// e extrai apenas a pasta sprite/ para {app}\SpriteCollab\sprite\.
+/// Exibida automaticamente quando os sprites não são encontrados.
+/// Após extração bem-sucedida, reinicia o app.
 /// </summary>
 public partial class SpriteSetupWindow : Window
 {
-    // URL fixa do ZIP de sprites — atualizar se uma nova versão dos sprites for publicada
+    // ZIP do branch master do PMD SpriteCollab — contém todos os sprites de todas as gerações
     private const string SpritesZipUrl =
-        "https://github.com/tocanu/PokeBar2/releases/download/sprites-v1/PokeBar-Sprites-Gen1.zip";
+        "https://github.com/PMDCollab/SpriteCollab/archive/refs/heads/master.zip";
 
-    private const string ZipFileName = "PokeBar-Sprites-Gen1.zip";
+    // Caminho dentro do ZIP onde ficam os sprites (GitHub coloca pasta raiz "SpriteCollab-master/")
+    private const string ZipSpritePrefix = "SpriteCollab-master/sprite/";
+
+    private const string ZipFileName = "SpriteCollab-master.zip";
 
     private readonly CancellationTokenSource _cts = new();
 
@@ -35,30 +38,29 @@ public partial class SpriteSetupWindow : Window
         Loaded += (_, _) => _ = RunSetupAsync();
     }
 
-    // ── Download + extração ───────────────────────────────────────────────────
+    // ── Pipeline principal ────────────────────────────────────────────────────
 
     private async Task RunSetupAsync()
     {
-        var ct        = _cts.Token;
-        var installDir = AppContext.BaseDirectory;
-        var spriteDest = Path.Combine(installDir, "SpriteCollab", "sprite");
-        var zipPath   = Path.Combine(Path.GetTempPath(), ZipFileName);
+        var ct         = _cts.Token;
+        var spriteDest = Path.Combine(AppContext.BaseDirectory, "SpriteCollab", "sprite");
+        var zipPath    = Path.Combine(Path.GetTempPath(), ZipFileName);
 
         try
         {
             // ── Fase 1: Download ──────────────────────────────────────────────
-            SetStatus("Conectando ao GitHub...", indeterminate: true);
-            Log.Information("Downloading sprites from {Url}", SpritesZipUrl);
+            SetStatus("Conectando ao GitHub (PMDCollab/SpriteCollab)...", indeterminate: true);
+            Log.Information("Downloading full SpriteCollab from {Url}", SpritesZipUrl);
 
-            using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+            using var http = new HttpClient { Timeout = TimeSpan.FromHours(2) };
             http.DefaultRequestHeaders.Add("User-Agent", "PokeBar-SpriteSetup/1.0");
 
             using var response = await http.GetAsync(
                 SpritesZipUrl, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
 
-            var total      = response.Content.Headers.ContentLength ?? 154_000_000L;
-            var totalMb    = total / 1_048_576.0;
+            // GitHub pode não enviar Content-Length para archives grandes
+            var total   = response.Content.Headers.ContentLength; // null se desconhecido
             long downloaded = 0;
 
             await using var src = await response.Content.ReadAsStreamAsync(ct);
@@ -74,31 +76,40 @@ public partial class SpriteSetupWindow : Window
                 await dst.WriteAsync(buffer.AsMemory(0, read), ct);
                 downloaded += read;
 
-                // Atualizar UI a cada ~250 ms para não sobrecarregar o dispatcher
-                if (sw.ElapsedMilliseconds >= 250)
+                if (sw.ElapsedMilliseconds >= 300)
                 {
                     sw.Restart();
                     var dlMb = downloaded / 1_048_576.0;
-                    var pct  = downloaded * 100.0 / total;
-                    SetStatus($"Baixando sprites... {dlMb:F0} / {totalMb:F0} MB", indeterminate: false, pct);
+
+                    if (total.HasValue && total.Value > 0)
+                    {
+                        var pct   = downloaded * 100.0 / total.Value;
+                        var totMb = total.Value / 1_048_576.0;
+                        SetStatus($"Baixando sprites... {dlMb:F0} / {totMb:F0} MB", indeterminate: false, pct);
+                    }
+                    else
+                    {
+                        // Tamanho desconhecido — mostra só o que baixou
+                        SetStatus($"Baixando sprites... {dlMb:F0} MB baixados", indeterminate: true);
+                    }
                 }
             }
 
-            Log.Information("Sprites ZIP downloaded ({Bytes} bytes)", downloaded);
+            Log.Information("SpriteCollab ZIP downloaded ({MB:F1} MB)", downloaded / 1_048_576.0);
 
             // ── Fase 2: Extração ──────────────────────────────────────────────
-            SetStatus("Extraindo sprites...", indeterminate: true);
+            SetStatus("Extraindo sprites (isso pode demorar alguns minutos)...", indeterminate: true);
 
             await Task.Run(() => ExtractSprites(zipPath, spriteDest, ct), ct);
 
-            // Limpar ZIP temporário
+            // Apagar ZIP do temp (libera ~800 MB)
             try { File.Delete(zipPath); } catch { /* não crítico */ }
 
             Log.Information("Sprites extracted to {Dest}", spriteDest);
 
-            // ── Fase 3: Reiniciar app ─────────────────────────────────────────
+            // ── Fase 3: Reiniciar ─────────────────────────────────────────────
             SetStatus("Pronto! Reiniciando o PokeBar...", indeterminate: true);
-            await Task.Delay(800, ct); // breve pausa para o usuário ver a mensagem
+            await Task.Delay(900, ct);
 
             var exePath = Process.GetCurrentProcess().MainModule?.FileName
                           ?? Path.Combine(AppContext.BaseDirectory, "Pokebar.DesktopPet.exe");
@@ -126,29 +137,45 @@ public partial class SpriteSetupWindow : Window
                 MessageBoxImage.Warning);
 
             if (retry == MessageBoxResult.Yes)
-                await RunSetupAsync();   // nova tentativa
+                await RunSetupAsync();
             else
                 WpfApp.Current.Shutdown();
         }
     }
 
-    /// <summary>Extrai o ZIP de sprites para destDir, com path-traversal guard.</summary>
+    // ── Extração ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Extrai apenas as entradas sob "SpriteCollab-master/sprite/" do ZIP do GitHub,
+    /// stripando o prefixo e colocando os arquivos diretamente em <paramref name="destDir"/>.
+    /// </summary>
     private static void ExtractSprites(string zipPath, string destDir, CancellationToken ct)
     {
         Directory.CreateDirectory(destDir);
         var destRoot = Path.GetFullPath(destDir) + Path.DirectorySeparatorChar;
 
-        using var zip     = ZipFile.OpenRead(zipPath);
-        var entries       = zip.Entries;
-        int total         = entries.Count;
-        int done          = 0;
+        using var zip = ZipFile.OpenRead(zipPath);
+        var entries   = zip.Entries;
+        int total     = entries.Count;
+        int done      = 0;
+        int extracted = 0;
 
         foreach (var entry in entries)
         {
             ct.ThrowIfCancellationRequested();
+            done++;
 
-            // Garante que não há path traversal (../)
-            var fullDest = Path.GetFullPath(Path.Combine(destDir, entry.FullName));
+            // Ignorar entradas fora de sprite/
+            if (!entry.FullName.StartsWith(ZipSpritePrefix, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // Remover o prefixo "SpriteCollab-master/sprite/" para obter caminho relativo
+            var relative = entry.FullName[ZipSpritePrefix.Length..];
+            if (string.IsNullOrEmpty(relative))
+                continue;
+
+            // Guardar contra path traversal
+            var fullDest = Path.GetFullPath(Path.Combine(destDir, relative));
             if (!fullDest.StartsWith(destRoot, StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -161,12 +188,17 @@ public partial class SpriteSetupWindow : Window
                 var dir = Path.GetDirectoryName(fullDest);
                 if (dir != null) Directory.CreateDirectory(dir);
                 entry.ExtractToFile(fullDest, overwrite: true);
+                extracted++;
             }
 
-            done++;
+            if (done % 1000 == 0)
+            {
+                var pct = done * 100.0 / total;
+                Log.Debug("Extracting: {Done}/{Total} ZIP entries ({Extracted} sprite files)", done, total, extracted);
+            }
         }
 
-        Log.Debug("Extracted {Done}/{Total} sprite entries", done, total);
+        Log.Information("Extraction complete: {Extracted} sprite files from {Total} ZIP entries", extracted, total);
     }
 
     // ── Helpers UI ────────────────────────────────────────────────────────────
@@ -175,8 +207,8 @@ public partial class SpriteSetupWindow : Window
     {
         Dispatcher.Invoke(() =>
         {
-            StatusText.Text              = text;
-            ProgressBar.IsIndeterminate  = indeterminate;
+            StatusText.Text             = text;
+            ProgressBar.IsIndeterminate = indeterminate;
             if (!indeterminate)
                 ProgressBar.Value = Math.Clamp(value, 0, 100);
         });
