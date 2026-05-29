@@ -3177,11 +3177,29 @@ public partial class MainWindow : Window
 
         foreach (var path in candidates)
         {
-            if (Directory.Exists(path))
+            // Pasta deve existir E ter pelo menos um PNG — evita aceitar pasta vazia
+            // criada por extração que falhou no meio do caminho.
+            if (Directory.Exists(path) && HasSpriteContent(path))
                 return path;
         }
 
-        Log.Warning("SpriteCollab/sprite not found. Tried: {Paths}", string.Join("; ", candidates));
+        Log.Warning("SpriteCollab/sprite not found or empty. Tried: {Paths}", string.Join("; ", candidates));
         return string.Empty; // tratado em OnLoaded
+    }
+
+    /// <summary>
+    /// Verifica rapidamente se a pasta de sprites tem conteúdo real.
+    /// Checa apenas um arquivo conhecido (Walk-Anim.png do Bulbasaur) para não
+    /// percorrer milhares de arquivos na inicialização.
+    /// </summary>
+    private static bool HasSpriteContent(string spritePath)
+    {
+        try
+        {
+            // Dex 0001 = Bulbasaur, presente em todas as versões do SpriteCollab
+            var probe = Path.Combine(spritePath, "0001", "Walk-Anim.png");
+            return File.Exists(probe);
+        }
+        catch { return false; }
     }
 }

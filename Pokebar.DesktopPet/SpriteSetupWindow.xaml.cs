@@ -101,8 +101,6 @@ public partial class SpriteSetupWindow : Window
             Log.Information("SpriteCollab ZIP downloaded ({MB:F1} MB)", downloaded / 1_048_576.0);
 
             // ── Fase 2: Extração ──────────────────────────────────────────────
-            // Pequena pausa para o Windows Defender / AV terminar de escanear o arquivo
-            await Task.Delay(500, ct);
             SetStatus("Extraindo sprites (isso pode demorar alguns minutos)...", indeterminate: true);
 
             await Task.Run(() => ExtractSprites(zipPath, spriteDest, ct), ct);
@@ -153,13 +151,37 @@ public partial class SpriteSetupWindow : Window
     /// <summary>
     /// Extrai apenas as entradas sob "SpriteCollab-master/sprite/" do ZIP do GitHub,
     /// stripando o prefixo e colocando os arquivos diretamente em <paramref name="destDir"/>.
+    /// Tenta abrir o ZIP até 15 vezes com espera crescente — necessário porque o
+    /// Windows Defender pode segurar o arquivo alguns segundos após o download fechar.
+    /// Se a extração falhar no meio, apaga a pasta para garantir estado limpo.
     /// </summary>
     private static void ExtractSprites(string zipPath, string destDir, CancellationToken ct)
     {
+        // Retry ao abrir o ZIP: Windows Defender pode manter lock por alguns segundos
+        ZipArchive? zip = null;
+        for (int attempt = 1; attempt <= 15; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                zip = ZipFile.OpenRead(zipPath);
+                break;
+            }
+            catch (IOException) when (attempt < 15)
+            {
+                Log.Warning("ZIP locked (attempt {A}/15) — waiting for AV scan to finish...", attempt);
+                Thread.Sleep(attempt * 1000); // 1s, 2s, 3s… até 15s
+            }
+        }
+        if (zip == null)
+            throw new IOException("Não foi possível abrir o ZIP após 15 tentativas — antivírus bloqueando o arquivo.");
+
         Directory.CreateDirectory(destDir);
         var destRoot = Path.GetFullPath(destDir) + Path.DirectorySeparatorChar;
 
-        using var zip = ZipFile.OpenRead(zipPath);
+        try
+        {
+        using var _ = zip;
         var entries   = zip.Entries;
         int total     = entries.Count;
         int done      = 0;
@@ -204,6 +226,15 @@ public partial class SpriteSetupWindow : Window
         }
 
         Log.Information("Extraction complete: {Extracted} sprite files from {Total} ZIP entries", extracted, total);
+        }
+        catch
+        {
+            // Extração falhou no meio — apagar pasta parcial para que na próxima
+            // abertura o app detecte os sprites como ausentes e tente de novo.
+            Log.Warning("Extraction failed mid-way — cleaning up partial sprite folder {Dir}", destDir);
+            try { Directory.Delete(destDir, recursive: true); } catch { /* best-effort */ }
+            throw; // re-lançar para o caller mostrar o diálogo de erro
+        }
     }
 
     // ── Helpers UI ────────────────────────────────────────────────────────────
