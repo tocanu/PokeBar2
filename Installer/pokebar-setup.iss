@@ -45,6 +45,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; Aparência
 WizardStyle=modern
+SetupIconFile=..\Pokebar.DesktopPet\pokeball.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
 
