@@ -1165,6 +1165,17 @@ public partial class MainWindow : Window
         {
             RootCanvas.Width = newW;
             RootCanvas.Height = newH;
+
+            // Re-clampar posição quando o tamanho do sprite muda (ex: primeiro frame
+            // carregado depois de ter andado com halfWidth=0 como fallback).
+            // Garante que o sprite não fique parcialmente fora da tela.
+            if (_currentTaskbar != null)
+            {
+                var halfW = GetHalfWidthPx(_pokemon, _currentTaskbar);
+                _pokemon.X = Math.Clamp(_pokemon.X,
+                    _currentTaskbar.BoundsPx.Left  + halfW,
+                    _currentTaskbar.BoundsPx.Right - halfW);
+            }
         }
         // Offset the sprite image down to make room for the speech bubble above
         Canvas.SetTop(PokemonImage, SPEECH_BUBBLE_MARGIN);
@@ -1740,11 +1751,14 @@ public partial class MainWindow : Window
 
     private double GetHalfWidthPx(BaseEntity entity, TaskbarService.TaskbarInfo taskbar)
     {
-        if (entity.FrameWidth <= 0)
-            return 0;
-
         var scale = taskbar.DpiScale > 0 ? taskbar.DpiScale : 1.0;
-        return (entity.FrameWidth * scale) / 2;
+
+        // Sprites PMD têm tipicamente 96px de largura. Usar isso como fallback quando
+        // o frame ainda não carregou (FrameWidth=0), evitando que o pet ande até a
+        // borda exata do monitor e fique com metade do sprite fora da tela quando
+        // o sprite finalmente aparecer.
+        var frameW = entity.FrameWidth > 0 ? entity.FrameWidth : 96.0;
+        return (frameW * scale) / 2;
     }
 
     private TaskbarService.TaskbarInfo? GetEnemyTaskbar(EnemyPet enemy)
