@@ -56,6 +56,9 @@ public record MoveDefinition
     /// <summary>Cooldown em rodadas antes de poder usar novamente (0 = sem cooldown).</summary>
     public int CooldownRounds { get; init; }
 
+    /// <summary>Tipo do movimento (determina efetividade via TypeChart).</summary>
+    public PokemonType Type { get; init; } = PokemonType.Normal;
+
     /// <summary>Moves padrão disponíveis para todos os Pokémon.</summary>
     public static MoveDefinition[] DefaultMoves() => new[]
     {
@@ -64,14 +67,16 @@ public record MoveDefinition
             Name = "Tackle",
             BaseDamage = 10,
             CritChance = 0.06,
-            CooldownRounds = 0
+            CooldownRounds = 0,
+            Type = PokemonType.Normal
         },
         new MoveDefinition
         {
             Name = "Headbutt",
             BaseDamage = 18,
             CritChance = 0.10,
-            CooldownRounds = 1
+            CooldownRounds = 1,
+            Type = PokemonType.Normal
         },
         new MoveDefinition
         {
@@ -80,7 +85,8 @@ public record MoveDefinition
             CritChance = 0.05,
             StatusEffect = StatusEffectType.Poison,
             StatusChance = 0.30,
-            CooldownRounds = 2
+            CooldownRounds = 2,
+            Type = PokemonType.Poison
         },
         new MoveDefinition
         {
@@ -89,7 +95,8 @@ public record MoveDefinition
             CritChance = 0.08,
             StatusEffect = StatusEffectType.Paralysis,
             StatusChance = 0.25,
-            CooldownRounds = 3
+            CooldownRounds = 3,
+            Type = PokemonType.Normal
         },
         new MoveDefinition
         {
@@ -98,7 +105,8 @@ public record MoveDefinition
             CritChance = 0,
             StatusEffect = StatusEffectType.Sleep,
             StatusChance = 0.60,
-            CooldownRounds = 4
+            CooldownRounds = 4,
+            Type = PokemonType.Psychic
         }
     };
 }

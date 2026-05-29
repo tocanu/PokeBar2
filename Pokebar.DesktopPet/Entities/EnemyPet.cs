@@ -12,14 +12,16 @@ public class EnemyPet : PokemonPet
     private bool _patrolPaused;
     private double _patrolPauseDuration;
     private double _patrolPauseTimer;
+    private bool _patrolBehaviorActive; // true quando está numa animação de comportamento durante pausa
 
     /// <summary>
     /// Tempo em segundos que um inimigo fainted fica antes de despawnar.
-    /// Se a captura estiver em progresso, o timer pausa.
+    /// O timer só corre quando não há captura em progresso.
+    /// Com cooldown de 1.5s entre tentativas, 6s = ~4 tentativas antes de escapar sozinho.
     /// </summary>
-    public const double FaintedDespawnSeconds = 15.0;
+    public const double FaintedDespawnSeconds = 6.0;
 
-    public EnemyPet(int dex, int level = 1, int? maxHp = null, int? seed = null, bool isShiny = false, RarityTier rarity = RarityTier.Common) : base(dex)
+    public EnemyPet(int dex, string formId = "0000", int level = 1, int? maxHp = null, int? seed = null, bool isShiny = false, RarityTier rarity = RarityTier.Common) : base(dex, formId)
     {
         Level = Math.Max(1, level);
         MaxHp = maxHp ?? BuildStat(12, Level, dex);
@@ -61,6 +63,7 @@ public class EnemyPet : PokemonPet
     public override void Update(double deltaTime)
     {
         UpdatePatrol(deltaTime);
+        UpdateBehaviorTimeout(deltaTime);
         UpdateFaintedDespawn(deltaTime);
         base.Update(deltaTime);
     }
@@ -134,18 +137,20 @@ public class EnemyPet : PokemonPet
 
     private void UpdatePatrol(double deltaTime)
     {
+        // Apenas Idle e Walking passam por aqui.
+        // Sleeping/SpecialIdle são tratados exclusivamente em UpdateBehaviorTimeout.
         if (State != EntityState.Idle && State != EntityState.Walking)
             return;
 
-        // ── Paused (standing still) ──
+        // ── Pausa simples (sem animação de comportamento ativa) ──
         if (_patrolPaused)
         {
             _patrolPauseTimer += deltaTime;
+
             if (_patrolPauseTimer >= _patrolPauseDuration)
             {
                 _patrolPaused = false;
-                // Pick a random direction and speed variation
-                var speedVariation = 0.8 + (_random.NextDouble() * 0.4); // 0.8x – 1.2x
+                var speedVariation = 0.8 + (_random.NextDouble() * 0.4);
                 var dir = _random.Next(0, 2) == 0 ? -1.0 : 1.0;
                 VelocityX = PatrolSpeed * dir * speedVariation;
                 StartWalking();
@@ -160,12 +165,84 @@ public class EnemyPet : PokemonPet
         if (_patrolTimer < _nextDirectionChange)
             return;
 
-        // Time to change — pause first
+        // Hora de pausar
         _patrolPaused = true;
         _patrolPauseTimer = 0;
-        _patrolPauseDuration = 1.0 + (_random.NextDouble() * 2.5); // 1-3.5s idle
+        _patrolBehaviorActive = false;
         VelocityX = 0;
+        BeginPauseBehavior();
+    }
+
+    /// <summary>
+    /// Gerencia o timeout de animações de comportamento (Sleeping, SpecialIdle).
+    /// Separado de UpdatePatrol para que o guard simples (Idle/Walking) não precise
+    /// ser relaxado — evita behaviors executando enquanto o pet caminha.
+    /// </summary>
+    private void UpdateBehaviorTimeout(double deltaTime)
+    {
+        if (!_patrolBehaviorActive || !_patrolPaused)
+            return;
+
+        _patrolPauseTimer += deltaTime;
+
+        // Animação não-loop (SpecialIdle) terminou antes do timer → encerra
+        if (State == EntityState.SpecialIdle && !AnimationPlayer.IsPlaying)
+        {
+            EndBehaviorAndResume();
+            return;
+        }
+
+        // Duração máxima atingida → encerra comportamento e retoma patrulha
+        if (_patrolPauseTimer >= _patrolPauseDuration)
+        {
+            EndBehaviorAndResume();
+        }
+    }
+
+    private void EndBehaviorAndResume()
+    {
         StartIdle();
+        _patrolBehaviorActive = false;
+        _patrolPaused = false;
+        var speedVariation = 0.8 + (_random.NextDouble() * 0.4);
+        var dir = _random.Next(0, 2) == 0 ? -1.0 : 1.0;
+        VelocityX = PatrolSpeed * dir * speedVariation;
+        StartWalking();
+        _patrolTimer = 0;
+        _nextDirectionChange = NextWalkSeconds();
+    }
+
+    /// <summary>
+    /// Decide o que fazer durante a pausa de patrulha:
+    /// ~35% de chance de usar uma animação de comportamento disponível.
+    /// </summary>
+    private void BeginPauseBehavior()
+    {
+        if (HasBehaviorAnimations && _random.NextDouble() < 0.35)
+        {
+            // Dormir é mais raro e dura mais
+            if (HasSleepAnimation && _random.NextDouble() < 0.25)
+            {
+                if (StartSleeping())
+                {
+                    _patrolBehaviorActive = true;
+                    _patrolPauseDuration = 6.0 + _random.NextDouble() * 10.0; // 6–16 s
+                    return;
+                }
+            }
+
+            // Qualquer outro comportamento disponível (sentar, deitar, olhar pra cima…)
+            if (StartRandomIdleBehavior(_random))
+            {
+                _patrolBehaviorActive = true;
+                _patrolPauseDuration = 2.0 + _random.NextDouble() * 4.0; // 2–6 s
+                return;
+            }
+        }
+
+        // Padrão: idle normal curto
+        StartIdle();
+        _patrolPauseDuration = 1.0 + _random.NextDouble() * 2.5;
     }
 
     private double NextWalkSeconds()

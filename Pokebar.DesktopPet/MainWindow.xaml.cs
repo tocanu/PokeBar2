@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -40,6 +42,11 @@ public partial class MainWindow : Window
     private double _spawnTimer;
     private double _nextSpawnDelay;
 
+    // Após captura falhar, o inimigo fica visível brevemente e depois some
+    private double _captureFailCooldown;
+    private EnemyPet? _captureFailedEnemy;
+    private const double CAPTURE_FAIL_COOLDOWN = 1.5;
+
     private readonly bool _debugOverlayEnabled;
     private double _fpsSmooth;
     private readonly List<TaskbarService.TaskbarInfo> _taskbars = new();
@@ -62,6 +69,15 @@ public partial class MainWindow : Window
     private AchievementService? _achievementService;
     private bool _silenceNotifications;
     private bool _blockSpawns;
+    private bool _sandboxMode;
+
+    // Pokéball refill automático: +1 a cada 5 min enquanto abaixo do cap
+    private double _pokeballRefillTimer;
+    private const double POKEBALL_REFILL_INTERVAL = 300.0; // segundos entre recargas
+    private const int    POKEBALL_REFILL_CAP      = 10;    // máximo de bolas para recarregar
+
+    // Feedback de "sem pokébolas" — cooldown para não spammar o balão
+    private double _noBallsFeedbackCooldown;
 
     // FASE 7: Conteúdo & Gameplay
     private MoodService? _moodService;
@@ -74,6 +90,7 @@ public partial class MainWindow : Window
     private PokedexService? _pokedexService;
     private EnemySpawnWeight[]? _dynamicSpawnPool;
     private bool _forceRareSpawn;
+    private bool _forceShinySpawn; // flag de debug: próximo spawn é shiny garantido
 
     // FASE 8: Visual GBA services
     private UiSfxService? _sfxService;
@@ -82,6 +99,10 @@ public partial class MainWindow : Window
     // P1: Desktop icon interaction
     private DesktopIconService? _desktopIconService;
     private IconOverlayWindow? _iconOverlay;
+
+    // Auto-update
+    private UpdateService.UpdateAvailableInfo? _pendingUpdate;
+    private System.Threading.CancellationTokenSource? _updateDownloadCts;
 
     // Chase-target: when the player clicks an enemy, the pet walks toward it
     private EnemyPet? _chaseTarget;
@@ -319,6 +340,7 @@ public partial class MainWindow : Window
             _trayIcon.ScreenshotRequested += () => Dispatcher.Invoke(OnScreenshotRequested);
             _trayIcon.SilenceNotificationsToggled += () => Dispatcher.Invoke(OnSilenceNotificationsToggled);
             _trayIcon.BlockSpawnsToggled += () => Dispatcher.Invoke(OnBlockSpawnsToggled);
+            _trayIcon.SandboxModeToggled += () => Dispatcher.Invoke(OnSandboxModeToggled);
             _trayIcon.UseStoneRequested += stoneVal => Dispatcher.Invoke(() => OnUseStoneRequested(stoneVal));
             
             // FASE 7: Acariciar via tray
@@ -339,6 +361,13 @@ public partial class MainWindow : Window
         _hotkeyService.DiagnosticPressed += OnDiagnosticRequested;
         _hotkeyService.ScreenshotPressed += () => Dispatcher.Invoke(OnScreenshotRequested);
         _hotkeyService.PcBoxPressed += () => Dispatcher.Invoke(OnPcBoxRequested);
+        _hotkeyService.ForceShinyPressed += () => Dispatcher.Invoke(() =>
+        {
+            _forceShinySpawn = true;
+            // Força spawn imediato independente do timer
+            _spawnTimer = _nextSpawnDelay;
+            Log.Information("DEBUG: Próximo spawn forçado como shiny via Ctrl+Shift+Y");
+        });
 
         // FASE 6: Achievement service
         _achievementService = new AchievementService(_saveData.Achievements);
@@ -356,8 +385,12 @@ public partial class MainWindow : Window
         // FASE 6: DND inicial — restaurar do save (prioridade) ou config
         _silenceNotifications = _saveData.SilenceNotifications || winConfig.SilenceNotifications;
         _blockSpawns = _saveData.BlockSpawns || winConfig.BlockSpawns;
+        _sandboxMode = _saveData.SandboxMode;
+        _pokemon.SandboxMode = _sandboxMode;
         _trayIcon?.SetSilenceNotifications(_silenceNotifications);
         _trayIcon?.SetBlockSpawns(_blockSpawns);
+        _trayIcon?.SetSandboxMode(_sandboxMode);
+        _trayIcon?.SetPokeballCount(_pokemon.Pokeballs);
         if (_notificationService != null)
             _notificationService.Enabled = !_silenceNotifications && winConfig.ToastNotificationsEnabled;
 
@@ -462,6 +495,14 @@ public partial class MainWindow : Window
             });
         };
 
+        // Auto-update: checar em background após 30 s de inicialização
+        if (_trayIcon != null)
+        {
+            _trayIcon.CheckUpdateRequested  += () => Dispatcher.Invoke(OnCheckUpdateManually);
+            _trayIcon.InstallUpdateRequested += () => Dispatcher.Invoke(OnInstallUpdateRequested);
+        }
+        _ = Task.Run(StartupUpdateCheckAsync);
+
         Log.Information("Windows integration initialized. Tray={Tray}, Toast={Toast}, Hotkeys=yes, SysPrefs=yes, Silence={Silence}, BlockSpawns={Block}",
             winConfig.TrayIconEnabled, winConfig.ToastNotificationsEnabled, _silenceNotifications, _blockSpawns);
     }
@@ -477,11 +518,13 @@ public partial class MainWindow : Window
                 ShowSpeechBubble(phrase, 1.5);
                 _sfxService?.PlaySelect();
 
-                // Show overlay above pet's head (not at icon's desktop position)
+                // Show overlay above pet's head with the actual icon image
                 if (_desktopIconService?.TargetIcon != null)
                 {
                     _iconOverlay ??= new IconOverlayWindow();
-                    _iconOverlay.ShowAt((int)_pokemon.X, (int)(_pokemon.Y - 50), _desktopIconService.TargetIcon.Name);
+                    var iconBitmap = DesktopIconBitmapHelper.GetDesktopIconBitmap(
+                        _desktopIconService.TargetIcon.Name);
+                    _iconOverlay.ShowAt((int)_pokemon.X, (int)(_pokemon.Y - 50), iconBitmap);
                 }
             });
         };
@@ -556,7 +599,7 @@ public partial class MainWindow : Window
 
         if (_pokedexService == null) return;
 
-        var dex = new PokedexWindow(_pokedexService, _spriteCache, _config);
+        var dex = new PokedexWindow(_pokedexService, _spriteCache, _config, sfx: _sfxService);
         dex.Owner = null;
         dex.Show();
         _sfxService?.PlayConfirm();
@@ -566,12 +609,6 @@ public partial class MainWindow : Window
 
     private void OnPcBoxRequested()
     {
-        if (_combatManager.IsActive || _captureManager.IsActive)
-        {
-            Log.Debug("PcBox blocked: combat/capture active");
-            return;
-        }
-
         var existingPcBox = System.Windows.Application.Current.Windows
             .OfType<PcBoxWindow>()
             .FirstOrDefault(w => w.IsVisible);
@@ -581,6 +618,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        _sfxService?.PlayConfirm();
         var pcBox = new PcBoxWindow(
             _pokemon.Party,
             _pokemon.Dex,
@@ -590,7 +628,8 @@ public partial class MainWindow : Window
             _isPaused,
             _silenceNotifications,
             _blockSpawns,
-            _saveData.CaptureHistory);
+            _saveData.CaptureHistory,
+            sfx: _sfxService);
         pcBox.Owner = null; // Transparent window can't be owner
         pcBox.PetRequested += OnPetClicked;
         pcBox.PauseResumeRequested += TogglePause;
@@ -617,9 +656,11 @@ public partial class MainWindow : Window
     private void OnSettingsRequested()
     {
         var allAchievements = _achievementService?.AllAchievements.ToList() ?? new List<Achievement>();
+        _sfxService?.PlaySelect();
         var settings = new SettingsWindow(
             _config, _appSettings, _saveData, _spriteCache, _pokemon.Dex, allAchievements,
-            _pokedexService?.Seen, _pokedexService?.Captured);
+            _pokedexService?.Seen, _pokedexService?.Captured,
+            sfx: _sfxService);
 
         // P1: Desktop icon interaction state
         if (_desktopIconService != null)
@@ -703,8 +744,13 @@ public partial class MainWindow : Window
             ? _config.Player.WalkSpeed
             : -_config.Player.WalkSpeed;
 
-        Log.Debug("Config changes applied in-memory: Silence={Silence}, BlockSpawns={Block}, Toast={Toast}, Speed={Speed}",
-            _silenceNotifications, _blockSpawns, _config.Windows.ToastNotificationsEnabled, _config.Player.WalkSpeed);
+        // Aplicar SFX e balões de fala em tempo real
+        if (_sfxService != null)
+            _sfxService.Enabled = _config.Sfx.Enabled;
+
+        Log.Debug("Config changes applied in-memory: Silence={Silence}, BlockSpawns={Block}, Toast={Toast}, Speed={Speed}, Sfx={Sfx}, Speech={Speech}",
+            _silenceNotifications, _blockSpawns, _config.Windows.ToastNotificationsEnabled, _config.Player.WalkSpeed,
+            _config.Sfx.Enabled, _config.Mood.SpeechBubblesEnabled);
 
         // Reinitialize desktop icon service if mode changed
         if (_desktopIconService != null)
@@ -757,6 +803,147 @@ public partial class MainWindow : Window
 
         _saveData = _saveData with { BlockSpawns = _blockSpawns };
         PerformSave("blockspawns");
+    }
+
+    private void OnSandboxModeToggled()
+    {
+        _sandboxMode = !_sandboxMode;
+        _pokemon.SandboxMode = _sandboxMode;
+        _trayIcon?.SetSandboxMode(_sandboxMode);
+
+        if (!_sandboxMode)
+        {
+            // Ao desativar, atualizar display com contagem real
+            _trayIcon?.SetPokeballCount(_pokemon.Pokeballs);
+        }
+
+        var stateMsg = _sandboxMode
+            ? "🔓 Sandbox ativado — pokébolas infinitas!"
+            : $"🔒 Sandbox desativado — pokébolas: {_pokemon.Pokeballs}";
+        _trayIcon?.ShowNotification("Pokebar", stateMsg);
+        Log.Information("Sandbox mode: {State}", _sandboxMode ? "ON" : "OFF");
+
+        _saveData = _saveData with { SandboxMode = _sandboxMode };
+        PerformSave("sandbox");
+    }
+
+    // ── Auto-update ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Checagem silenciosa em background na inicialização do app (aguarda 30 s).
+    /// </summary>
+    private async Task StartupUpdateCheckAsync()
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            var info = await UpdateService.CheckAsync();
+            if (info != null)
+                Dispatcher.Invoke(() => OnUpdateFound(info, fromManualCheck: false));
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Startup update check suppressed");
+        }
+    }
+
+    /// <summary>
+    /// Checagem manual disparada pelo item "Verificar Atualizações" do tray.
+    /// </summary>
+    private async void OnCheckUpdateManually()
+    {
+        _trayIcon?.SetCheckingUpdate(true);
+        try
+        {
+            var info = await UpdateService.CheckAsync();
+            if (info != null)
+                OnUpdateFound(info, fromManualCheck: true);
+            else
+                System.Windows.MessageBox.Show(
+                    $"Você já está na versão mais recente ({UpdateService.CurrentVersion.ToString(3)}).",
+                    "PokeBar — Atualizações",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+        }
+        finally
+        {
+            _trayIcon?.SetCheckingUpdate(false);
+        }
+    }
+
+    /// <summary>
+    /// Chamado quando uma nova versão é encontrada (automático ou manual).
+    /// </summary>
+    private void OnUpdateFound(UpdateService.UpdateAvailableInfo info, bool fromManualCheck)
+    {
+        _pendingUpdate = info;
+        _trayIcon?.SetUpdateAvailable(info.Version);
+
+        if (fromManualCheck)
+        {
+            // Diálogo imediato na checagem manual
+            OnInstallUpdateRequested();
+        }
+        else
+        {
+            // Checagem automática: apenas notificação no balão
+            _trayIcon?.ShowNotification(
+                "PokeBar — Atualização disponível!",
+                $"Versão {info.Version} está disponível. Clique em 'Verificar Atualizações' no menu para instalar.",
+                System.Windows.Forms.ToolTipIcon.Info);
+        }
+    }
+
+    /// <summary>
+    /// Pergunta ao usuário se quer instalar e, se sim, baixa e executa o instalador.
+    /// </summary>
+    private async void OnInstallUpdateRequested()
+    {
+        var info = _pendingUpdate;
+        if (info is null)
+        {
+            OnCheckUpdateManually();
+            return;
+        }
+
+        var sizeMb = info.SizeBytes > 0 ? $" ({info.SizeBytes / 1_048_576.0:F1} MB)" : "";
+        var result = System.Windows.MessageBox.Show(
+            $"Versão {info.Version} está disponível{sizeMb}.\n\n" +
+            "O app será fechado e o instalador abrirá automaticamente. Deseja atualizar agora?",
+            "PokeBar — Nova Versão",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        // Download com progresso no tooltip do tray
+        _updateDownloadCts?.Cancel();
+        _updateDownloadCts = new CancellationTokenSource();
+        var ct = _updateDownloadCts.Token;
+
+        var progress = new Progress<double>(p =>
+            _trayIcon?.SetTooltip($"PokeBar — Baixando atualização {p:P0}..."));
+
+        try
+        {
+            var installerPath = await UpdateService.DownloadInstallerAsync(info, progress, ct);
+            UpdateService.InstallAndRestart(installerPath);
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelado pelo usuário ou shutdown
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to download or launch update installer");
+            System.Windows.MessageBox.Show(
+                $"Falha ao baixar a atualização:\n{ex.Message}\n\nTente novamente mais tarde.",
+                "PokeBar — Erro",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            _trayIcon?.SetCheckingUpdate(false);
+        }
     }
 
     private void CheckAchievements()
@@ -877,6 +1064,7 @@ public partial class MainWindow : Window
         }
 
         UpdateFullscreenMonitors();
+        HandleFullscreenEviction(); // migrar pet/inimigos para monitor livre se o atual virou fullscreen
         UpdateTaskbarTravel();
         UpdateEnemyMovement();
         if (!_blockSpawns)
@@ -890,6 +1078,8 @@ public partial class MainWindow : Window
         UpdateWindowPosition();
         UpdateEnemyWindowPosition();
         UpdateAutoSave(deltaTime);
+
+        UpdatePokeballRefill(deltaTime);
 
         // FASE 7: Atualizar humor, comportamento idle e movimento inteligente
         UpdateMoodAndBehavior(deltaTime);
@@ -1045,25 +1235,30 @@ public partial class MainWindow : Window
             return;
         }
 
-        // Pet reached the RIGHT edge — try to bridge to next monitor
+        // Pet reached the RIGHT edge.
+        // If a neighbor exists, do NOT proactively adopt it — SetCurrentTaskbar while the
+        // sprite center is still inside the current monitor's BoundsPx causes a per-frame
+        // oscillation: FindTaskbarForX returns the old monitor next tick → reverts →
+        // pet never crosses.  Instead, just let the pet walk freely into the neighbor's
+        // pixel space; the FindTaskbarForX detection above will fire the moment X crosses
+        // BoundsPx.Right and correctly call SetCurrentTaskbar (and update GroundY) then.
+        // Only clamp when there is no reachable neighbor.
         if (movingRight && _pokemon.X >= maxX)
         {
             var next = GetNeighbor(_currentTaskbar, true);
             if (next == null || IsMonitorBlocked(next))
                 ClampToTaskbar(_pokemon, _currentTaskbar, halfWidth, true);
-            else
-                SetCurrentTaskbar(next);  // proactively adopt neighbor
+            // else: walk freely — crossing detected by FindTaskbarForX on the next tick
             return;
         }
 
-        // Pet reached the LEFT edge — try to bridge to previous monitor
+        // Pet reached the LEFT edge — same logic.
         if (!movingRight && _pokemon.X <= minX)
         {
             var prev = GetNeighbor(_currentTaskbar, false);
             if (prev == null || IsMonitorBlocked(prev))
                 ClampToTaskbar(_pokemon, _currentTaskbar, halfWidth, true);
-            else
-                SetCurrentTaskbar(prev);  // proactively adopt neighbor
+            // else: walk freely — crossing detected by FindTaskbarForX on the next tick
         }
     }
 
@@ -1077,6 +1272,15 @@ public partial class MainWindow : Window
             return;
 
         _lastFullscreenCheck = now;
+
+        // Se ShowOverFullscreen ativo, limpa os monitores bloqueados e encerra — pet nunca some
+        if (_config.Windows.ShowOverFullscreen)
+        {
+            if (_fullscreenMonitors.Count > 0)
+                _fullscreenMonitors = new HashSet<IntPtr>();
+            return;
+        }
+
         var ignoreWindows = new List<IntPtr> { _windowHwnd };
         foreach (var window in _enemyWindows.Values)
         {
@@ -1109,6 +1313,57 @@ public partial class MainWindow : Window
             return false;
 
         return _fullscreenMonitors.Contains(target.MonitorHandle);
+    }
+
+    /// <summary>
+    /// Quando o monitor do pet (ou de um inimigo) entra em fullscreen,
+    /// migra a entidade para o primeiro monitor livre disponível.
+    /// Se todos estiverem bloqueados, não faz nada — UpdateAutoHideVisibility
+    /// cuidará de esconder o pet nesse caso.
+    /// Executado logo após UpdateFullscreenMonitors (rodada lenta, FullscreenCheckMs).
+    /// </summary>
+    private void HandleFullscreenEviction()
+    {
+        if (_currentTaskbar == null || _taskbars.Count == 0) return;
+        if (_fullscreenMonitors.Count == 0) return; // nenhum fullscreen ativo, nada a fazer
+
+        // ── Player pet ──────────────────────────────────────────────────────────
+        if (IsMonitorBlocked(_currentTaskbar))
+        {
+            var safe = _taskbars.FirstOrDefault(t => !IsMonitorBlocked(t));
+            if (safe != null)
+            {
+                Log.Information("Fullscreen eviction: pet {OldIdx} → {NewIdx}",
+                    _currentTaskbar.MonitorIndex, safe.MonitorIndex);
+
+                // Teleportar ao centro do monitor seguro
+                _pokemon.X = (safe.BoundsPx.Left + safe.BoundsPx.Right) / 2.0;
+                SetCurrentTaskbar(safe);
+                UpdateWindowPosition(); // aplicar imediatamente, sem 1 frame de glitch
+            }
+            // Se safe == null → todos bloqueados, UpdateAutoHideVisibility vai esconder
+        }
+
+        // ── Inimigos ────────────────────────────────────────────────────────────
+        foreach (var enemy in _entityManager.Enemies)
+        {
+            if (enemy.State == EntityState.Fainted || enemy.State == EntityState.Dead)
+                continue;
+
+            var tb = GetEnemyTaskbar(enemy);
+            if (tb == null || !IsMonitorBlocked(tb)) continue;
+
+            var safe = _taskbars.FirstOrDefault(t => !IsMonitorBlocked(t));
+            if (safe != null)
+            {
+                Log.Debug("Fullscreen eviction: enemy Dex{Dex} {OldIdx} → {NewIdx}",
+                    enemy.Dex, tb.MonitorIndex, safe.MonitorIndex);
+
+                enemy.X = (safe.BoundsPx.Left + safe.BoundsPx.Right) / 2.0;
+                SetEnemyTaskbar(enemy, safe);
+            }
+            // Se safe == null → UpdateAutoHideVisibility esconde o inimigo
+        }
     }
 
     private void SetCurrentTaskbar(TaskbarService.TaskbarInfo taskbar)
@@ -1216,12 +1471,18 @@ public partial class MainWindow : Window
         if (_currentTaskbar == null)
             return;
 
-        var hide = TaskbarService.IsTaskbarHidden(_currentTaskbar);
+        // Esconder quando: taskbar auto-hidden OU monitor bloqueado por fullscreen
+        // (fullscreen: só chega aqui se HandleFullscreenEviction não encontrou monitor livre)
+        var autoHide  = TaskbarService.IsTaskbarHidden(_currentTaskbar);
+        var fsBlocked = IsMonitorBlocked(_currentTaskbar);
+        var hide = autoHide || fsBlocked;
         Opacity = hide ? 0 : 1;
+
         foreach (var pair in _enemyWindows)
         {
             var taskbar = GetEnemyTaskbar(pair.Key);
-            var enemyHide = taskbar != null && TaskbarService.IsTaskbarHidden(taskbar);
+            var enemyHide = taskbar != null &&
+                (TaskbarService.IsTaskbarHidden(taskbar) || IsMonitorBlocked(taskbar));
             pair.Value.SetHidden(enemyHide);
         }
         _captureManager.SetHidden(hide);
@@ -1326,13 +1587,16 @@ public partial class MainWindow : Window
                 maxX = taskbar.BoundsPx.Right - halfWidth;
             }
 
+            // Same fix as UpdateTaskbarTravel: don't proactively adopt the neighbor while
+            // the enemy center is still inside the current monitor's BoundsPx — that causes
+            // per-frame oscillation between the two taskbars.  Let FindTaskbarForX detect
+            // the actual crossing; only clamp when no reachable neighbor exists.
             if (movingRight && enemy.X >= maxX)
             {
                 var next = GetNeighbor(taskbar, true);
                 if (next == null || IsMonitorBlocked(next))
                     ClampToTaskbar(enemy, taskbar, halfWidth, true);
-                else
-                    SetEnemyTaskbar(enemy, next);
+                // else: walk freely — crossing detected by FindTaskbarForX above
                 continue;
             }
 
@@ -1341,8 +1605,7 @@ public partial class MainWindow : Window
                 var prev = GetNeighbor(taskbar, false);
                 if (prev == null || IsMonitorBlocked(prev))
                     ClampToTaskbar(enemy, taskbar, halfWidth, true);
-                else
-                    SetEnemyTaskbar(enemy, prev);
+                // else: walk freely — crossing detected by FindTaskbarForX above
             }
         }
     }
@@ -1365,10 +1628,21 @@ public partial class MainWindow : Window
     /// </summary>
     private void UpdateStatusOverlays(double deltaTime)
     {
+        // Não mostrar overlays de status durante a sequência de captura
+        bool capturing = _captureManager.IsActive;
+
         foreach (var pair in _enemyWindows)
         {
             var enemy = pair.Key;
             var window = pair.Value;
+
+            if (capturing)
+            {
+                window.SetStatusOverlay(null);
+                window.SetTintColor(null);
+                window.UpdateEffects(deltaTime);
+                continue;
+            }
 
             // Overlay textual de status
             var statusText = enemy.ActiveStatus switch
@@ -1397,12 +1671,39 @@ public partial class MainWindow : Window
 
     private void UpdateCapture(double deltaTime)
     {
-        if (!_captureManager.IsActive && _currentTaskbar != null)
+        // Conta down do cooldown pós-falha; quando expirar, despawna o inimigo que escapou
+        if (_captureFailCooldown > 0)
+        {
+            _captureFailCooldown -= deltaTime;
+            if (_captureFailCooldown <= 0 && _captureFailedEnemy != null)
+            {
+                _captureFailedEnemy.Despawn();
+                _captureFailedEnemy = null;
+            }
+        }
+
+        // Conta down do cooldown de feedback "sem pokébolas"
+        if (_noBallsFeedbackCooldown > 0)
+            _noBallsFeedbackCooldown -= deltaTime;
+
+        if (!_captureManager.IsActive && _captureFailCooldown <= 0 && _currentTaskbar != null)
         {
             foreach (var enemy in _entityManager.Enemies)
             {
                 if (enemy.State != EntityState.Fainted || enemy.IsCaptureInProgress)
                     continue;
+
+                // Guard: sem pokébolas e não está em sandbox → não lança a bola
+                if (!_pokemon.CanThrowPokeball())
+                {
+                    if (_noBallsFeedbackCooldown <= 0)
+                    {
+                        _noBallsFeedbackCooldown = 5.0; // feedbak no máximo a cada 5s
+                        ShowSpeechBubble("🎾 ×0!", 2.5);
+                        Log.Debug("Capture skipped: no Pokéballs and not sandbox");
+                    }
+                    break; // inimigo ficará até FaintedDespawnSeconds e some sozinho
+                }
 
                 _enemyWindows.TryGetValue(enemy, out var window);
                 var taskbar = GetEnemyTaskbar(enemy) ?? _currentTaskbar;
@@ -1502,10 +1803,13 @@ public partial class MainWindow : Window
         var dex = _forceRareSpawn ? SelectRareDex() : SelectEnemyDex();
         _forceRareSpawn = false;
 
-        // FASE 7: Rolar shiny
-        var isShiny = RollShiny();
+        // FASE 7: Rolar shiny — só se sprites shiny existirem para este dex
+        var isShiny = _forceShinySpawn || RollShiny(dex);
+        _forceShinySpawn = false;
+        // Se forçado mas não tem sprite shiny, usa formId normal mesmo assim
+        var shinyFormId = (isShiny && _spriteCache.Loader.HasShinySprite(dex)) ? "shiny" : "0000";
         var rarity = GetRarityForDex(dex);
-        var enemy = new EnemyPet(dex, isShiny: isShiny, rarity: rarity);
+        var enemy = new EnemyPet(dex, formId: shinyFormId, isShiny: isShiny, rarity: rarity);
         enemy.PatrolSpeed = _config.Enemy.WalkSpeed;
         RegisterEnemy(enemy, taskbar);
 
@@ -2059,13 +2363,15 @@ public partial class MainWindow : Window
         _speechBubbleTimer = durationSeconds;
 
         // FASE 8: Typewriter effect — reveal text character by character
+        // SpeechCursor is the ▼ TextBlock defined in MainWindow.xaml
         if (_config.Sfx.TypewriterEnabled && _typewriterService != null)
         {
-            _typewriterService.Start(SpeechText, text);
+            _typewriterService.Start(SpeechText, text, SpeechCursor);
         }
         else
         {
             SpeechText.Text = text;
+            SpeechCursor.Visibility = Visibility.Collapsed;
         }
 
         // Position the bubble above the sprite
@@ -2192,10 +2498,16 @@ public partial class MainWindow : Window
     }
 
     /// <summary>FASE 7: Determina se o spawn deve ser shiny.</summary>
-    private bool RollShiny()
+    /// <summary>
+    /// Rola se o spawn deve ser shiny. Só retorna true se:
+    /// 1. Existe sprite shiny disponível para este dex (pasta /shiny/)
+    /// 2. O dado cai dentro da chance configurada (padrão 1/4096)
+    /// </summary>
+    private bool RollShiny(int dex)
     {
         var chance = _config.Shiny.ShinyChanceDenominator;
         if (chance <= 0) return false;
+        if (!_spriteCache.Loader.HasShinySprite(dex)) return false;
         return _random.Next(0, chance) == 0;
     }
 
@@ -2441,6 +2753,10 @@ public partial class MainWindow : Window
 
     private void OnCaptureFailed(EnemyPet enemy)
     {
+        // Inimigo fica visível brevemente e depois some — sem nova tentativa
+        _captureFailCooldown = CAPTURE_FAIL_COOLDOWN;
+        _captureFailedEnemy  = enemy;
+
         _saveData = _saveData with
         {
             Pokeballs = _pokemon.Pokeballs,
@@ -2450,7 +2766,7 @@ public partial class MainWindow : Window
                 TotalPokeballsUsed = _saveData.Stats.TotalPokeballsUsed + 1
             }
         };
-        Log.Debug("Capture failed. Stats updated: Failed={Failed}, PokeballsUsed={Used}", 
+        Log.Debug("Capture failed. Stats updated: Failed={Failed}, PokeballsUsed={Used}",
             _saveData.Stats.TotalCaptureFailed, _saveData.Stats.TotalPokeballsUsed);
 
         // FASE 5: Notificação toast e atualizar tray
@@ -2488,8 +2804,7 @@ public partial class MainWindow : Window
         Log.Debug("Battle ended. PlayerWon={Won}. Stats: Battles={Battles}, Won={Won2}", 
             playerWon, _saveData.Stats.TotalBattles, _saveData.Stats.TotalBattlesWon);
 
-        // FASE 5: Notificação toast
-        _notificationService?.NotifyBattleResult(playerWon);
+        // Notificação de batalha removida — ruído sem valor para o usuário
 
         // P2: Speech bubble feedback
         ShowSpeechBubble(playerWon ? "💪" : "😢", 2.0);
@@ -2537,6 +2852,37 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Reabastecimento passivo de pokébolas: +1 a cada POKEBALL_REFILL_INTERVAL segundos
+    /// enquanto o total estiver abaixo de POKEBALL_REFILL_CAP.
+    /// Não funciona em sandbox (sem necessidade) nem quando o jogo está pausado.
+    /// </summary>
+    private void UpdatePokeballRefill(double deltaTime)
+    {
+        // Sem refill em sandbox ou quando já atingiu o cap
+        if (_sandboxMode || _pokemon.Pokeballs >= POKEBALL_REFILL_CAP)
+        {
+            _pokeballRefillTimer = 0;
+            return;
+        }
+
+        _pokeballRefillTimer += deltaTime;
+        if (_pokeballRefillTimer < POKEBALL_REFILL_INTERVAL)
+            return;
+
+        _pokeballRefillTimer = 0;
+        _pokemon.AddPokeballs(1);
+        _saveData = _saveData with { Pokeballs = _pokemon.Pokeballs };
+        _trayIcon?.SetPokeballCount(_pokemon.Pokeballs);
+
+        _notificationService?.Notify(
+            "Pokebar",
+            $"🎾 Pokébola recarregada! Total: {_pokemon.Pokeballs}/{POKEBALL_REFILL_CAP}");
+
+        Log.Information("Pokéball refill: +1 (total: {Total}/{Cap})",
+            _pokemon.Pokeballs, POKEBALL_REFILL_CAP);
+    }
+
     private void UpdateAutoSave(double deltaTime)
     {
         // Acumular playtime
@@ -2573,6 +2919,7 @@ public partial class MainWindow : Window
             TotalPets = _saveData.TotalPets,
             SilenceNotifications = _silenceNotifications,
             BlockSpawns = _blockSpawns,
+            SandboxMode = _sandboxMode,
             Stones = _saveData.Stones,
             EvolutionCancelled = _saveData.EvolutionCancelled,
             // P2: Pokédex, daily quests, capture history
@@ -2580,6 +2927,7 @@ public partial class MainWindow : Window
             DailyQuestIds = _questService?.DailyQuestIds ?? _saveData.DailyQuestIds,
             DailyStreak = _questService?.DailyStreak ?? _saveData.DailyStreak,
             LastDailyDate = _questService?.LastDailyDate ?? _saveData.LastDailyDate,
+            LastDailyGeneratedDate = _questService?.LastDailyGeneratedDate ?? _saveData.LastDailyGeneratedDate, // BUG FIX: separar data de geração da data de claim
             PetCooldownRemaining = _moodService?.CooldownRemaining ?? 0   // BUG FIX: cooldown persiste entre sessões
         };
         // Persistir Pokédex

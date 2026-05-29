@@ -66,6 +66,9 @@ public record SaveData
     /// <summary>Bloquear spawns e combate (persiste entre sessões).</summary>
     public bool BlockSpawns { get; init; }
 
+    /// <summary>Modo sandbox: pokébolas infinitas (não são consumidas ao capturar).</summary>
+    public bool SandboxMode { get; init; }
+
     /// <summary>Inventário de pedras de evolução (stone → quantidade).</summary>
     public Dictionary<EvolutionStone, int> Stones { get; init; } = new();
 
@@ -83,6 +86,13 @@ public record SaveData
 
     /// <summary>Data (UTC) da última daily quest completada (para calcular streak).</summary>
     public DateTime? LastDailyDate { get; init; }
+
+    /// <summary>
+    /// Data (UTC) em que as daily quests foram geradas pela última vez.
+    /// Separado de LastDailyDate (que é a data de claim) para evitar que reiniciar
+    /// o app no mesmo dia regenere as dailies quando o jogador ainda não as completou.
+    /// </summary>
+    public DateTime? LastDailyGeneratedDate { get; init; }
 
     /// <summary>IDs das daily quests ativas hoje.</summary>
     public List<string> DailyQuestIds { get; init; } = new();

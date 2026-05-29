@@ -25,7 +25,14 @@ public sealed class TrayIconService : IDisposable
     private WinForms.ToolStripMenuItem _pokeballItem = null!;
     private WinForms.ToolStripMenuItem _silenceItem = null!;
     private WinForms.ToolStripMenuItem _blockSpawnsItem = null!;
+    private WinForms.ToolStripMenuItem _sandboxItem = null!;
     private WinForms.ToolStripMenuItem _stonesItem = null!;
+    private WinForms.ToolStripMenuItem _updateAvailableItem = null!;
+    private WinForms.ToolStripMenuItem _checkUpdateItem = null!;
+
+    // Estado local para atualização de display
+    private bool _sandboxActive;
+    private int _currentPokeballCount;
 
     /// <summary>Disparado quando o usuário clica em Pausar/Retomar.</summary>
     public event Action? PauseResumeRequested;
@@ -57,13 +64,17 @@ public sealed class TrayIconService : IDisposable
     /// <summary>Disparado quando o usuário alterna Bloquear Spawns.</summary>
     public event Action? BlockSpawnsToggled;
 
+    /// <summary>Disparado quando o usuário alterna o modo Sandbox (pokébolas infinitas).</summary>
+    public event Action? SandboxModeToggled;
+
     /// <summary>Disparado quando o usuário clica em Acariciar (FASE 7).</summary>
     public event Action? PetRequested;
 
-    /// <summary>Disparado quando o usuário seleciona um perfil. Parâmetro: profileId.</summary>
-#pragma warning disable CS0067
-    public event Action<string>? ProfileSwitchRequested;
-#pragma warning restore CS0067
+    /// <summary>Disparado quando o usuário clica em Verificar Atualizações.</summary>
+    public event Action? CheckUpdateRequested;
+
+    /// <summary>Disparado quando o usuário clica no item de update disponível.</summary>
+    public event Action? InstallUpdateRequested;
 
     public TrayIconService()
     {
@@ -103,7 +114,7 @@ public sealed class TrayIconService : IDisposable
         menu.Items.Add(new WinForms.ToolStripSeparator());
 
         // Pokeballs (informativo)
-        _pokeballItem = new WinForms.ToolStripMenuItem("Pokeballs: 0") { Enabled = false };
+        _pokeballItem = new WinForms.ToolStripMenuItem("🎾 Pokébolas: 0") { Enabled = false };
         menu.Items.Add(_pokeballItem);
 
         // Pedras de evolução (submenu dinâmico)
@@ -164,6 +175,29 @@ public sealed class TrayIconService : IDisposable
         _blockSpawnsItem.Click += (_, _) => BlockSpawnsToggled?.Invoke();
         menu.Items.Add(_blockSpawnsItem);
 
+        // Sandbox: pokébolas infinitas (toggle)
+        _sandboxItem = new WinForms.ToolStripMenuItem("🎾 Sandbox (Pokébolas ∞)");
+        _sandboxItem.CheckOnClick = true;
+        _sandboxItem.Click += (_, _) => SandboxModeToggled?.Invoke();
+        menu.Items.Add(_sandboxItem);
+
+        menu.Items.Add(new WinForms.ToolStripSeparator());
+
+        // Atualização disponível (oculto por padrão, aparece quando update é encontrado)
+        _updateAvailableItem = new WinForms.ToolStripMenuItem("⬆ Atualização disponível!")
+        {
+            Visible = false,
+            Font = new Font(menu.Font, System.Drawing.FontStyle.Bold),
+            ForeColor = System.Drawing.Color.FromArgb(0x00, 0x7A, 0xFF)
+        };
+        _updateAvailableItem.Click += (_, _) => InstallUpdateRequested?.Invoke();
+        menu.Items.Add(_updateAvailableItem);
+
+        // Verificar Atualizações
+        _checkUpdateItem = new WinForms.ToolStripMenuItem("🔄 Verificar Atualizações");
+        _checkUpdateItem.Click += (_, _) => CheckUpdateRequested?.Invoke();
+        menu.Items.Add(_checkUpdateItem);
+
         menu.Items.Add(new WinForms.ToolStripSeparator());
 
         // Sair
@@ -185,11 +219,26 @@ public sealed class TrayIconService : IDisposable
     }
 
     /// <summary>
-    /// Atualiza o contador de pokeballs exibido no menu.
+    /// Atualiza o contador de pokébolas exibido no menu.
     /// </summary>
     public void SetPokeballCount(int count)
     {
-        _pokeballItem.Text = $"Pokeballs: {count}";
+        _currentPokeballCount = count;
+        _pokeballItem.Text = _sandboxActive
+            ? "🎾 Pokébolas: ∞"
+            : $"🎾 Pokébolas: {count}";
+    }
+
+    /// <summary>
+    /// Ativa/desativa o modo sandbox e atualiza o display de pokébolas.
+    /// </summary>
+    public void SetSandboxMode(bool enabled)
+    {
+        _sandboxActive = enabled;
+        _sandboxItem.Checked = enabled;
+        _pokeballItem.Text = enabled
+            ? "🎾 Pokébolas: ∞"
+            : $"🎾 Pokébolas: {_currentPokeballCount}";
     }
 
     /// <summary>
@@ -264,6 +313,35 @@ public sealed class TrayIconService : IDisposable
         Pokebar.Core.Models.EvolutionStone.Shiny => "✨",
         _ => "💎"
     };
+
+    /// <summary>
+    /// Mostra (ou esconde) o item de update disponível no menu.
+    /// </summary>
+    public void SetUpdateAvailable(string? version)
+    {
+        if (version is null)
+        {
+            _updateAvailableItem.Visible = false;
+            _checkUpdateItem.Text = "🔄 Verificar Atualizações";
+            _checkUpdateItem.Enabled = true;
+        }
+        else
+        {
+            _updateAvailableItem.Text    = $"⬆ Atualização v{version} disponível!";
+            _updateAvailableItem.Visible = true;
+            _checkUpdateItem.Text        = "🔄 Verificar Atualizações";
+            _checkUpdateItem.Enabled     = true;
+        }
+    }
+
+    /// <summary>
+    /// Muda o item de verificação para "Verificando..." enquanto a checagem ocorre.
+    /// </summary>
+    public void SetCheckingUpdate(bool checking)
+    {
+        _checkUpdateItem.Text    = checking ? "🔄 Verificando..." : "🔄 Verificar Atualizações";
+        _checkUpdateItem.Enabled = !checking;
+    }
 
     /// <summary>
     /// Exibe uma notificação balloon tip no tray.

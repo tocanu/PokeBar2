@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -10,6 +12,7 @@ using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 using Pokebar.Core.Localization;
 using Pokebar.Core.Models;
 using Pokebar.DesktopPet.Animation;
+using Pokebar.DesktopPet.Services;
 
 namespace Pokebar.DesktopPet;
 
@@ -33,6 +36,14 @@ public partial class PcBoxWindow : Window
     private const int PAGE_SIZE = 30; // 6 columns x 5 rows
     private bool _showingHistory;
     private readonly IReadOnlyList<CaptureHistoryEntry> _captureHistory;
+    private readonly UiSfxService? _sfx;
+
+    // Clip cache: evita chamar GetAnimations repetidamente para o mesmo dex
+    private readonly Dictionary<int, AnimationClip?> _clipByDex = new();
+    private System.Windows.Threading.DispatcherTimer? _animTimer;
+
+    // Lista atual de itens — mantida como campo para atualização pontual sem recriar tudo
+    private List<PcBoxItem> _pageItems = new();
 
     /// <summary>Dex escolhido pelo jogador, ou -1 se nenhum.</summary>
     public int ChosenDex => _selectedDex;
@@ -47,13 +58,22 @@ public partial class PcBoxWindow : Window
     public event Action? BlockSpawnsToggled;
     public event Action? QuitRequested;
 
-    // Fire Red palette colors
-    private static readonly System.Windows.Media.Color CardNormal = System.Windows.Media.Color.FromArgb(0x40, 0xF8, 0xF8, 0xF0);
-    private static readonly System.Windows.Media.Color CardActive = System.Windows.Media.Color.FromArgb(0x60, 0xF8, 0xD0, 0x30);
-    private static readonly System.Windows.Media.Color CardSelected = System.Windows.Media.Color.FromArgb(0x80, 0x88, 0xC8, 0xE8);
-    private static readonly System.Windows.Media.Color BorderNormal = System.Windows.Media.Color.FromArgb(0x60, 0x98, 0xB8, 0x88);
-    private static readonly System.Windows.Media.Color BorderActive = System.Windows.Media.Color.FromRgb(0xE0, 0x40, 0x38);
-    private static readonly System.Windows.Media.Color BorderSelected = System.Windows.Media.Color.FromRgb(0x38, 0x90, 0xF8);
+    // Fire Red palette — brushes frozen para melhor performance de rendering
+    private  static readonly SolidColorBrush BrushCardNormal    = Frozen(0x40, 0xF8, 0xF8, 0xF0);
+    private  static readonly SolidColorBrush BrushCardActive    = Frozen(0x60, 0xF8, 0xD0, 0x30);
+    private  static readonly SolidColorBrush BrushCardSelected  = Frozen(0x80, 0x88, 0xC8, 0xE8);
+    internal static readonly SolidColorBrush BrushCardEmpty     = Frozen(0x20, 0x80, 0xC0, 0x60);
+    private  static readonly SolidColorBrush BrushBorderNormal  = Frozen(0x60, 0x98, 0xB8, 0x88);
+    private  static readonly SolidColorBrush BrushBorderActive  = Frozen(0xFF, 0xE0, 0x40, 0x38);
+    private  static readonly SolidColorBrush BrushBorderSelected= Frozen(0xFF, 0x38, 0x90, 0xF8);
+    internal static readonly SolidColorBrush BrushBorderEmpty   = Frozen(0x30, 0x98, 0xB8, 0x88);
+
+    private static SolidColorBrush Frozen(byte a, byte r, byte g, byte b)
+    {
+        var brush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(a, r, g, b));
+        brush.Freeze();
+        return brush;
+    }
 
     public PcBoxWindow(
         IReadOnlyList<int> party,
@@ -64,7 +84,8 @@ public partial class PcBoxWindow : Window
         bool isPaused = false,
         bool isSilenceNotifications = false,
         bool isBlockSpawns = false,
-        IReadOnlyList<CaptureHistoryEntry>? captureHistory = null)
+        IReadOnlyList<CaptureHistoryEntry>? captureHistory = null,
+        UiSfxService? sfx = null)
     {
         InitializeComponent();
         _spriteCache = spriteCache;
@@ -76,10 +97,20 @@ public partial class PcBoxWindow : Window
         _isSilenceNotifications = isSilenceNotifications;
         _isBlockSpawns = isBlockSpawns;
         _captureHistory = captureHistory ?? Array.Empty<CaptureHistoryEntry>();
+        _sfx = sfx;
 
         ApplyLocale();
         BuildGearMenu();
         ShowPage(0);
+
+        // Timer de animação: avança frames dos sprites na grid a ~7 fps (150 ms/frame)
+        _animTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(150)
+        };
+        _animTimer.Tick += (_, _) => { foreach (var item in _pageItems) item.AdvanceFrame(); };
+        _animTimer.Start();
+        Closed += (_, _) => _animTimer.Stop();
     }
 
     private void ApplyLocale()
@@ -90,6 +121,34 @@ public partial class PcBoxWindow : Window
     }
 
     private int TotalPages => Math.Max(1, (int)Math.Ceiling(_party.Count / (double)PAGE_SIZE));
+
+    /// <summary>
+    /// Busca o clip de animação com cache.
+    /// Prefere Idle; fallback para WalkFallback, WalkRight.
+    /// Retorna null se não há sprites disponíveis.
+    /// </summary>
+    private AnimationClip? GetClipCached(int dex)
+    {
+        if (_clipByDex.TryGetValue(dex, out var cached))
+            return cached;
+        AnimationClip? clip = null;
+        try
+        {
+            var anims = _spriteCache.GetAnimations(dex, "0000", _config);
+            clip = anims.Idle ?? anims.WalkFallback ?? anims.WalkRight;
+        }
+        catch { /* sem sprite */ }
+        _clipByDex[dex] = clip;
+        return clip;
+    }
+
+    private (SolidColorBrush bg, SolidColorBrush border) GetBrushes(int dex)
+    {
+        if (dex <= 0)                  return (BrushCardEmpty,    BrushBorderEmpty);
+        if (dex == _selectedDex)       return (BrushCardSelected, BrushBorderSelected);
+        if (dex == _activeDex)         return (BrushCardActive,   BrushBorderActive);
+        return (BrushCardNormal, BrushBorderNormal);
+    }
 
     private void ShowPage(int page)
     {
@@ -102,77 +161,74 @@ public partial class PcBoxWindow : Window
         PrevButton.IsEnabled = _currentPage > 0;
         NextButton.IsEnabled = _currentPage < TotalPages - 1;
 
-        // Build items for this page
-        var items = new List<PcBoxItem>();
+        // Build items for this page (sprites via cache)
+        var items = new List<PcBoxItem>(PAGE_SIZE);
         for (int i = start; i < end; i++)
         {
             var dex = _party[i];
-            BitmapSource? sprite = null;
-            try
-            {
-                var anims = _spriteCache.GetAnimations(dex, "0000", _config);
-                if (anims.Idle?.Frames.Count > 0)
-                    sprite = anims.Idle.Frames[0];
-                else if (anims.WalkRight?.Frames.Count > 0)
-                    sprite = anims.WalkRight.Frames[0];
-            }
-            catch { /* sem sprite */ }
-
-            var isActive = dex == _activeDex;
-            var isSelected = dex == _selectedDex;
+            var (bg, border) = GetBrushes(dex);
             items.Add(new PcBoxItem
             {
                 Dex = dex,
-                Sprite = sprite,
+                Clip = GetClipCached(dex),
                 Label = $"#{dex:D3}",
-                Background = new SolidColorBrush(isSelected ? CardSelected : isActive ? CardActive : CardNormal),
-                BorderColor = new SolidColorBrush(isSelected ? BorderSelected : isActive ? BorderActive : BorderNormal)
+                Background = bg,
+                BorderColor = border
             });
         }
 
-        // Pad to 30 with empty slots
+        // Pad to 30 with empty slots (reuse static brushes)
         while (items.Count < PAGE_SIZE)
-        {
-            items.Add(new PcBoxItem
-            {
-                Dex = -1,
-                Sprite = null,
-                Label = "",
-                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0x80, 0xC0, 0x60)),
-                BorderColor = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x30, 0x98, 0xB8, 0x88))
-            });
-        }
+            items.Add(PcBoxItem.Empty);
 
-        PokemonGrid.ItemsSource = items;
+        _pageItems = items;
+        PokemonGrid.ItemsSource = _pageItems;
     }
 
     private void OnPokemonClick(object sender, MouseButtonEventArgs e)
     {
-        if (sender is FrameworkElement element && element.Tag is int dex && dex > 0)
+        if (sender is not FrameworkElement element || element.Tag is not int dex || dex <= 0)
+            return;
+
+        _sfx?.PlaySelect();
+
+        var prevDex = _selectedDex;
+        _selectedDex = dex;
+        SelectButton.IsEnabled = true;
+
+        var label = dex == _activeDex
+            ? Localizer.Get("pcbox.active", dex.ToString("D3"))
+            : $"#{dex:D3}";
+        SelectedText.Text = Localizer.Get("pcbox.selected", label);
+
+        // Atualiza apenas os dois itens afetados — sem recriar a lista inteira
+        foreach (var item in _pageItems)
         {
-            _selectedDex = dex;
-            SelectButton.IsEnabled = true;
-
-            var label = dex == _activeDex
-                ? Localizer.Get("pcbox.active", dex.ToString("D3"))
-                : $"#{dex:D3}";
-            SelectedText.Text = Localizer.Get("pcbox.selected", label);
-
-            // Refresh visual selection
-            ShowPage(_currentPage);
+            if (item.Dex == prevDex || item.Dex == dex)
+            {
+                var (bg, border) = GetBrushes(item.Dex);
+                item.Background  = bg;
+                item.BorderColor = border;
+            }
         }
     }
 
     private void OnPrevPage(object sender, RoutedEventArgs e)
     {
         if (_currentPage > 0)
+        {
+            _sfx?.PlaySelect();
             ShowPage(_currentPage - 1);
+        }
     }
 
     private void OnNextPage(object sender, RoutedEventArgs e)
     {
         if (_currentPage < TotalPages - 1)
+        {
+            _sfx?.PlaySelect();
             ShowPage(_currentPage + 1);
+        }
     }
 
     private void OnWindowDrag(object sender, MouseButtonEventArgs e)
@@ -183,6 +239,7 @@ public partial class PcBoxWindow : Window
 
     private void OnGearClick(object sender, RoutedEventArgs e)
     {
+        _sfx?.PlaySelect();
         RefreshGearMenu();
         _gearMenu.PlacementTarget = GearButton;
         _gearMenu.Placement = PlacementMode.Bottom;
@@ -193,6 +250,7 @@ public partial class PcBoxWindow : Window
     {
         if (_selectedDex > 0)
         {
+            _sfx?.PlayConfirm();
             DialogResult = true;
             Close();
         }
@@ -200,12 +258,14 @@ public partial class PcBoxWindow : Window
 
     private void OnCloseClick(object sender, RoutedEventArgs e)
     {
+        _sfx?.PlayCancel();
         DialogResult = false;
         Close();
     }
 
     private void OnHistoryToggle(object sender, RoutedEventArgs e)
     {
+        _sfx?.PlaySelect();
         _showingHistory = !_showingHistory;
         if (_showingHistory)
         {
@@ -223,79 +283,52 @@ public partial class PcBoxWindow : Window
         }
     }
 
+    // Brushes de raridade para o histórico — frozen, criados uma única vez
+    private static readonly SolidColorBrush BrushHistShiny      = Frozen(0x60, 0xF8, 0xD0, 0x30);
+    private static readonly SolidColorBrush BrushHistNormal      = Frozen(0x40, 0xF8, 0xF8, 0xF0);
+    private static readonly SolidColorBrush BrushHistBorderShiny = Frozen(0xFF, 0xF8, 0xD0, 0x30);
+    private static readonly SolidColorBrush BrushHistLegendary   = Frozen(0xFF, 0xE0, 0x40, 0x38);
+    private static readonly SolidColorBrush BrushHistEpic        = Frozen(0xFF, 0xA0, 0x40, 0xD0);
+    private static readonly SolidColorBrush BrushHistRare        = Frozen(0xFF, 0x38, 0x90, 0xF8);
+    private static readonly SolidColorBrush BrushHistUncommon    = Frozen(0xFF, 0x40, 0xC8, 0x40);
+    private static readonly SolidColorBrush BrushHistCommon      = Frozen(0x60, 0x98, 0xB8, 0x88);
+
     private void ShowHistory()
     {
-        var items = new List<PcBoxItem>();
-
-        // Mostrar as capturas mais recentes primeiro
         var entries = _captureHistory.Reverse().Take(PAGE_SIZE).ToList();
+        var items = new List<PcBoxItem>(PAGE_SIZE);
 
         foreach (var entry in entries)
         {
-            BitmapSource? sprite = null;
-            try
+            var bg     = entry.IsShiny ? BrushHistShiny : BrushHistNormal;
+            var border = entry.IsShiny ? BrushHistBorderShiny : entry.Rarity switch
             {
-                var anims = _spriteCache.GetAnimations(entry.Dex, "0000", _config);
-                sprite = anims.Idle?.Frames.Count > 0 ? anims.Idle.Frames[0]
-                       : anims.WalkRight?.Frames.Count > 0 ? anims.WalkRight.Frames[0]
-                       : null;
-            }
-            catch { /* sem sprite */ }
-
-            var bgColor = entry.IsShiny
-                ? System.Windows.Media.Color.FromArgb(0x60, 0xF8, 0xD0, 0x30)  // gold for shiny
-                : System.Windows.Media.Color.FromArgb(0x40, 0xF8, 0xF8, 0xF0); // normal
-
-            var borderColor = entry.IsShiny
-                ? System.Windows.Media.Color.FromRgb(0xF8, 0xD0, 0x30)
-                : entry.Rarity switch
-                {
-                    "Legendary" => System.Windows.Media.Color.FromRgb(0xE0, 0x40, 0x38),
-                    "Epic" => System.Windows.Media.Color.FromRgb(0xA0, 0x40, 0xD0),
-                    "Rare" => System.Windows.Media.Color.FromRgb(0x38, 0x90, 0xF8),
-                    "Uncommon" => System.Windows.Media.Color.FromRgb(0x40, 0xC8, 0x40),
-                    _ => System.Windows.Media.Color.FromArgb(0x60, 0x98, 0xB8, 0x88)
-                };
-
-            var timeAgo = FormatTimeAgo(entry.CapturedAt);
+                "Legendary" => BrushHistLegendary,
+                "Epic"      => BrushHistEpic,
+                "Rare"      => BrushHistRare,
+                "Uncommon"  => BrushHistUncommon,
+                _           => BrushHistCommon
+            };
             var label = entry.IsShiny ? $"★#{entry.Dex:D3}" : $"#{entry.Dex:D3}";
 
             items.Add(new PcBoxItem
             {
-                Dex = entry.Dex,
-                Sprite = sprite,
-                Label = label,
-                Background = new SolidColorBrush(bgColor),
-                BorderColor = new SolidColorBrush(borderColor)
+                Dex        = entry.Dex,
+                Clip       = GetClipCached(entry.Dex),
+                Label      = label,
+                Background = bg,
+                BorderColor= border
             });
         }
 
-        // Pad remaining slots
         while (items.Count < PAGE_SIZE)
-        {
-            items.Add(new PcBoxItem
-            {
-                Dex = -1,
-                Sprite = null,
-                Label = "",
-                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0x80, 0xC0, 0x60)),
-                BorderColor = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x30, 0x98, 0xB8, 0x88))
-            });
-        }
+            items.Add(PcBoxItem.Empty);
 
-        PokemonGrid.ItemsSource = items;
+        _pageItems = items;
+        PokemonGrid.ItemsSource = _pageItems;
         SelectedText.Text = entries.Count > 0
             ? $"{entries.Count} {Localizer.Get("pcbox.recent_captures")}"
             : Localizer.Get("pcbox.no_captures");
-    }
-
-    private static string FormatTimeAgo(DateTime utcTime)
-    {
-        var elapsed = DateTime.UtcNow - utcTime;
-        if (elapsed.TotalMinutes < 1) return "agora";
-        if (elapsed.TotalHours < 1) return $"{(int)elapsed.TotalMinutes}m";
-        if (elapsed.TotalDays < 1) return $"{(int)elapsed.TotalHours}h";
-        return $"{(int)elapsed.TotalDays}d";
     }
 
     private void BuildGearMenu()
@@ -395,11 +428,57 @@ public partial class PcBoxWindow : Window
     }
 }
 
-public class PcBoxItem
+public class PcBoxItem : INotifyPropertyChanged
 {
-    public int Dex { get; set; }
-    public BitmapSource? Sprite { get; set; }
-    public string Label { get; set; } = string.Empty;
-    public SolidColorBrush Background { get; set; } = new SolidColorBrush();
-    public SolidColorBrush BorderColor { get; set; } = new SolidColorBrush(System.Windows.Media.Colors.Gray);
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void Notify([CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+    public int Dex { get; init; }
+    public string Label { get; init; } = string.Empty;
+
+    // Clip de animação: Sprite é o frame atual, avançado pelo timer da janela
+    private AnimationClip? _clip;
+    private int _clipFrame;
+
+    public AnimationClip? Clip
+    {
+        get => _clip;
+        init => _clip = value;
+    }
+
+    /// <summary>Frame atual do clip de animação. Atualiza a binding de Sprite.</summary>
+    public BitmapSource? Sprite => _clip?.Frames.Count > 0
+        ? _clip.Frames[_clipFrame % _clip.Frames.Count]
+        : null;
+
+    /// <summary>Avança um frame da animação e notifica o binding.</summary>
+    public void AdvanceFrame()
+    {
+        if (_clip == null || _clip.Frames.Count <= 1) return;
+        _clipFrame = (_clipFrame + 1) % _clip.Frames.Count;
+        Notify(nameof(Sprite));
+    }
+
+    private SolidColorBrush _background = new();
+    public SolidColorBrush Background
+    {
+        get => _background;
+        set { if (!ReferenceEquals(_background, value)) { _background = value; Notify(); } }
+    }
+
+    private SolidColorBrush _borderColor = new();
+    public SolidColorBrush BorderColor
+    {
+        get => _borderColor;
+        set { if (!ReferenceEquals(_borderColor, value)) { _borderColor = value; Notify(); } }
+    }
+
+    /// <summary>Slot vazio pré-alocado (imutável, seguro para reusar).</summary>
+    public static readonly PcBoxItem Empty = new()
+    {
+        Background  = PcBoxWindow.BrushCardEmpty,
+        BorderColor = PcBoxWindow.BrushBorderEmpty
+    };
 }

@@ -219,6 +219,10 @@ public class CombatManager
     /// </summary>
     private CombatResult SimulateRounds(PlayerPet player, EnemyPet enemy, List<string> messages)
     {
+        // Primeira mensagem: tipo do inimigo (exibida imediatamente no round 0)
+        var enemyTypeEmoji = Pokebar.Core.Models.TypeChart.TypeEmoji(enemy.PrimaryType);
+        messages.Add($"⚔ {enemyTypeEmoji} {enemy.PrimaryType}!");
+
         var playerMoves = new MoveSet(_moves, _random);
         var enemyMoves = new MoveSet(_moves, _random);
 
@@ -244,11 +248,18 @@ public class CombatManager
             int playerDmg = 0;
             bool playerSkipped = IsSkippedByStatus(pStatus, ref pSleepLeft);
 
+            // BUG FIX: IsSkippedByStatus decrementa sleepLeft mas não limpa o status
+            // quando o sono expira (sleepLeft chega a 0 e retorna false). Sem este
+            // guard, pStatus permanece Sleep até o fim, propagando bônus indevido
+            // de captura via CombatResult.EnemyStatus → enemy.ActiveStatus.
+            if (pStatus == StatusEffectType.Sleep && pSleepLeft == 0)
+                pStatus = StatusEffectType.None;
+
             if (!playerSkipped)
             {
                 playerMove = playerMoves.PickMove();
                 playerMoves.UseMove(playerMove);
-                playerDmg = CalcDamage(playerMove, player.Attack, enemy.Defense);
+                playerDmg = CalcDamage(playerMove, player.Attack, enemy.Defense, enemy.PrimaryType);
                 eHp -= playerDmg;
 
                 if (playerMove.StatusEffect != StatusEffectType.None && eStatus == StatusEffectType.None)
@@ -275,11 +286,15 @@ public class CombatManager
             int enemyDmg = 0;
             bool enemySkipped = IsSkippedByStatus(eStatus, ref eSleepLeft);
 
+            // BUG FIX: idem para o inimigo — limpar eStatus quando eSleepLeft chega a 0.
+            if (eStatus == StatusEffectType.Sleep && eSleepLeft == 0)
+                eStatus = StatusEffectType.None;
+
             if (!enemySkipped)
             {
                 enemyMove = enemyMoves.PickMove();
                 enemyMoves.UseMove(enemyMove);
-                enemyDmg = CalcDamage(enemyMove, enemy.Attack, player.Defense);
+                enemyDmg = CalcDamage(enemyMove, enemy.Attack, player.Defense, player.PrimaryType);
                 pHp -= enemyDmg;
 
                 if (enemyMove.StatusEffect != StatusEffectType.None && pStatus == StatusEffectType.None)
@@ -320,14 +335,19 @@ public class CombatManager
     }
 
     /// <summary>
-    /// Calcula dano de um move: BaseDamage × (atk/def) × variância × crit.
+    /// Calcula dano de um move: BaseDamage × (atk/def) × efetividade de tipo × variância × crit.
     /// </summary>
-    private int CalcDamage(MoveDefinition move, int attack, int defense)
+    private int CalcDamage(MoveDefinition move, int attack, int defense, Pokebar.Core.Models.PokemonType defenderType)
     {
         if (move.BaseDamage <= 0) return 0;
 
+        // Efetividade de tipo (0 = imune, 0.5 = pouco efetivo, 1 = normal, 2 = super efetivo)
+        var typeMultiplier = Pokebar.Core.Models.TypeChart.GetMultiplier(move.Type, defenderType);
+        if (typeMultiplier == 0.0) return 0;
+
         var safeDef = Math.Max(1, defense);
         var raw = move.BaseDamage * ((double)attack / safeDef);
+        raw *= typeMultiplier;
 
         // Variância: ±damageVariance
         var variance = 1.0 + ((_random.NextDouble() * 2 - 1) * _damageVariance);
@@ -412,18 +432,10 @@ public class CombatManager
     {
         pet.VelocityX = previousVelocity;
 
-        if (previousState == EntityState.Idle)
-        {
-            pet.StartIdle();
-        }
-        else if (previousState == EntityState.Walking)
-        {
+        if (previousState == EntityState.Walking)
             pet.StartWalking();
-        }
         else
-        {
-            pet.StartWalking();
-        }
+            pet.StartIdle(); // Idle é o estado seguro padrão pós-combate
     }
 
     private readonly record struct CombatResult(

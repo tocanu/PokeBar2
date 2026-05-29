@@ -9,6 +9,15 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+
+    <!-- Versão do app — atualize antes de cada release -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>PokeBar</Product>
+    <Company>PokeBar</Company>
+    <Description>Desktop Pet Pokémon para Windows</Description>
+    <Copyright>Copyright © 2025 PokeBar</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,10 +40,5 @@
     <Resource Include="Fonts\PressStart2P-Regular.ttf" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Sounds\*.wav">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 
 </Project>

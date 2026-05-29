@@ -47,6 +47,7 @@ public class TaskbarService
     private const uint MONITOR_DEFAULTTONEAREST = 2;
 
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+    private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
     [DllImport("shell32.dll", SetLastError = true)]
     private static extern IntPtr SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
@@ -75,9 +76,14 @@ public class TaskbarService
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+
+    [DllImport("shcore.dll")]
+    private static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
+
     public class TaskbarInfo
     {
-        public Rect Bounds { get; set; }
         public Rect BoundsPx { get; set; }
         public TaskbarPosition Position { get; set; }
         public bool IsAutoHide { get; set; }
@@ -86,8 +92,6 @@ public class TaskbarService
         public IntPtr Hwnd { get; set; }
         public IntPtr MonitorHandle { get; set; }
         public bool IsPrimary { get; set; }
-
-        public double GroundY => Bounds.Bottom;
 
         public double GroundYPx => BoundsPx.Bottom;
     }
@@ -140,6 +144,56 @@ public class TaskbarService
             return true;
         }, IntPtr.Zero);
 
+        // ── Synthetic entries for monitors without a taskbar window ──────────
+        // Monitors that have no Shell_SecondaryTrayWnd (e.g. secondary monitors with
+        // "Show taskbar on all displays" disabled) won't be in the list yet.
+        // We enumerate all physical monitors and add a virtual strip at the bottom
+        // of each work area for any monitor not already covered.
+        var coveredMonitors = new HashSet<IntPtr>(taskbars.Select(t => t.MonitorHandle));
+        var allMonitors = new List<IntPtr>();
+
+        EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
+            (IntPtr hMonitor, IntPtr hdc, ref RECT rc, IntPtr data) =>
+            {
+                allMonitors.Add(hMonitor);
+                return true;
+            },
+            IntPtr.Zero);
+
+        foreach (var hMonitor in allMonitors)
+        {
+            if (coveredMonitors.Contains(hMonitor))
+                continue;
+
+            var mi = new MONITORINFO { cbSize = Marshal.SizeOf(typeof(MONITORINFO)) };
+            if (!GetMonitorInfo(hMonitor, ref mi))
+                continue;
+
+            var monPx  = RectFromRECT(mi.rcMonitor);
+            var workPx = RectFromRECT(mi.rcWork);
+            var dpi    = GetDpiScaleForMonitor(hMonitor);
+
+            // Virtual strip at the work-area bottom (same height as a typical taskbar)
+            const int SyntheticHeight = 40;
+            var synPx = new Rect(
+                monPx.Left,
+                workPx.Bottom - SyntheticHeight,
+                monPx.Width,
+                SyntheticHeight);
+
+            taskbars.Add(new TaskbarInfo
+            {
+                BoundsPx     = synPx,
+                Position     = TaskbarPosition.Bottom,
+                IsAutoHide   = false,
+                DpiScale     = dpi,
+                MonitorIndex = taskbars.Count,
+                Hwnd         = IntPtr.Zero,
+                MonitorHandle = hMonitor,
+                IsPrimary    = false
+            });
+        }
+
         taskbars.Sort((a, b) => a.BoundsPx.Left.CompareTo(b.BoundsPx.Left));
         return taskbars;
     }
@@ -177,12 +231,10 @@ public class TaskbarService
 
         var boundsPx = RectFromRECT(data.rc);
         var dpiScale = GetDpiScale(hWnd);
-        var bounds = ScaleRect(boundsPx, 1 / dpiScale);
         var monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
 
         info = new TaskbarInfo
         {
-            Bounds = bounds,
             BoundsPx = boundsPx,
             Position = data.uEdge switch
             {
@@ -211,14 +263,12 @@ public class TaskbarService
 
         var boundsPx = RectFromRECT(rect);
         var dpiScale = GetDpiScale(hWnd);
-        var bounds = ScaleRect(boundsPx, 1 / dpiScale);
         var monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
         var monitorBoundsPx = GetMonitorBoundsPx(monitor);
         var position = InferPosition(boundsPx, monitorBoundsPx);
 
         info = new TaskbarInfo
         {
-            Bounds = bounds,
             BoundsPx = boundsPx,
             Position = position,
             IsAutoHide = autoHide,
@@ -239,7 +289,6 @@ public class TaskbarService
 
         return new TaskbarInfo
         {
-            Bounds = new Rect(0, screenHeight - taskbarHeight, SystemParameters.PrimaryScreenWidth, taskbarHeight),
             BoundsPx = new Rect(0, screenHeight - taskbarHeight, SystemParameters.PrimaryScreenWidth, taskbarHeight),
             Position = TaskbarPosition.Bottom,
             IsAutoHide = autoHide,
@@ -266,11 +315,6 @@ public class TaskbarService
         return new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
     }
 
-    private static Rect ScaleRect(Rect rect, double scale)
-    {
-        return new Rect(rect.X * scale, rect.Y * scale, rect.Width * scale, rect.Height * scale);
-    }
-
     private static double GetDpiScale(IntPtr hWnd)
     {
         try
@@ -284,6 +328,17 @@ public class TaskbarService
         {
             return 1.0;
         }
+    }
+
+    private static double GetDpiScaleForMonitor(IntPtr hMonitor)
+    {
+        try
+        {
+            if (GetDpiForMonitor(hMonitor, 0 /* MDT_EFFECTIVE_DPI */, out uint dpiX, out _) == 0)
+                return dpiX / 96.0;
+        }
+        catch { }
+        return 1.0;
     }
 
     private static Rect GetMonitorBoundsPx(IntPtr hMonitor)

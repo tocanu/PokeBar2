@@ -9,7 +9,6 @@ public class PlayerPet : PokemonPet
 {
     private readonly List<int> _party = new();
     private int _friendship = 70;
-    private int _combatHp; // HP temporário durante simulação de combate
 
     public PlayerPet(int dex, int pokeballs = 0) : base(dex)
     {
@@ -26,6 +25,9 @@ public class PlayerPet : PokemonPet
     public int Attack { get; private set; }
     public int Defense { get; private set; }
     public int Pokeballs { get; private set; }
+
+    /// <summary>Se ativo, pokébolas não são consumidas ao capturar (modo sandbox).</summary>
+    public bool SandboxMode { get; set; }
     public IReadOnlyList<int> Party => _party;
 
     // FASE 7: Amizade e Humor
@@ -44,12 +46,6 @@ public class PlayerPet : PokemonPet
 
     /// <summary>Turnos restantes de sono.</summary>
     public int SleepTurnsLeft { get; set; }
-
-    /// <summary>HP de combate para simulação interna.</summary>
-    public int CombatHp { get => _combatHp; set => _combatHp = Math.Clamp(value, 0, MaxHp); }
-
-    /// <summary>Inicializa HP de combate no início da luta.</summary>
-    public void BeginCombat() { _combatHp = MaxHp; ActiveStatus = StatusEffectType.None; SleepTurnsLeft = 0; }
 
     /// <summary>Limpa status após combate.</summary>
     public void EndCombat() { ActiveStatus = StatusEffectType.None; SleepTurnsLeft = 0; }
@@ -76,12 +72,23 @@ public class PlayerPet : PokemonPet
 
     public bool TryConsumePokeball()
     {
+        // Sandbox: pokébola nunca é consumida
+        if (SandboxMode)
+            return true;
+
         if (Pokeballs <= 0)
             return false;
 
         Pokeballs--;
         return true;
     }
+
+    /// <summary>
+    /// Retorna true se uma captura pode ser tentada agora
+    /// (tem pokébola ou está em modo sandbox).
+    /// Não consome nem decrementa nada.
+    /// </summary>
+    public bool CanThrowPokeball() => SandboxMode || Pokeballs > 0;
 
     public void AddToParty(int dex)
     {

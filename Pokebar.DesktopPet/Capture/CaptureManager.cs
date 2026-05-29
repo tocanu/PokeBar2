@@ -1,17 +1,33 @@
-﻿using System;
+using System;
 using Pokebar.Core.Models;
 using Pokebar.DesktopPet.Entities;
 using Serilog;
+using StatusEffectType = Pokebar.Core.Models.StatusEffectType;
 
 namespace Pokebar.DesktopPet.Capture;
 
+/// <summary>
+/// Manages the full Pokéball capture sequence:
+///   Travel  → arc flight from player to enemy, ball spinning
+///   Absorb  → enemy shrinks, lid opens/closes, glow flash
+///   Drop    → ball falls to ground with gravity, landing squish
+///   Shake   → ball rocks left/right (3 shakes), scale recovery
+///   Done    → success/fail resolution
+/// </summary>
 public class CaptureManager
 {
-    private readonly double _travelDuration;
-    private readonly double _absorbDuration;
-    private readonly double _shakeDuration;
-    private readonly int _shakeCount;
-    private readonly double _shakeAmplitude;
+    // ── Timings ────────────────────────────────────────────────────────────────
+    private readonly double _travelDuration;    // arc flight
+    private const double ABSORB_DURATION = 0.55;
+    private const double DROP_DURATION   = 0.38;
+    private const double SHAKE_DURATION  = 0.55; // per individual shake
+    private const int    SHAKE_COUNT     = 3;
+
+    // ── Shake parameters ──────────────────────────────────────────────────────
+    private const double ROCK_AMPLITUDE  = 20.0; // degrees
+    private const double SHIFT_AMPLITUDE =  5.0; // px horizontal offset during rock
+
+    // ── State ─────────────────────────────────────────────────────────────────
     private readonly GameplayConfig _config;
     private readonly double _baseSuccessRate;
     private readonly Random _random = new();
@@ -20,12 +36,8 @@ public class CaptureManager
 
     public CaptureManager(GameplayConfig config)
     {
-        _config = config;
-        _travelDuration = config.Capture.ShrinkDuration > 0 ? config.Capture.ShrinkDuration : 0.6;
-        _absorbDuration = 0.5;
-        _shakeDuration = 0.25;
-        _shakeCount = 3;
-        _shakeAmplitude = 6;
+        _config          = config;
+        _travelDuration  = config.Capture.ShrinkDuration > 0 ? config.Capture.ShrinkDuration : 0.65;
         _baseSuccessRate = Math.Clamp(config.Capture.BaseSuccessRate, 0.0, 1.0);
     }
 
@@ -34,26 +46,26 @@ public class CaptureManager
     public event Action<EnemyPet>? CaptureCompleted;
     public event Action<EnemyPet>? CaptureFailed;
 
-    public bool TryStartCapture(PlayerPet player, EnemyPet enemy, PetWindow? enemyWindow, double dpiScale,
-        double playerScreenCenterX = 0, double playerScreenCenterY = 0)
+    // ── Public API ─────────────────────────────────────────────────────────────
+
+    public bool TryStartCapture(PlayerPet player, EnemyPet enemy, PetWindow? enemyWindow,
+        double dpiScale, double playerScreenCenterX = 0, double playerScreenCenterY = 0)
     {
         if (enemy.State != EntityState.Fainted || enemy.IsCaptureInProgress)
             return false;
 
-        // Consumir pokeball - sem bola, sem captura
         if (!player.TryConsumePokeball())
         {
-            Log.Debug("Capture blocked: no Pokéballs available (Player has {Pokeballs})", player.Pokeballs);
+            Log.Debug("Capture blocked: no Pokéballs (has {Pokeballs})", player.Pokeballs);
             return false;
         }
 
-        Log.Information("Capture attempt started: Player throwing Pokéball at enemy Dex {EnemyDex} (Pokéballs remaining: {Pokeballs})", 
+        Log.Information("Capture started: dex={Dex} pokéballs_left={Balls}",
             enemy.Dex, player.Pokeballs);
         enemy.BeginCapture();
 
         if (enemyWindow == null)
         {
-            Log.Information("Capture completed instantly (no window). Enemy Dex: {Dex}", enemy.Dex);
             enemy.MarkCaptured();
             CaptureCompleted?.Invoke(enemy);
             return true;
@@ -62,181 +74,247 @@ public class CaptureManager
         enemyWindow.SetCaptureScale(1);
         var ballWindow = new CaptureBallWindow(_config);
 
-        // Usar posições de tela reais (DIPs) lidas diretamente das janelas
         var (enemyCenterX, enemyCenterY) = enemyWindow.GetScreenCenter();
         var enemyGroundY = enemyWindow.GetScreenGroundY();
 
-        Log.Debug("Capture ball: Player({PlayerX:F0},{PlayerY:F0}) → Enemy({EnemyX:F0},{EnemyY:F0}), BallSize={Size}",
-            playerScreenCenterX, playerScreenCenterY, enemyCenterX, enemyCenterY, _config.Capture.BallSizePx);
-
-        // Posicionar a bola ANTES de Show para garantir posição inicial correta
         ballWindow.UpdatePosition(playerScreenCenterX, playerScreenCenterY);
         ballWindow.Show();
         ballWindow.SetHidden(_hidden);
 
-        var sequence = new CaptureSequence(enemy, enemyWindow, ballWindow)
+        _active = new CaptureSequence(enemy, enemyWindow, ballWindow)
         {
-            StartX = playerScreenCenterX,
-            StartY = playerScreenCenterY,
+            StartX  = playerScreenCenterX,
+            StartY  = playerScreenCenterY,
             TargetX = enemyCenterX,
             TargetY = enemyCenterY,
-            DropY = enemyGroundY
+            DropY   = enemyGroundY,
         };
-
-        _active = sequence;
         return true;
     }
 
     public void Update(double deltaTime)
     {
-        if (_active == null)
-            return;
-
+        if (_active == null) return;
         _active.Elapsed += deltaTime;
 
         switch (_active.Phase)
         {
-            case CapturePhase.Travel:
-                UpdateTravel();
-                break;
-            case CapturePhase.Absorb:
-                UpdateAbsorb();
-                break;
-            case CapturePhase.Shake:
-                UpdateShake();
-                break;
-            case CapturePhase.Done:
-                FinishCapture();
-                break;
+            case CapturePhase.Travel: UpdateTravel(deltaTime); break;
+            case CapturePhase.Absorb: UpdateAbsorb();          break;
+            case CapturePhase.Drop:   UpdateDrop(deltaTime);   break;
+            case CapturePhase.Shake:  UpdateShake();           break;
+            case CapturePhase.Done:   FinishCapture();         break;
         }
     }
 
     public void SetHidden(bool hidden)
     {
         _hidden = hidden;
-        if (_active?.BallWindow != null)
-            _active.BallWindow.SetHidden(hidden);
+        _active?.BallWindow.SetHidden(hidden);
     }
 
     public void Shutdown()
     {
-        if (_active == null)
-            return;
-
+        if (_active == null) return;
         _active.BallWindow.Close();
         _active = null;
     }
 
-    private void UpdateTravel()
-    {
-        if (_active == null)
-            return;
+    // ── Phase: Travel ──────────────────────────────────────────────────────────
+    // Ball flies on a parabolic arc from the player to the enemy, spinning.
 
-        var progress = Math.Clamp(_active.Elapsed / _travelDuration, 0, 1);
+    private void UpdateTravel(double deltaTime)
+    {
+        var progress = Math.Clamp(_active!.Elapsed / _travelDuration, 0, 1);
+
         var x = Lerp(_active.StartX, _active.TargetX, progress);
         var y = Lerp(_active.StartY, _active.TargetY, progress);
 
-        // Arco parabólico: bola sobe e desce durante Travel (altura máx no meio)
-        // Gravity do config escala a altura do arco (default 500 → ~60px)
-        var arcHeight = _config.Capture.Gravity / 8.0;
-        var arc = -4.0 * arcHeight * progress * (progress - 1.0); // parábola: 0 → arcHeight → 0
-        y -= arc;
+        // Parabolic arc: rises to peak at mid-flight then falls onto enemy
+        var arcHeight = Math.Max(40.0, _config.Capture.Gravity / 8.0);
+        y -= -4.0 * arcHeight * progress * (progress - 1.0);
+
+        // Continuous spin: ~2.5 full rotations over travel duration
+        _active.SpinAngle = (_active.SpinAngle + deltaTime * (900.0 / _travelDuration)) % 360.0;
+        _active.BallWindow.SetSpinAngle(_active.SpinAngle);
 
         _active.BallWindow.UpdatePosition(x, y);
         _active.BallWindow.EnsureTopmost();
 
-        if (progress >= 1)
+        if (progress >= 1.0)
         {
-            // Carry forward overrun so next phase starts with correct timing
+            _active.BallWindow.SetSpinAngle(0);
             _active.Elapsed = Math.Max(0, _active.Elapsed - _travelDuration);
-            _active.Phase = CapturePhase.Absorb;
+            _active.Phase   = CapturePhase.Absorb;
         }
     }
+
+    // ── Phase: Absorb ─────────────────────────────────────────────────────────
+    // Lid opens, enemy shrinks and vanishes, glow flashes, lid closes.
 
     private void UpdateAbsorb()
     {
-        if (_active == null)
-            return;
+        var p = Math.Clamp(_active!.Elapsed / ABSORB_DURATION, 0.0, 1.0);
 
-        var progress = Math.Clamp(_active.Elapsed / _absorbDuration, 0, 1);
-        var scale = 1 - progress;
-        _active.EnemyWindow.SetCaptureScale(scale);
+        // Enemy: scale 1→0 over the whole absorb window
+        _active.EnemyWindow.SetCaptureScale(Math.Max(0, 1.0 - p));
+
+        // Lid: open 0→0.45, hold flat, close 0.55→1.0
+        double lidT;
+        if (p < 0.45)
+            lidT = Ease(p / 0.45);
+        else if (p < 0.55)
+            lidT = 1.0;
+        else
+            lidT = 1.0 - Ease((p - 0.55) / 0.45);
+        _active.BallWindow.SetLidOpen(lidT);
+
+        // Glow: ramps up then down, peak at p≈0.5
+        var glow = Math.Max(0, Math.Sin(p * Math.PI));
+        _active.BallWindow.SetGlow(glow * 0.85);
+
+        // Scale pulse: ball swells slightly then snaps shut
+        var pulse = Math.Sin(p * Math.PI) * 0.18;
+        _active.BallWindow.SetBallScale(1.0 + pulse, 1.0 + pulse * 0.6);
+
         _active.BallWindow.UpdatePosition(_active.TargetX, _active.TargetY);
         _active.BallWindow.EnsureTopmost();
 
-        if (progress >= 1)
+        if (p >= 1.0)
         {
             _active.EnemyWindow.SetHidden(true);
-            _active.Elapsed = Math.Max(0, _active.Elapsed - _absorbDuration);
-            _active.Phase = CapturePhase.Shake;
+            _active.BallWindow.SetLidOpen(0);
+            _active.BallWindow.SetGlow(0);
+            _active.BallWindow.SetBallScale(1, 1);
+            _active.Elapsed = Math.Max(0, _active.Elapsed - ABSORB_DURATION);
+            _active.Phase   = CapturePhase.Drop;
         }
     }
 
+    // ── Phase: Drop ───────────────────────────────────────────────────────────
+    // Ball falls from enemy-centre down to the taskbar with gravity, then squishes.
+
+    private void UpdateDrop(double deltaTime)
+    {
+        var p = Math.Clamp(_active!.Elapsed / DROP_DURATION, 0.0, 1.0);
+
+        // Quadratic ease-in (accelerating gravity)
+        var fallT = p * p;
+        var y = Lerp(_active.TargetY, _active.DropY, fallT);
+
+        // Slow trailing spin during fall (~¼ turn = 90° over DROP_DURATION seconds)
+        _active.SpinAngle = (_active.SpinAngle + deltaTime * (90.0 / DROP_DURATION)) % 360.0;
+        _active.BallWindow.SetSpinAngle(_active.SpinAngle);
+
+        _active.BallWindow.UpdatePosition(_active.TargetX, y);
+        _active.BallWindow.EnsureTopmost();
+
+        if (p >= 1.0)
+        {
+            // Landing squish: wide and flat, will recover in Shake
+            _active.BallWindow.SetBallScale(1.35, 0.70);
+            _active.BallWindow.SetSpinAngle(0);
+            _active.BallWindow.UpdatePosition(_active.TargetX, _active.DropY);
+            _active.Elapsed = Math.Max(0, _active.Elapsed - DROP_DURATION);
+            _active.Phase   = CapturePhase.Shake;
+        }
+    }
+
+    // ── Phase: Shake ──────────────────────────────────────────────────────────
+    // Ball rocks left–right N times; squish recovers during the first shake.
+
     private void UpdateShake()
     {
-        if (_active == null)
-            return;
-
-        _active.ShakeElapsed += _active.Elapsed;
+        _active!.ShakeElapsed += _active.Elapsed;
         _active.Elapsed = 0;
 
-        var totalShake = _shakeDuration * _shakeCount;
+        var totalShake = SHAKE_DURATION * SHAKE_COUNT;
+
         if (_active.ShakeElapsed >= totalShake)
         {
+            _active.BallWindow.SetRockAngle(0);
+            _active.BallWindow.SetBallScale(1, 1);
             _active.Phase = CapturePhase.Done;
             return;
         }
 
-        var phase = _active.ShakeElapsed / _shakeDuration;
-        var shakeIndex = (int)Math.Floor(phase);
-        var local = phase - shakeIndex;
-        var direction = (shakeIndex % 2 == 0) ? -1 : 1;
-        var offset = Math.Sin(local * Math.PI) * _shakeAmplitude * direction;
-        var x = _active.TargetX + offset;
-        _active.BallWindow.UpdatePosition(x, _active.DropY);
+        // Squish recovery: lerp back to (1,1) over first 0.18 s
+        const double squishRecover = 0.18;
+        if (_active.ShakeElapsed < squishRecover)
+        {
+            var t  = _active.ShakeElapsed / squishRecover;
+            var sx = Lerp(1.35, 1.0, t);
+            var sy = Lerp(0.70, 1.0, t);
+            _active.BallWindow.SetBallScale(sx, sy);
+        }
+        else
+        {
+            _active.BallWindow.SetBallScale(1, 1);
+        }
+
+        // Rock oscillation for each shake
+        var shakePhase = _active.ShakeElapsed / SHAKE_DURATION;
+        var shakeIndex = (int)Math.Floor(shakePhase);
+        var local      = shakePhase - shakeIndex;
+
+        // Alternate direction; sine gives smooth ease-in/out pivot
+        var dir       = (shakeIndex % 2 == 0) ? -1.0 : 1.0;
+        var rockAngle = Math.Sin(local * Math.PI) * ROCK_AMPLITUDE * dir;
+        var xOffset   = Math.Sin(local * Math.PI) * SHIFT_AMPLITUDE  * dir;
+
+        _active.BallWindow.SetRockAngle(rockAngle);
+        _active.BallWindow.UpdatePosition(_active.TargetX + xOffset, _active.DropY);
         _active.BallWindow.EnsureTopmost();
     }
 
+    // ── Phase: Done ───────────────────────────────────────────────────────────
+
     private void FinishCapture()
     {
-        if (_active == null)
-            return;
-
+        if (_active == null) return;
         var enemy = _active.Enemy;
 
-        // Fórmula justa de captura: baseRate × hpFactor × statusBonus / rarityDifficulty
+        // Capture formula: baseRate × hpFactor × statusBonus / rarityDifficulty
         var hpFactor = enemy.MaxHp > 0
             ? (3.0 * enemy.MaxHp - 2.0 * enemy.CurrentHp) / (3.0 * enemy.MaxHp)
             : 1.0;
 
         var statusBonus = enemy.ActiveStatus switch
         {
-            Core.Models.StatusEffectType.Sleep => _config.Capture.SleepCaptureBonus,
-            Core.Models.StatusEffectType.Poison or Core.Models.StatusEffectType.Paralysis => _config.Capture.StatusCaptureBonus,
-            _ => 1.0
+            StatusEffectType.Sleep                                        => _config.Capture.SleepCaptureBonus,
+            StatusEffectType.Poison or StatusEffectType.Paralysis         => _config.Capture.StatusCaptureBonus,
+            _                                                             => 1.0,
         };
 
-        var rarityIndex = (int)enemy.Rarity;
-        var rarityDifficulty = rarityIndex >= 0 && rarityIndex < _config.Capture.RarityDifficulty.Length
-            ? _config.Capture.RarityDifficulty[rarityIndex]
-            : 1.0;
+        var rarityIndex  = (int)enemy.Rarity;
+        var rarityDiff   = rarityIndex >= 0 && rarityIndex < _config.Capture.RarityDifficulty.Length
+            ? _config.Capture.RarityDifficulty[rarityIndex] : 1.0;
 
-        var captureChance = Math.Clamp(_baseSuccessRate * hpFactor * statusBonus / Math.Max(0.1, rarityDifficulty), 0.05, 0.95);
-        var roll = _random.NextDouble();
+        var captureChance = Math.Clamp(
+            _baseSuccessRate * hpFactor * statusBonus / Math.Max(0.1, rarityDiff),
+            0.05, 0.95);
+
+        var roll    = _random.NextDouble();
         var success = roll < captureChance;
 
-        Log.Information("Capture roll: {Roll:F3} vs {Chance:F3} (base={Base:F2}, hp={HpF:F2}, status={Status}×{SBonus:F1}, rarity={Rarity}÷{RDiff:F1}) → {Result}",
-            roll, captureChance, _baseSuccessRate, hpFactor, enemy.ActiveStatus, statusBonus, enemy.Rarity, rarityDifficulty,
+        Log.Information(
+            "Capture roll: {Roll:F3} vs {Chance:F3} " +
+            "(base={Base:F2} hp={Hp:F2} status={St}×{SB:F1} rarity={R}÷{RD:F1}) → {Result}",
+            roll, captureChance, _baseSuccessRate, hpFactor,
+            enemy.ActiveStatus, statusBonus, enemy.Rarity, rarityDiff,
             success ? "SUCCESS" : "FAILED");
 
         if (success)
         {
+            _active.BallWindow.SetButtonSuccess();
             enemy.MarkCaptured();
             _active.BallWindow.Close();
             CaptureCompleted?.Invoke(enemy);
         }
         else
         {
+            // Pop the lid open then restore enemy
+            _active.BallWindow.SetLidOpen(1.0);
             enemy.IsCaptureInProgress = false;
             _active.EnemyWindow.SetCaptureScale(1);
             _active.EnemyWindow.SetHidden(false);
@@ -247,35 +325,46 @@ public class CaptureManager
         _active = null;
     }
 
-    private static double Lerp(double from, double to, double t) => from + ((to - from) * t);
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private static double Lerp(double a, double b, double t) => a + (b - a) * t;
+
+    /// <summary>Smooth-step ease: slow start, fast middle, slow end.</summary>
+    private static double Ease(double t) => t * t * (3 - 2 * t);
+
+    // ── Inner types ────────────────────────────────────────────────────────────
 
     private sealed class CaptureSequence
     {
         public CaptureSequence(EnemyPet enemy, PetWindow enemyWindow, CaptureBallWindow ballWindow)
         {
-            Enemy = enemy;
+            Enemy       = enemy;
             EnemyWindow = enemyWindow;
-            BallWindow = ballWindow;
+            BallWindow  = ballWindow;
         }
 
-        public EnemyPet Enemy { get; }
-        public PetWindow EnemyWindow { get; }
-        public CaptureBallWindow BallWindow { get; }
-        public CapturePhase Phase { get; set; } = CapturePhase.Travel;
-        public double Elapsed { get; set; }
-        public double ShakeElapsed { get; set; }
-        public double StartX { get; set; }
-        public double StartY { get; set; }
+        public EnemyPet          Enemy        { get; }
+        public PetWindow          EnemyWindow  { get; }
+        public CaptureBallWindow  BallWindow   { get; }
+        public CapturePhase       Phase        { get; set; } = CapturePhase.Travel;
+        public double             Elapsed      { get; set; }
+        public double             ShakeElapsed { get; set; }
+
+        // Travel/Drop
+        public double StartX  { get; set; }
+        public double StartY  { get; set; }
         public double TargetX { get; set; }
         public double TargetY { get; set; }
-        public double DropY { get; set; }
+        public double DropY   { get; set; }
+        public double SpinAngle { get; set; }
     }
 
     private enum CapturePhase
     {
         Travel = 0,
         Absorb = 1,
-        Shake = 2,
-        Done = 3
+        Drop   = 2,   // ball falls to ground after absorbing enemy
+        Shake  = 3,
+        Done   = 4,
     }
 }

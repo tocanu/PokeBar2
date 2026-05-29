@@ -40,6 +40,10 @@ public class PokemonPet : BaseEntity
     {
     }
 
+    /// <summary>Tipo primário do Pokémon, derivado automaticamente do Dex number.</summary>
+    public Pokebar.Core.Models.PokemonType PrimaryType
+        => Pokebar.Core.Models.PokemonTypeData.GetPrimaryType(Dex);
+
     public bool ShouldFlip
     {
         get

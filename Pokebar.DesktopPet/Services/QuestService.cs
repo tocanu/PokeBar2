@@ -18,6 +18,13 @@ public class QuestService
     private double _newQuestTimer;
     private double _walkTimeAccumulator;
 
+    // BUG FIX: detectar virada de dia com app aberto.
+    // CheckDailyReset era chamado apenas no boot (EnsureInitialQuests).
+    // Se o app ficasse aberto além da meia-noite as dailies nunca eram resetadas.
+    private const double MIDNIGHT_CHECK_INTERVAL_SECONDS = 30.0;
+    private double _midnightCheckTimer;
+    private DateTime _lastCheckedDate = DateTime.UtcNow.Date;
+
     /// <summary>Missões ativas com progresso.</summary>
     public List<QuestProgress> ActiveQuests { get; private set; } = new();
 
@@ -30,14 +37,18 @@ public class QuestService
     /// <summary>Streak de dias consecutivos com daily quests completadas.</summary>
     public int DailyStreak { get; private set; }
 
-    /// <summary>Data da última daily quest completada.</summary>
+    /// <summary>Data da última daily quest completada (para streak).</summary>
     public DateTime? LastDailyDate { get; private set; }
+
+    /// <summary>
+    /// Data em que as daily quests foram geradas pela última vez.
+    /// Separado de LastDailyDate para que reiniciar o app no mesmo dia
+    /// não regenere as quests enquanto o jogador ainda não as completou.
+    /// </summary>
+    public DateTime? LastDailyGeneratedDate { get; private set; }
 
     /// <summary>Disparado quando uma missão é completada.</summary>
     public event Action<Quest, QuestProgress>? QuestCompleted;
-
-    /// <summary>Disparado quando o streak diário é atualizado.</summary>
-    public event Action<int>? DailyStreakUpdated;
 
     public QuestService(QuestConfig config)
     {
@@ -54,14 +65,35 @@ public class QuestService
         DailyQuestIds = new List<string>(save.DailyQuestIds);
         DailyStreak = save.DailyStreak;
         LastDailyDate = save.LastDailyDate;
+        LastDailyGeneratedDate = save.LastDailyGeneratedDate;
+
+        // Sincronizar _lastCheckedDate com a data atual após restaurar o save,
+        // para que a verificação de virada de dia não dispare imediatamente no boot
+        // (CheckDailyReset já é chamado via EnsureInitialQuests logo em seguida).
+        _lastCheckedDate = DateTime.UtcNow.Date;
     }
 
     /// <summary>
-    /// Atualiza o timer de geração de novas missões.
+    /// Atualiza o timer de geração de novas missões e verifica virada de dia.
     /// </summary>
     public void Update(double deltaTime)
     {
         if (!_config.Enabled) return;
+
+        // BUG FIX: verificar virada de meia-noite durante runtime.
+        // Checagem a cada 30 s (não a cada frame) para minimizar alocações de DateTime.
+        _midnightCheckTimer += deltaTime;
+        if (_midnightCheckTimer >= MIDNIGHT_CHECK_INTERVAL_SECONDS)
+        {
+            _midnightCheckTimer = 0;
+            var today = DateTime.UtcNow.Date;
+            if (today != _lastCheckedDate)
+            {
+                _lastCheckedDate = today;
+                Log.Information("QuestService: virada de dia detectada — reiniciando daily quests");
+                CheckDailyReset();
+            }
+        }
 
         _newQuestTimer += deltaTime;
         var intervalSec = _config.NewQuestIntervalMinutes * 60.0;
@@ -141,7 +173,6 @@ public class QuestService
                     DailyStreak++;
                     LastDailyDate = DateTime.UtcNow;
                     Log.Information("Daily streak updated: {Streak} days", DailyStreak);
-                    DailyStreakUpdated?.Invoke(DailyStreak);
                 }
             }
         }
@@ -170,15 +201,22 @@ public class QuestService
         if (!_config.DailyQuestsEnabled) return;
 
         var today = DateTime.UtcNow.Date;
-        var lastDaily = LastDailyDate?.Date;
 
-        if (lastDaily == today)
-            return; // já gerou dailies hoje
+        // BUG FIX: usar LastDailyGeneratedDate (data de GERAÇÃO) como guard,
+        // não LastDailyDate (data de CLAIM).
+        // Antes: se o jogador não completava as dailies, LastDailyDate ficava com
+        // a data do dia anterior e CheckDailyReset regenerava as quests a cada
+        // reinicialização do app no mesmo dia — duplicando ActiveQuests.
+        // Agora: LastDailyGeneratedDate é atualizado em GenerateDailyQuests e
+        // garante que a geração ocorre no máximo uma vez por dia calendário.
+        if (LastDailyGeneratedDate?.Date == today)
+            return; // dailies já geradas hoje
 
-        // Verificar streak
-        if (lastDaily.HasValue)
+        // Verificar streak baseado na data de CLAIM (LastDailyDate) — correto
+        if (LastDailyDate.HasValue)
         {
-            var daysSinceLast = (today - lastDaily.Value).Days;
+            var lastClaimedDate = LastDailyDate.Value.Date;
+            var daysSinceLast = (today - lastClaimedDate).Days;
             if (daysSinceLast == 1)
             {
                 // Dia consecutivo — manter streak
@@ -198,13 +236,6 @@ public class QuestService
 
         // Gerar novas daily quests
         GenerateDailyQuests();
-    }
-
-    /// <summary>Calcula o multiplicador de bônus pelo streak atual.</summary>
-    public double GetStreakBonus()
-    {
-        var effectiveStreak = Math.Min(DailyStreak, _config.MaxStreakBonus);
-        return 1.0 + (effectiveStreak * _config.StreakBonusPerDay);
     }
 
     /// <summary>Retorna a Quest completa por ID.</summary>
@@ -409,6 +440,11 @@ public class QuestService
     private void GenerateDailyQuests()
     {
         if (!_config.DailyQuestsEnabled || _dailyQuestPool.Count == 0) return;
+
+        // BUG FIX: marcar data de geração ANTES de gerar as quests.
+        // Isso garante que, mesmo se o processo for encerrado durante a geração,
+        // uma nova reinicialização no mesmo dia não tente regenerar novamente.
+        LastDailyGeneratedDate = DateTime.UtcNow;
 
         var count = Math.Min(_config.DailyQuestCount, _dailyQuestPool.Count);
         var shuffled = _dailyQuestPool.OrderBy(_ => _random.Next()).Take(count).ToList();
