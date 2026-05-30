@@ -1000,10 +1000,25 @@ public partial class MainWindow : Window
         if (_spritesMissing)
         {
             Log.Warning("SpriteCollab not found — opening SpriteSetupWindow for automatic download");
-            // A janela baixa os sprites e reinicia o app ao terminar.
-            // Se o usuário cancelar ou der erro, ela chama Application.Shutdown() diretamente.
-            new SpriteSetupWindow().ShowDialog();
-            return; // shutdown ou restart já foram disparados pela janela
+
+            var setup = new SpriteSetupWindow();
+            setup.ShowDialog();
+
+            // Controle do restart/shutdown feito AQUI (não de dentro do dialog)
+            // para evitar chamar Shutdown() enquanto ShowDialog() ainda está no stack,
+            // o que causava "Hwnd de zero não é válido" na limpeza do WPF.
+            if (setup.RestartExePath != null)
+            {
+                Log.Information("Sprites extracted — restarting app: {Exe}", setup.RestartExePath);
+                Process.Start(new ProcessStartInfo(setup.RestartExePath) { UseShellExecute = true });
+            }
+            else
+            {
+                Log.Information("Sprite setup cancelled or failed — shutting down");
+            }
+
+            System.Windows.Application.Current.Shutdown();
+            return;
         }
 
         InitializeTaskbars();

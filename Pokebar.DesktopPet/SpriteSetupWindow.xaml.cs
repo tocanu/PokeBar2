@@ -32,6 +32,9 @@ public partial class SpriteSetupWindow : Window
 
     private readonly CancellationTokenSource _cts = new();
 
+    /// <summary>Caminho do EXE a relançar após extração. Preenchido em caso de sucesso.</summary>
+    public string? RestartExePath { get; private set; }
+
     public SpriteSetupWindow()
     {
         InitializeComponent();
@@ -110,21 +113,25 @@ public partial class SpriteSetupWindow : Window
 
             Log.Information("Sprites extracted to {Dest}", spriteDest);
 
-            // ── Fase 3: Reiniciar ─────────────────────────────────────────────
+            // ── Fase 3: Fechar dialog — MainWindow fará o restart ────────────
             SetStatus("Pronto! Reiniciando o PokeBar...", indeterminate: true);
             await Task.Delay(900, ct);
 
-            var exePath = Process.GetCurrentProcess().MainModule?.FileName
-                          ?? Path.Combine(AppContext.BaseDirectory, "Pokebar.DesktopPet.exe");
+            // Passar o exePath via propriedade para que MainWindow.OnLoaded
+            // possa lançar o novo processo DEPOIS que o dialog fechar,
+            // evitando chamar Shutdown() de dentro de ShowDialog().
+            RestartExePath = Process.GetCurrentProcess().MainModule?.FileName
+                             ?? Path.Combine(AppContext.BaseDirectory, "Pokebar.DesktopPet.exe");
 
-            Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
-            WpfApp.Current.Shutdown();
+            DialogResult = true;
+            Close();
         }
         catch (OperationCanceledException)
         {
             Log.Information("Sprite download cancelled by user");
             CleanupZip(zipPath);
-            WpfApp.Current.Shutdown();
+            DialogResult = false;
+            Close();
         }
         catch (Exception ex)
         {
@@ -142,7 +149,10 @@ public partial class SpriteSetupWindow : Window
             if (retry == MessageBoxResult.Yes)
                 await RunSetupAsync();
             else
-                WpfApp.Current.Shutdown();
+            {
+                DialogResult = false;
+                Close();
+            }
         }
     }
 
