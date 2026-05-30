@@ -1832,8 +1832,14 @@ public partial class MainWindow : Window
         _spawnTimer = 0;
         _nextSpawnDelay = NextSpawnDelay();
 
-        if (GetEnemyCount() >= _config.Enemy.MaxSimultaneous)
+        var currentCount = GetEnemyCount();
+        if (currentCount >= _config.Enemy.MaxSimultaneous)
+        {
+            Log.Debug("Spawn skipped: MaxSimultaneous reached ({Count}/{Max}). States: {States}",
+                currentCount, _config.Enemy.MaxSimultaneous,
+                string.Join(", ", _entityManager.Enemies.Select(e => $"dex{e.Dex}={e.State}")));
             return;
+        }
 
         if (_random.NextDouble() > _config.Spawn.ChanceWhenReady)
             return;
