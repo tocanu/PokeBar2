@@ -267,7 +267,7 @@ public partial class MainWindow : Window
                 // Reposicionar o pet no centro do monitor atual após mudança
                 if (_currentTaskbar != null)
                 {
-                    _pokemon.X = _currentTaskbar.BoundsPx.Left + (_currentTaskbar.BoundsPx.Width / 2);
+                    _pokemon.X = _currentTaskbar.TravelLeft + (_currentTaskbar.MonitorBoundsPx.Width / 2);
                     _pokemon.Y = _currentTaskbar.GroundYPx - TASKBAR_MARGIN;
                 }
             });
@@ -1010,7 +1010,7 @@ public partial class MainWindow : Window
 
         if (_currentTaskbar != null)
         {
-            _pokemon.X = _currentTaskbar.BoundsPx.Left + (_currentTaskbar.BoundsPx.Width / 2);
+            _pokemon.X = _currentTaskbar.TravelLeft + (_currentTaskbar.MonitorBoundsPx.Width / 2);
             _pokemon.Y = _currentTaskbar.GroundYPx - TASKBAR_MARGIN;
             Log.Debug("Player spawned at X: {X:F0}, Y: {Y:F0} on monitor {MonitorIndex}", 
                 _pokemon.X, _pokemon.Y, _currentTaskbar.MonitorIndex);
@@ -1173,8 +1173,8 @@ public partial class MainWindow : Window
             {
                 var halfW = GetHalfWidthPx(_pokemon, _currentTaskbar);
                 _pokemon.X = Math.Clamp(_pokemon.X,
-                    _currentTaskbar.BoundsPx.Left  + halfW,
-                    _currentTaskbar.BoundsPx.Right - halfW);
+                    _currentTaskbar.TravelLeft  + halfW,
+                    _currentTaskbar.TravelRight - halfW);
             }
         }
         // Offset the sprite image down to make room for the speech bubble above
@@ -1216,8 +1216,8 @@ public partial class MainWindow : Window
         for (int i = 0; i < _taskbars.Count; i++)
         {
             var tb = _taskbars[i];
-            Log.Information("  Monitor {Index}: BoundsPx=[{Left},{Right}] Primary={Primary} Handle={Handle:X}",
-                i, tb.BoundsPx.Left, tb.BoundsPx.Right, tb.IsPrimary, tb.MonitorHandle.ToInt64());
+            Log.Information("  Monitor {Index}: Monitor=[{ML},{MR}] Taskbar=[{TL},{TR}] Primary={Primary} Handle={Handle:X}",
+                i, tb.TravelLeft, tb.TravelRight, tb.BoundsPx.Left, tb.BoundsPx.Right, tb.IsPrimary, tb.MonitorHandle.ToInt64());
         }
     }
 
@@ -1229,8 +1229,8 @@ public partial class MainWindow : Window
             return;
 
         var halfWidth = GetHalfWidthPx(_pokemon, _currentTaskbar);
-        var minX = _currentTaskbar.BoundsPx.Left + halfWidth;
-        var maxX = _currentTaskbar.BoundsPx.Right - halfWidth;
+        var minX = _currentTaskbar.TravelLeft  + halfWidth;
+        var maxX = _currentTaskbar.TravelRight - halfWidth;
         var movingRight = _pokemon.VelocityX >= 0;
         var target = FindTaskbarForX(_pokemon.X);
 
@@ -1366,7 +1366,7 @@ public partial class MainWindow : Window
                     _currentTaskbar.MonitorIndex, safe.MonitorIndex);
 
                 // Teleportar ao centro do monitor seguro
-                _pokemon.X = (safe.BoundsPx.Left + safe.BoundsPx.Right) / 2.0;
+                _pokemon.X = (safe.TravelLeft + safe.TravelRight) / 2.0;
                 SetCurrentTaskbar(safe);
                 UpdateWindowPosition(); // aplicar imediatamente, sem 1 frame de glitch
             }
@@ -1388,7 +1388,7 @@ public partial class MainWindow : Window
                 Log.Debug("Fullscreen eviction: enemy Dex{Dex} {OldIdx} → {NewIdx}",
                     enemy.Dex, tb.MonitorIndex, safe.MonitorIndex);
 
-                enemy.X = (safe.BoundsPx.Left + safe.BoundsPx.Right) / 2.0;
+                enemy.X = (safe.TravelLeft + safe.TravelRight) / 2.0;
                 SetEnemyTaskbar(enemy, safe);
             }
             // Se safe == null → UpdateAutoHideVisibility esconde o inimigo
@@ -1410,7 +1410,7 @@ public partial class MainWindow : Window
     {
         foreach (var taskbar in _taskbars)
         {
-            if (x >= taskbar.BoundsPx.Left && x <= taskbar.BoundsPx.Right)
+            if (x >= taskbar.TravelLeft && x <= taskbar.TravelRight)
                 return taskbar;
         }
 
@@ -1432,8 +1432,8 @@ public partial class MainWindow : Window
 
     private void ClampToTaskbar(BaseEntity entity, TaskbarService.TaskbarInfo taskbar, double halfWidth, bool bounce)
     {
-        var minX = taskbar.BoundsPx.Left + halfWidth;
-        var maxX = taskbar.BoundsPx.Right - halfWidth;
+        var minX = taskbar.TravelLeft  + halfWidth;
+        var maxX = taskbar.TravelRight - halfWidth;
 
         if (entity.X < minX)
         {
@@ -1565,8 +1565,8 @@ public partial class MainWindow : Window
                 continue;
 
             var halfWidth = GetHalfWidthPx(enemy, taskbar);
-            var minX = taskbar.BoundsPx.Left + halfWidth;
-            var maxX = taskbar.BoundsPx.Right - halfWidth;
+            var minX = taskbar.TravelLeft  + halfWidth;
+            var maxX = taskbar.TravelRight - halfWidth;
             var movingRight = enemy.VelocityX >= 0;
             var target = FindTaskbarForX(enemy.X);
 
@@ -1592,8 +1592,8 @@ public partial class MainWindow : Window
                 {
                     SetEnemyTaskbar(enemy, neighbor);
                     taskbar = neighbor;
-                    minX = taskbar.BoundsPx.Left + halfWidth;
-                    maxX = taskbar.BoundsPx.Right - halfWidth;
+                    minX = taskbar.TravelLeft  + halfWidth;
+                    maxX = taskbar.TravelRight - halfWidth;
                 }
                 else
                 {
@@ -1850,8 +1850,8 @@ public partial class MainWindow : Window
 
         var spawnLeft = _random.Next(0, 2) == 0;
         var startX = spawnLeft
-            ? taskbar.BoundsPx.Left - _config.Spawn.OffsetFromEdge
-            : taskbar.BoundsPx.Right + _config.Spawn.OffsetFromEdge;
+            ? taskbar.TravelLeft  - _config.Spawn.OffsetFromEdge
+            : taskbar.TravelRight + _config.Spawn.OffsetFromEdge;
         enemy.X = startX;
         enemy.Y = taskbar.GroundYPx - TASKBAR_MARGIN;
         enemy.VelocityX = spawnLeft ? _config.Enemy.WalkSpeed : -_config.Enemy.WalkSpeed;
@@ -2124,7 +2124,7 @@ public partial class MainWindow : Window
         if (_smartMovement != null && _currentTaskbar != null)
         {
             var tb = _currentTaskbar;
-            var speedMultiplier = _smartMovement.Update(_pokemon, deltaTime, mood, tb.BoundsPx.Left, tb.BoundsPx.Right);
+            var speedMultiplier = _smartMovement.Update(_pokemon, deltaTime, mood, tb.TravelLeft, tb.TravelRight);
 
             if (speedMultiplier == 0.0 && _pokemon.State == EntityState.Walking)
             {

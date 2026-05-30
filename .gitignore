@@ -49,3 +49,5 @@ Thumbs.db
 
 # Temp build output
 _tmp_out/
+
+dist/

@@ -84,7 +84,16 @@ public class TaskbarService
 
     public class TaskbarInfo
     {
+        /// <summary>Retângulo da janela da taskbar em pixels físicos.</summary>
         public Rect BoundsPx { get; set; }
+
+        /// <summary>
+        /// Retângulo completo do monitor em pixels físicos.
+        /// Usado para calcular os limites de viagem do pet (X mínimo/máximo),
+        /// independente de onde a taskbar está posicionada ou qual é o seu tamanho.
+        /// </summary>
+        public Rect MonitorBoundsPx { get; set; }
+
         public TaskbarPosition Position { get; set; }
         public bool IsAutoHide { get; set; }
         public double DpiScale { get; set; }
@@ -93,6 +102,13 @@ public class TaskbarService
         public IntPtr MonitorHandle { get; set; }
         public bool IsPrimary { get; set; }
 
+        /// <summary>Borda esquerda do monitor — limite de viagem do pet no eixo X.</summary>
+        public double TravelLeft  => MonitorBoundsPx.Left;
+
+        /// <summary>Borda direita do monitor — limite de viagem do pet no eixo X.</summary>
+        public double TravelRight => MonitorBoundsPx.Right;
+
+        /// <summary>Linha do chão onde o pet caminha (base da taskbar).</summary>
         public double GroundYPx => BoundsPx.Bottom;
     }
 
@@ -183,14 +199,15 @@ public class TaskbarService
 
             taskbars.Add(new TaskbarInfo
             {
-                BoundsPx     = synPx,
-                Position     = TaskbarPosition.Bottom,
-                IsAutoHide   = false,
-                DpiScale     = dpi,
-                MonitorIndex = taskbars.Count,
-                Hwnd         = IntPtr.Zero,
-                MonitorHandle = hMonitor,
-                IsPrimary    = false
+                BoundsPx        = synPx,
+                MonitorBoundsPx = monPx,
+                Position        = TaskbarPosition.Bottom,
+                IsAutoHide      = false,
+                DpiScale        = dpi,
+                MonitorIndex    = taskbars.Count,
+                Hwnd            = IntPtr.Zero,
+                MonitorHandle   = hMonitor,
+                IsPrimary       = false
             });
         }
 
@@ -229,27 +246,29 @@ public class TaskbarService
         if (result == IntPtr.Zero)
             return false;
 
-        var boundsPx = RectFromRECT(data.rc);
-        var dpiScale = GetDpiScale(hWnd);
-        var monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        var boundsPx        = RectFromRECT(data.rc);
+        var dpiScale        = GetDpiScale(hWnd);
+        var monitor         = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        var monitorBoundsPx = GetMonitorBoundsPx(monitor);
 
         info = new TaskbarInfo
         {
-            BoundsPx = boundsPx,
+            BoundsPx        = boundsPx,
+            MonitorBoundsPx = monitorBoundsPx,
             Position = data.uEdge switch
             {
-                ABE_LEFT => TaskbarPosition.Left,
-                ABE_TOP => TaskbarPosition.Top,
-                ABE_RIGHT => TaskbarPosition.Right,
+                ABE_LEFT   => TaskbarPosition.Left,
+                ABE_TOP    => TaskbarPosition.Top,
+                ABE_RIGHT  => TaskbarPosition.Right,
                 ABE_BOTTOM => TaskbarPosition.Bottom,
-                _ => TaskbarPosition.Unknown
+                _          => TaskbarPosition.Unknown
             },
-            IsAutoHide = autoHide,
-            DpiScale = dpiScale,
+            IsAutoHide   = autoHide,
+            DpiScale     = dpiScale,
             MonitorIndex = 0,
-            Hwnd = hWnd,
+            Hwnd         = hWnd,
             MonitorHandle = monitor,
-            IsPrimary = true
+            IsPrimary    = true
         };
 
         return true;
@@ -269,14 +288,15 @@ public class TaskbarService
 
         info = new TaskbarInfo
         {
-            BoundsPx = boundsPx,
-            Position = position,
-            IsAutoHide = autoHide,
-            DpiScale = dpiScale,
-            MonitorIndex = monitorIndex,
-            Hwnd = hWnd,
-            MonitorHandle = monitor,
-            IsPrimary = false
+            BoundsPx        = boundsPx,
+            MonitorBoundsPx = monitorBoundsPx,
+            Position        = position,
+            IsAutoHide      = autoHide,
+            DpiScale        = dpiScale,
+            MonitorIndex    = monitorIndex,
+            Hwnd            = hWnd,
+            MonitorHandle   = monitor,
+            IsPrimary       = false
         };
 
         return true;
@@ -284,19 +304,21 @@ public class TaskbarService
 
     private static TaskbarInfo BuildFallbackTaskbar(bool autoHide)
     {
-        var screenHeight = SystemParameters.PrimaryScreenHeight;
+        var screenW      = SystemParameters.PrimaryScreenWidth;
+        var screenH      = SystemParameters.PrimaryScreenHeight;
         var taskbarHeight = 40;
 
         return new TaskbarInfo
         {
-            BoundsPx = new Rect(0, screenHeight - taskbarHeight, SystemParameters.PrimaryScreenWidth, taskbarHeight),
-            Position = TaskbarPosition.Bottom,
-            IsAutoHide = autoHide,
-            DpiScale = 1.0,
-            MonitorIndex = 0,
-            Hwnd = IntPtr.Zero,
-            MonitorHandle = IntPtr.Zero,
-            IsPrimary = true
+            BoundsPx        = new Rect(0, screenH - taskbarHeight, screenW, taskbarHeight),
+            MonitorBoundsPx = new Rect(0, 0, screenW, screenH),
+            Position        = TaskbarPosition.Bottom,
+            IsAutoHide      = autoHide,
+            DpiScale        = 1.0,
+            MonitorIndex    = 0,
+            Hwnd            = IntPtr.Zero,
+            MonitorHandle   = IntPtr.Zero,
+            IsPrimary       = true
         };
     }
 
